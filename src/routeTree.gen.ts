@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RetirementRouteImport } from './routes/retirement'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as InsuranceRouteImport } from './routes/insurance'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as EmergencyFundRouteImport } from './routes/emergency-fund'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -30,6 +31,11 @@ const KnowledgeRoute = KnowledgeRouteImport.update({
 const InsuranceRoute = InsuranceRouteImport.update({
   id: '/insurance',
   path: '/insurance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GoalsRoute = GoalsRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
   '/retirement': typeof RetirementRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
   '/retirement': typeof RetirementRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
   '/retirement': typeof RetirementRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/emergency-fund'
     | '/goals'
+    | '/how-it-works'
     | '/insurance'
     | '/knowledge'
     | '/retirement'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/emergency-fund'
     | '/goals'
+    | '/how-it-works'
     | '/insurance'
     | '/knowledge'
     | '/retirement'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/emergency-fund'
     | '/goals'
+    | '/how-it-works'
     | '/insurance'
     | '/knowledge'
     | '/retirement'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EmergencyFundRoute: typeof EmergencyFundRoute
   GoalsRoute: typeof GoalsRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   InsuranceRoute: typeof InsuranceRoute
   KnowledgeRoute: typeof KnowledgeRoute
   RetirementRoute: typeof RetirementRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/insurance'
       fullPath: '/insurance'
       preLoaderRoute: typeof InsuranceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/goals': {
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EmergencyFundRoute: EmergencyFundRoute,
   GoalsRoute: GoalsRoute,
+  HowItWorksRoute: HowItWorksRoute,
   InsuranceRoute: InsuranceRoute,
   KnowledgeRoute: KnowledgeRoute,
   RetirementRoute: RetirementRoute,
