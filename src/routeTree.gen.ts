@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RetirementRouteImport } from './routes/retirement'
+import { Route as InsuranceRouteImport } from './routes/insurance'
 import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const RetirementRoute = RetirementRouteImport.update({
   id: '/retirement',
   path: '/retirement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InsuranceRoute = InsuranceRouteImport.update({
+  id: '/insurance',
+  path: '/insurance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GoalsRoute = GoalsRouteImport.update({
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/goals': typeof GoalsRoute
+  '/insurance': typeof InsuranceRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/goals': typeof GoalsRoute
+  '/insurance': typeof InsuranceRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/goals': typeof GoalsRoute
+  '/insurance': typeof InsuranceRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/goals' | '/retirement'
+  fullPaths: '/' | '/dashboard' | '/goals' | '/insurance' | '/retirement'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/goals' | '/retirement'
-  id: '__root__' | '/' | '/dashboard' | '/goals' | '/retirement'
+  to: '/' | '/dashboard' | '/goals' | '/insurance' | '/retirement'
+  id: '__root__' | '/' | '/dashboard' | '/goals' | '/insurance' | '/retirement'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   GoalsRoute: typeof GoalsRoute
+  InsuranceRoute: typeof InsuranceRoute
   RetirementRoute: typeof RetirementRoute
 }
 
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/retirement'
       fullPath: '/retirement'
       preLoaderRoute: typeof RetirementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/insurance': {
+      id: '/insurance'
+      path: '/insurance'
+      fullPath: '/insurance'
+      preLoaderRoute: typeof InsuranceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/goals': {
@@ -106,6 +123,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   GoalsRoute: GoalsRoute,
+  InsuranceRoute: InsuranceRoute,
   RetirementRoute: RetirementRoute,
 }
 export const routeTree = rootRouteImport
