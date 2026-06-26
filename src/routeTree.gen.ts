@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RetirementRouteImport } from './routes/retirement'
+import { Route as PrinciplesRouteImport } from './routes/principles'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as InsuranceRouteImport } from './routes/insurance'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -21,6 +22,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const RetirementRoute = RetirementRouteImport.update({
   id: '/retirement',
   path: '/retirement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrinciplesRoute = PrinciplesRouteImport.update({
+  id: '/principles',
+  path: '/principles',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KnowledgeRoute = KnowledgeRouteImport.update({
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
+  '/principles': typeof PrinciplesRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
+  '/principles': typeof PrinciplesRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
+  '/principles': typeof PrinciplesRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/insurance'
     | '/knowledge'
+    | '/principles'
     | '/retirement'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/insurance'
     | '/knowledge'
+    | '/principles'
     | '/retirement'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/insurance'
     | '/knowledge'
+    | '/principles'
     | '/retirement'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   InsuranceRoute: typeof InsuranceRoute
   KnowledgeRoute: typeof KnowledgeRoute
+  PrinciplesRoute: typeof PrinciplesRoute
   RetirementRoute: typeof RetirementRoute
 }
 
@@ -141,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/retirement'
       fullPath: '/retirement'
       preLoaderRoute: typeof RetirementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/principles': {
+      id: '/principles'
+      path: '/principles'
+      fullPath: '/principles'
+      preLoaderRoute: typeof PrinciplesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/knowledge': {
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   InsuranceRoute: InsuranceRoute,
   KnowledgeRoute: KnowledgeRoute,
+  PrinciplesRoute: PrinciplesRoute,
   RetirementRoute: RetirementRoute,
 }
 export const routeTree = rootRouteImport
