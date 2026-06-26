@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RetirementRouteImport } from './routes/retirement'
+import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as InsuranceRouteImport } from './routes/insurance'
 import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as EmergencyFundRouteImport } from './routes/emergency-fund'
@@ -19,6 +20,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const RetirementRoute = RetirementRouteImport.update({
   id: '/retirement',
   path: '/retirement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KnowledgeRoute = KnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsuranceRoute = InsuranceRouteImport.update({
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
   '/insurance': typeof InsuranceRoute
+  '/knowledge': typeof KnowledgeRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
   '/insurance': typeof InsuranceRoute
+  '/knowledge': typeof KnowledgeRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
   '/insurance': typeof InsuranceRoute
+  '/knowledge': typeof KnowledgeRoute
   '/retirement': typeof RetirementRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/emergency-fund'
     | '/goals'
     | '/insurance'
+    | '/knowledge'
     | '/retirement'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/emergency-fund'
     | '/goals'
     | '/insurance'
+    | '/knowledge'
     | '/retirement'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/emergency-fund'
     | '/goals'
     | '/insurance'
+    | '/knowledge'
     | '/retirement'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   EmergencyFundRoute: typeof EmergencyFundRoute
   GoalsRoute: typeof GoalsRoute
   InsuranceRoute: typeof InsuranceRoute
+  KnowledgeRoute: typeof KnowledgeRoute
   RetirementRoute: typeof RetirementRoute
 }
 
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/retirement'
       fullPath: '/retirement'
       preLoaderRoute: typeof RetirementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/knowledge': {
+      id: '/knowledge'
+      path: '/knowledge'
+      fullPath: '/knowledge'
+      preLoaderRoute: typeof KnowledgeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insurance': {
@@ -161,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmergencyFundRoute: EmergencyFundRoute,
   GoalsRoute: GoalsRoute,
   InsuranceRoute: InsuranceRoute,
+  KnowledgeRoute: KnowledgeRoute,
   RetirementRoute: RetirementRoute,
 }
 export const routeTree = rootRouteImport
