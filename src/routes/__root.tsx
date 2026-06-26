@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "NitiVitt — Your Personal Financial Guide" },
+      { title: "NitiVitt - Your Personal Financial Guide" },
       {
         name: "description",
         content:
@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "author", content: "NitiVitt" },
       { name: "theme-color", content: "#0B2E5C" },
-      { property: "og:title", content: "NitiVitt — Wise Wealth" },
+      { property: "og:title", content: "NitiVitt - Your Personal Financial Guide" },
       {
         property: "og:description",
         content:
@@ -94,6 +94,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "NitiVitt" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "NitiVitt - Your Personal Financial Guide" },
+      { name: "description", content: "NitiVitt Core is a financial intelligence platform that provides personalized insights and recommendations." },
+      { property: "og:description", content: "NitiVitt Core is a financial intelligence platform that provides personalized insights and recommendations." },
+      { name: "twitter:description", content: "NitiVitt Core is a financial intelligence platform that provides personalized insights and recommendations." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
