@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SimulatorRouteImport } from './routes/simulator'
 import { Route as RetirementRouteImport } from './routes/retirement'
 import { Route as RecommendationsRouteImport } from './routes/recommendations'
 import { Route as PrinciplesRouteImport } from './routes/principles'
@@ -26,6 +27,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SimulatorRoute = SimulatorRouteImport.update({
+  id: '/simulator',
+  path: '/simulator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RetirementRoute = RetirementRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/principles': typeof PrinciplesRoute
   '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
+  '/simulator': typeof SimulatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
@@ -117,6 +124,7 @@ export interface FileRoutesByTo {
   '/principles': typeof PrinciplesRoute
   '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
+  '/simulator': typeof SimulatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesById {
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/principles': typeof PrinciplesRoute
   '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
+  '/simulator': typeof SimulatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRouteTypes {
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/principles'
     | '/recommendations'
     | '/retirement'
+    | '/simulator'
     | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/principles'
     | '/recommendations'
     | '/retirement'
+    | '/simulator'
     | '/sitemap.xml'
   id:
     | '__root__'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/principles'
     | '/recommendations'
     | '/retirement'
+    | '/simulator'
     | '/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
@@ -196,6 +208,7 @@ export interface RootRouteChildren {
   PrinciplesRoute: typeof PrinciplesRoute
   RecommendationsRoute: typeof RecommendationsRoute
   RetirementRoute: typeof RetirementRoute
+  SimulatorRoute: typeof SimulatorRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -206,6 +219,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/simulator': {
+      id: '/simulator'
+      path: '/simulator'
+      fullPath: '/simulator'
+      preLoaderRoute: typeof SimulatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/retirement': {
@@ -308,6 +328,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrinciplesRoute: PrinciplesRoute,
   RecommendationsRoute: RecommendationsRoute,
   RetirementRoute: RetirementRoute,
+  SimulatorRoute: SimulatorRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
