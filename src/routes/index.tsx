@@ -52,13 +52,13 @@ function Hero() {
           </div>
 
           <h1 className="mt-6 text-balance text-5xl leading-[1.05] tracking-tight text-foreground md:text-7xl">
-            <span className="font-display italic text-primary">Wise</span>{" "}
+            <span className="font-editorial italic text-primary">Wise</span>{" "}
             <span className="font-semibold">wealth, for every Indian.</span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-balance text-lg leading-relaxed text-muted-foreground md:text-xl">
-            Most platforms tell you <em className="font-display">what</em> to invest in.
-            NitiVitt teaches you <em className="font-display">why</em> — with math, transparency,
+            Most platforms tell you <em className="font-editorial">what</em> to invest in.
+            NitiVitt teaches you <em className="font-editorial">why</em> — with math, transparency,
             and zero commissions.
           </p>
 
@@ -339,7 +339,7 @@ function Philosophy() {
           </li>
         ))}
       </ul>
-      <p className="mt-12 text-center font-display text-3xl italic text-muted-foreground">
+      <p className="mt-12 text-center font-editorial text-3xl italic text-muted-foreground">
         "AI assists. Mathematics decides."
       </p>
     </section>
@@ -431,7 +431,7 @@ function FinalCTA() {
           Five minutes. One question answered.
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-          <em className="font-display">"Am I financially on track?"</em>
+          <em className="font-editorial">"Am I financially on track?"</em>
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
