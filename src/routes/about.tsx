@@ -31,7 +31,7 @@ function About() {
             commission. Spreadsheets tell you nothing at all.
           </p>
           <p className="mt-4 text-base leading-relaxed text-foreground">
-            NitiVitt is the answer to a different question: <em className="font-display">Am I on
+            NitiVitt is the answer to a different question: <em className="font-editorial">Am I on
             track?</em> Five minutes in, you should know exactly where you stand and what to do
             next — with math you can see and trust.
           </p>

@@ -1,4 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import {
+  Target,
+  Shield,
+  PiggyBank,
+  Wallet,
+  TrendingUp,
+  Sparkles,
+  Users,
+  FlaskConical,
+  Settings,
+  UserCircle,
+} from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { calculateNitiScore } from "@/lib/finance/niti-score";
@@ -133,6 +145,8 @@ function DashboardPreview() {
           </aside>
         </div>
 
+        <ModuleGrid />
+
         <div className="mt-10 rounded-2xl border border-dashed border-border bg-card/50 p-6 text-sm text-muted-foreground">
           This is a demo profile. Authentication, persistence, and your own data are coming next —
           the foundation is wired so it drops in without rework.
@@ -140,6 +154,52 @@ function DashboardPreview() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+const MODULES = [
+  { to: "/goals", icon: Target, name: "Goals", desc: "Am I on track?" },
+  { to: "/retirement", icon: PiggyBank, name: "Retirement", desc: "Will I have enough?" },
+  { to: "/insurance", icon: Shield, name: "Insurance", desc: "Am I protected?" },
+  { to: "/emergency-fund", icon: Wallet, name: "Emergency Fund", desc: "How long can I last?" },
+  { to: "/net-worth", icon: TrendingUp, name: "Net Worth", desc: "What am I worth?" },
+  { to: "/recommendations", icon: Sparkles, name: "Recommendations", desc: "What's next?" },
+  { to: "/simulator", icon: FlaskConical, name: "NitiSim™", desc: "What if…" },
+  { to: "/ai-coach", icon: Sparkles, name: "NitiGuide™", desc: "Help me understand." },
+  { to: "/peer-benchmark", icon: Users, name: "Peer Benchmark", desc: "Where do I stand?" },
+  { to: "/financial-health", icon: TrendingUp, name: "Financial Health", desc: "Six pillars, in detail." },
+  { to: "/profile", icon: UserCircle, name: "Profile", desc: "Your single source of truth." },
+  { to: "/settings", icon: Settings, name: "Settings", desc: "Privacy & assumptions." },
+] as const;
+
+function ModuleGrid() {
+  return (
+    <section className="mt-14">
+      <div className="flex items-end justify-between">
+        <h2 className="font-display text-2xl text-foreground md:text-3xl">Your modules</h2>
+        <p className="text-xs text-muted-foreground">Every module shows its math.</p>
+      </div>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {MODULES.map((m) => {
+          const Icon = m.icon;
+          return (
+            <Link
+              key={m.to}
+              to={m.to}
+              className="group flex items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                <Icon className="h-5 w-5" aria-hidden />
+              </span>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">{m.name}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">{m.desc}</p>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

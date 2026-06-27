@@ -10,14 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SimulatorRouteImport } from './routes/simulator'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RetirementRouteImport } from './routes/retirement'
+import { Route as RecommendationsRouteImport } from './routes/recommendations'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrinciplesRouteImport } from './routes/principles'
+import { Route as PeerBenchmarkRouteImport } from './routes/peer-benchmark'
+import { Route as NetWorthRouteImport } from './routes/net-worth'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as InsuranceRouteImport } from './routes/insurance'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as GoalsRouteImport } from './routes/goals'
+import { Route as FinancialHealthRouteImport } from './routes/financial-health'
 import { Route as EmergencyFundRouteImport } from './routes/emergency-fund'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AiCoachRouteImport } from './routes/ai-coach'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -26,14 +34,44 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SimulatorRoute = SimulatorRouteImport.update({
+  id: '/simulator',
+  path: '/simulator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RetirementRoute = RetirementRouteImport.update({
   id: '/retirement',
   path: '/retirement',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RecommendationsRoute = RecommendationsRouteImport.update({
+  id: '/recommendations',
+  path: '/recommendations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrinciplesRoute = PrinciplesRouteImport.update({
   id: '/principles',
   path: '/principles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeerBenchmarkRoute = PeerBenchmarkRouteImport.update({
+  id: '/peer-benchmark',
+  path: '/peer-benchmark',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NetWorthRoute = NetWorthRouteImport.update({
+  id: '/net-worth',
+  path: '/net-worth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KnowledgeRoute = KnowledgeRouteImport.update({
@@ -56,6 +94,11 @@ const GoalsRoute = GoalsRouteImport.update({
   path: '/goals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FinancialHealthRoute = FinancialHealthRouteImport.update({
+  id: '/financial-health',
+  path: '/financial-health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmergencyFundRoute = EmergencyFundRouteImport.update({
   id: '/emergency-fund',
   path: '/emergency-fund',
@@ -64,6 +107,11 @@ const EmergencyFundRoute = EmergencyFundRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiCoachRoute = AiCoachRouteImport.update({
+  id: '/ai-coach',
+  path: '/ai-coach',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -80,41 +128,65 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-coach': typeof AiCoachRoute
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
+  '/financial-health': typeof FinancialHealthRoute
   '/goals': typeof GoalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
+  '/net-worth': typeof NetWorthRoute
+  '/peer-benchmark': typeof PeerBenchmarkRoute
   '/principles': typeof PrinciplesRoute
+  '/profile': typeof ProfileRoute
+  '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
+  '/settings': typeof SettingsRoute
+  '/simulator': typeof SimulatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-coach': typeof AiCoachRoute
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
+  '/financial-health': typeof FinancialHealthRoute
   '/goals': typeof GoalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
+  '/net-worth': typeof NetWorthRoute
+  '/peer-benchmark': typeof PeerBenchmarkRoute
   '/principles': typeof PrinciplesRoute
+  '/profile': typeof ProfileRoute
+  '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
+  '/settings': typeof SettingsRoute
+  '/simulator': typeof SimulatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-coach': typeof AiCoachRoute
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
+  '/financial-health': typeof FinancialHealthRoute
   '/goals': typeof GoalsRoute
   '/how-it-works': typeof HowItWorksRoute
   '/insurance': typeof InsuranceRoute
   '/knowledge': typeof KnowledgeRoute
+  '/net-worth': typeof NetWorthRoute
+  '/peer-benchmark': typeof PeerBenchmarkRoute
   '/principles': typeof PrinciplesRoute
+  '/profile': typeof ProfileRoute
+  '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
+  '/settings': typeof SettingsRoute
+  '/simulator': typeof SimulatorRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
 export interface FileRouteTypes {
@@ -122,54 +194,86 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
+    | '/financial-health'
     | '/goals'
     | '/how-it-works'
     | '/insurance'
     | '/knowledge'
+    | '/net-worth'
+    | '/peer-benchmark'
     | '/principles'
+    | '/profile'
+    | '/recommendations'
     | '/retirement'
+    | '/settings'
+    | '/simulator'
     | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
+    | '/financial-health'
     | '/goals'
     | '/how-it-works'
     | '/insurance'
     | '/knowledge'
+    | '/net-worth'
+    | '/peer-benchmark'
     | '/principles'
+    | '/profile'
+    | '/recommendations'
     | '/retirement'
+    | '/settings'
+    | '/simulator'
     | '/sitemap.xml'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
+    | '/financial-health'
     | '/goals'
     | '/how-it-works'
     | '/insurance'
     | '/knowledge'
+    | '/net-worth'
+    | '/peer-benchmark'
     | '/principles'
+    | '/profile'
+    | '/recommendations'
     | '/retirement'
+    | '/settings'
+    | '/simulator'
     | '/sitemap.xml'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AiCoachRoute: typeof AiCoachRoute
   DashboardRoute: typeof DashboardRoute
   EmergencyFundRoute: typeof EmergencyFundRoute
+  FinancialHealthRoute: typeof FinancialHealthRoute
   GoalsRoute: typeof GoalsRoute
   HowItWorksRoute: typeof HowItWorksRoute
   InsuranceRoute: typeof InsuranceRoute
   KnowledgeRoute: typeof KnowledgeRoute
+  NetWorthRoute: typeof NetWorthRoute
+  PeerBenchmarkRoute: typeof PeerBenchmarkRoute
   PrinciplesRoute: typeof PrinciplesRoute
+  ProfileRoute: typeof ProfileRoute
+  RecommendationsRoute: typeof RecommendationsRoute
   RetirementRoute: typeof RetirementRoute
+  SettingsRoute: typeof SettingsRoute
+  SimulatorRoute: typeof SimulatorRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -182,6 +286,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/simulator': {
+      id: '/simulator'
+      path: '/simulator'
+      fullPath: '/simulator'
+      preLoaderRoute: typeof SimulatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/retirement': {
       id: '/retirement'
       path: '/retirement'
@@ -189,11 +307,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RetirementRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/recommendations': {
+      id: '/recommendations'
+      path: '/recommendations'
+      fullPath: '/recommendations'
+      preLoaderRoute: typeof RecommendationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/principles': {
       id: '/principles'
       path: '/principles'
       fullPath: '/principles'
       preLoaderRoute: typeof PrinciplesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peer-benchmark': {
+      id: '/peer-benchmark'
+      path: '/peer-benchmark'
+      fullPath: '/peer-benchmark'
+      preLoaderRoute: typeof PeerBenchmarkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/net-worth': {
+      id: '/net-worth'
+      path: '/net-worth'
+      fullPath: '/net-worth'
+      preLoaderRoute: typeof NetWorthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/knowledge': {
@@ -224,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoalsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/financial-health': {
+      id: '/financial-health'
+      path: '/financial-health'
+      fullPath: '/financial-health'
+      preLoaderRoute: typeof FinancialHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/emergency-fund': {
       id: '/emergency-fund'
       path: '/emergency-fund'
@@ -236,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-coach': {
+      id: '/ai-coach'
+      path: '/ai-coach'
+      fullPath: '/ai-coach'
+      preLoaderRoute: typeof AiCoachRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -258,14 +418,22 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AiCoachRoute: AiCoachRoute,
   DashboardRoute: DashboardRoute,
   EmergencyFundRoute: EmergencyFundRoute,
+  FinancialHealthRoute: FinancialHealthRoute,
   GoalsRoute: GoalsRoute,
   HowItWorksRoute: HowItWorksRoute,
   InsuranceRoute: InsuranceRoute,
   KnowledgeRoute: KnowledgeRoute,
+  NetWorthRoute: NetWorthRoute,
+  PeerBenchmarkRoute: PeerBenchmarkRoute,
   PrinciplesRoute: PrinciplesRoute,
+  ProfileRoute: ProfileRoute,
+  RecommendationsRoute: RecommendationsRoute,
   RetirementRoute: RetirementRoute,
+  SettingsRoute: SettingsRoute,
+  SimulatorRoute: SimulatorRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport

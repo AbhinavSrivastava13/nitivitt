@@ -63,7 +63,7 @@ function Principles() {
         </ul>
       </div>
 
-      <p className="mt-16 font-display text-3xl italic text-muted-foreground">
+      <p className="mt-16 font-editorial text-3xl italic text-muted-foreground">
         "AI assists. Mathematics decides."
       </p>
     </PageShell>
