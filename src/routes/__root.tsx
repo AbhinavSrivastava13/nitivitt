@@ -98,6 +98,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "NitiVitt Core is a financial intelligence platform that provides personalized insights and recommendations." },
       { property: "og:description", content: "NitiVitt Core is a financial intelligence platform that provides personalized insights and recommendations." },
       { name: "twitter:description", content: "NitiVitt Core is a financial intelligence platform that provides personalized insights and recommendations." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d4cd3872-04ef-4eb8-b0f7-e8c0c5c88680" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/d4cd3872-04ef-4eb8-b0f7-e8c0c5c88680" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
