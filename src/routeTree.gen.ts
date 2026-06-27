@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SimulatorRouteImport } from './routes/simulator'
 import { Route as RetirementRouteImport } from './routes/retirement'
 import { Route as RecommendationsRouteImport } from './routes/recommendations'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrinciplesRouteImport } from './routes/principles'
 import { Route as PeerBenchmarkRouteImport } from './routes/peer-benchmark'
 import { Route as NetWorthRouteImport } from './routes/net-worth'
@@ -44,6 +45,11 @@ const RetirementRoute = RetirementRouteImport.update({
 const RecommendationsRoute = RecommendationsRouteImport.update({
   id: '/recommendations',
   path: '/recommendations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrinciplesRoute = PrinciplesRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/net-worth': typeof NetWorthRoute
   '/peer-benchmark': typeof PeerBenchmarkRoute
   '/principles': typeof PrinciplesRoute
+  '/profile': typeof ProfileRoute
   '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
   '/simulator': typeof SimulatorRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/net-worth': typeof NetWorthRoute
   '/peer-benchmark': typeof PeerBenchmarkRoute
   '/principles': typeof PrinciplesRoute
+  '/profile': typeof ProfileRoute
   '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
   '/simulator': typeof SimulatorRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/net-worth': typeof NetWorthRoute
   '/peer-benchmark': typeof PeerBenchmarkRoute
   '/principles': typeof PrinciplesRoute
+  '/profile': typeof ProfileRoute
   '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
   '/simulator': typeof SimulatorRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/net-worth'
     | '/peer-benchmark'
     | '/principles'
+    | '/profile'
     | '/recommendations'
     | '/retirement'
     | '/simulator'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/net-worth'
     | '/peer-benchmark'
     | '/principles'
+    | '/profile'
     | '/recommendations'
     | '/retirement'
     | '/simulator'
@@ -213,6 +224,7 @@ export interface FileRouteTypes {
     | '/net-worth'
     | '/peer-benchmark'
     | '/principles'
+    | '/profile'
     | '/recommendations'
     | '/retirement'
     | '/simulator'
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   NetWorthRoute: typeof NetWorthRoute
   PeerBenchmarkRoute: typeof PeerBenchmarkRoute
   PrinciplesRoute: typeof PrinciplesRoute
+  ProfileRoute: typeof ProfileRoute
   RecommendationsRoute: typeof RecommendationsRoute
   RetirementRoute: typeof RetirementRoute
   SimulatorRoute: typeof SimulatorRoute
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/recommendations'
       fullPath: '/recommendations'
       preLoaderRoute: typeof RecommendationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/principles': {
@@ -368,6 +388,7 @@ const rootRouteChildren: RootRouteChildren = {
   NetWorthRoute: NetWorthRoute,
   PeerBenchmarkRoute: PeerBenchmarkRoute,
   PrinciplesRoute: PrinciplesRoute,
+  ProfileRoute: ProfileRoute,
   RecommendationsRoute: RecommendationsRoute,
   RetirementRoute: RetirementRoute,
   SimulatorRoute: SimulatorRoute,
