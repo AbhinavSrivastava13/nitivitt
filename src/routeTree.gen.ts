@@ -21,6 +21,7 @@ import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as GoalsRouteImport } from './routes/goals'
 import { Route as EmergencyFundRouteImport } from './routes/emergency-fund'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AiCoachRouteImport } from './routes/ai-coach'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -84,6 +85,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiCoachRoute = AiCoachRouteImport.update({
+  id: '/ai-coach',
+  path: '/ai-coach',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -98,6 +104,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-coach': typeof AiCoachRoute
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-coach': typeof AiCoachRoute
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-coach': typeof AiCoachRoute
   '/dashboard': typeof DashboardRoute
   '/emergency-fund': typeof EmergencyFundRoute
   '/goals': typeof GoalsRoute
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
     | '/goals'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
     | '/goals'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
     | '/goals'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AiCoachRoute: typeof AiCoachRoute
   DashboardRoute: typeof DashboardRoute
   EmergencyFundRoute: typeof EmergencyFundRoute
   GoalsRoute: typeof GoalsRoute
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai-coach': {
+      id: '/ai-coach'
+      path: '/ai-coach'
+      fullPath: '/ai-coach'
+      preLoaderRoute: typeof AiCoachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -318,6 +338,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AiCoachRoute: AiCoachRoute,
   DashboardRoute: DashboardRoute,
   EmergencyFundRoute: EmergencyFundRoute,
   GoalsRoute: GoalsRoute,
