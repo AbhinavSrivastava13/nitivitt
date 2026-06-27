@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RetirementRouteImport } from './routes/retirement'
+import { Route as RecommendationsRouteImport } from './routes/recommendations'
 import { Route as PrinciplesRouteImport } from './routes/principles'
 import { Route as NetWorthRouteImport } from './routes/net-worth'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
@@ -30,6 +31,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RetirementRoute = RetirementRouteImport.update({
   id: '/retirement',
   path: '/retirement',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecommendationsRoute = RecommendationsRouteImport.update({
+  id: '/recommendations',
+  path: '/recommendations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrinciplesRoute = PrinciplesRouteImport.update({
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/knowledge': typeof KnowledgeRoute
   '/net-worth': typeof NetWorthRoute
   '/principles': typeof PrinciplesRoute
+  '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/knowledge': typeof KnowledgeRoute
   '/net-worth': typeof NetWorthRoute
   '/principles': typeof PrinciplesRoute
+  '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/knowledge': typeof KnowledgeRoute
   '/net-worth': typeof NetWorthRoute
   '/principles': typeof PrinciplesRoute
+  '/recommendations': typeof RecommendationsRoute
   '/retirement': typeof RetirementRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/net-worth'
     | '/principles'
+    | '/recommendations'
     | '/retirement'
     | '/sitemap.xml'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/net-worth'
     | '/principles'
+    | '/recommendations'
     | '/retirement'
     | '/sitemap.xml'
   id:
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/knowledge'
     | '/net-worth'
     | '/principles'
+    | '/recommendations'
     | '/retirement'
     | '/sitemap.xml'
   fileRoutesById: FileRoutesById
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   KnowledgeRoute: typeof KnowledgeRoute
   NetWorthRoute: typeof NetWorthRoute
   PrinciplesRoute: typeof PrinciplesRoute
+  RecommendationsRoute: typeof RecommendationsRoute
   RetirementRoute: typeof RetirementRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -200,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/retirement'
       fullPath: '/retirement'
       preLoaderRoute: typeof RetirementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recommendations': {
+      id: '/recommendations'
+      path: '/recommendations'
+      fullPath: '/recommendations'
+      preLoaderRoute: typeof RecommendationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/principles': {
@@ -286,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   KnowledgeRoute: KnowledgeRoute,
   NetWorthRoute: NetWorthRoute,
   PrinciplesRoute: PrinciplesRoute,
+  RecommendationsRoute: RecommendationsRoute,
   RetirementRoute: RetirementRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
