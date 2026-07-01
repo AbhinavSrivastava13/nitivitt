@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/page-shell";
 import { RecommendationCard, type Recommendation } from "@/components/recommendation-card";
 
-export const Route = createFileRoute("/recommendations")({
+export const Route = createFileRoute("/_authenticated/recommendations")({
   head: () => ({
     meta: [
       { title: "Recommendations — NitiVitt" },

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell, ModulePlaceholder } from "@/components/page-shell";
 
-export const Route = createFileRoute("/ai-coach")({
+export const Route = createFileRoute("/_authenticated/ai-coach")({
   head: () => ({
     meta: [
       { title: "NitiGuide™ — AI Financial Coach — NitiVitt" },

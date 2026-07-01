@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell, ModulePlaceholder } from "@/components/page-shell";
 
-export const Route = createFileRoute("/simulator")({
+export const Route = createFileRoute("/_authenticated/simulator")({
   head: () => ({
     meta: [
       { title: "NitiSim™ Simulator — NitiVitt" },
