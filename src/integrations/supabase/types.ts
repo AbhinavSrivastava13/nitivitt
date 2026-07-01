@@ -14,7 +14,444 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      assets: {
+        Row: {
+          category: string
+          created_at: string
+          current_value: number
+          id: string
+          is_liquid: boolean
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          current_value?: number
+          id?: string
+          is_liquid?: boolean
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          current_value?: number
+          id?: string
+          is_liquid?: boolean
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_profiles: {
+        Row: {
+          annual_income: number | null
+          created_at: string
+          employment_type: string | null
+          id: string
+          monthly_essential_expenses: number | null
+          monthly_expenses: number | null
+          monthly_income: number | null
+          retirement_age: number | null
+          risk_profile: string | null
+          salary_growth_rate: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annual_income?: number | null
+          created_at?: string
+          employment_type?: string | null
+          id?: string
+          monthly_essential_expenses?: number | null
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          retirement_age?: number | null
+          risk_profile?: string | null
+          salary_growth_rate?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annual_income?: number | null
+          created_at?: string
+          employment_type?: string | null
+          id?: string
+          monthly_essential_expenses?: number | null
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          retirement_age?: number | null
+          risk_profile?: string | null
+          salary_growth_rate?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_scores: {
+        Row: {
+          band: string | null
+          breakdown: Json | null
+          computed_at: string
+          id: string
+          score_type: string
+          score_value: number
+          user_id: string
+        }
+        Insert: {
+          band?: string | null
+          breakdown?: Json | null
+          computed_at?: string
+          id?: string
+          score_type: string
+          score_value: number
+          user_id: string
+        }
+        Update: {
+          band?: string | null
+          breakdown?: Json | null
+          computed_at?: string
+          id?: string
+          score_type?: string
+          score_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      goals: {
+        Row: {
+          created_at: string
+          current_progress: number
+          goal_type: string
+          id: string
+          monthly_contribution: number | null
+          name: string
+          notes: string | null
+          priority: string
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_progress?: number
+          goal_type: string
+          id?: string
+          monthly_contribution?: number | null
+          name: string
+          notes?: string | null
+          priority?: string
+          target_amount: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_progress?: number
+          goal_type?: string
+          id?: string
+          monthly_contribution?: number | null
+          name?: string
+          notes?: string | null
+          priority?: string
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      insurance: {
+        Row: {
+          annual_premium: number | null
+          cover_amount: number
+          created_at: string
+          id: string
+          insurance_type: string
+          nominee: string | null
+          notes: string | null
+          policy_end_date: string | null
+          provider: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annual_premium?: number | null
+          cover_amount?: number
+          created_at?: string
+          id?: string
+          insurance_type: string
+          nominee?: string | null
+          notes?: string | null
+          policy_end_date?: string | null
+          provider?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annual_premium?: number | null
+          cover_amount?: number
+          created_at?: string
+          id?: string
+          insurance_type?: string
+          nominee?: string | null
+          notes?: string | null
+          policy_end_date?: string | null
+          provider?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      investments: {
+        Row: {
+          created_at: string
+          current_value: number
+          id: string
+          invested_amount: number | null
+          investment_type: string
+          monthly_contribution: number | null
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          invested_amount?: number | null
+          investment_type: string
+          monthly_contribution?: number | null
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number
+          id?: string
+          invested_amount?: number | null
+          investment_type?: string
+          monthly_contribution?: number | null
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      liabilities: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          interest_rate: number | null
+          monthly_emi: number
+          name: string
+          outstanding_amount: number
+          tenure_months: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          interest_rate?: number | null
+          monthly_emi?: number
+          name: string
+          outstanding_amount?: number
+          tenure_months?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          interest_rate?: number | null
+          monthly_emi?: number
+          name?: string
+          outstanding_amount?: number
+          tenure_months?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          city: string | null
+          created_at: string
+          date_of_birth: string | null
+          dependents: number | null
+          full_name: string | null
+          gender: string | null
+          id: string
+          marital_status: string | null
+          occupation: string | null
+          onboarding_completed: boolean
+          updated_at: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          dependents?: number | null
+          full_name?: string | null
+          gender?: string | null
+          id: string
+          marital_status?: string | null
+          occupation?: string | null
+          onboarding_completed?: boolean
+          updated_at?: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          dependents?: number | null
+          full_name?: string | null
+          gender?: string | null
+          id?: string
+          marital_status?: string | null
+          occupation?: string | null
+          onboarding_completed?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recommendations: {
+        Row: {
+          assumptions: Json | null
+          category: string
+          created_at: string
+          display_order: number
+          explanation: string | null
+          id: string
+          logic: string | null
+          metadata: Json | null
+          next_action: string | null
+          priority: string
+          severity: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assumptions?: Json | null
+          category: string
+          created_at?: string
+          display_order?: number
+          explanation?: string | null
+          id?: string
+          logic?: string | null
+          metadata?: Json | null
+          next_action?: string | null
+          priority?: string
+          severity?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assumptions?: Json | null
+          category?: string
+          created_at?: string
+          display_order?: number
+          explanation?: string | null
+          id?: string
+          logic?: string | null
+          metadata?: Json | null
+          next_action?: string | null
+          priority?: string
+          severity?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      simulations: {
+        Row: {
+          created_at: string
+          id: string
+          inputs: Json
+          name: string | null
+          outputs: Json | null
+          simulation_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inputs: Json
+          name?: string | null
+          outputs?: Json | null
+          simulation_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inputs?: Json
+          name?: string | null
+          outputs?: Json | null
+          simulation_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          assumptions: Json | null
+          created_at: string
+          currency: string
+          monthly_review_enabled: boolean
+          notifications_enabled: boolean
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assumptions?: Json | null
+          created_at?: string
+          currency?: string
+          monthly_review_enabled?: boolean
+          notifications_enabled?: boolean
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assumptions?: Json | null
+          created_at?: string
+          currency?: string
+          monthly_review_enabled?: boolean
+          notifications_enabled?: boolean
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
