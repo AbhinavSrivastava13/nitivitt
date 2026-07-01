@@ -65,7 +65,7 @@ export function calculateNitiScore(input: NitiCoreInput): MetricResult<number> &
     unit: "/1000",
     status,
     explanationKey: "score.composite",
-    assumptions: { weights: w as unknown as Record<string, number> },
+    assumptions: { weightsJson: JSON.stringify(w) },
     calculationSummary: `Σ(pillar × weight) = ${scoreOn100}/100 → ${scoreOn1000}/1000 (${grade})`,
     priority: status === "critical" ? "high" : status === "needs_attention" ? "medium" : "low",
     suggestedNextStep: "Fix the lowest-scoring pillar first — biggest lift per rupee.",

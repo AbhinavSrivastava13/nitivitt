@@ -112,7 +112,8 @@ function Hero() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
-                to="/dashboard"
+                to="/auth"
+                search={{ mode: "signup" }}
                 className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground shadow-glow transition-all hover:opacity-95 active:scale-[0.98]"
               >
                 Get My NitiScore™

@@ -13,14 +13,18 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrinciplesRouteImport } from './routes/principles'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authenticated/simulator'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetirementRouteImport } from './routes/_authenticated/retirement'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated/recommendations'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedPeerBenchmarkRouteImport } from './routes/_authenticated/peer-benchmark'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNetWorthRouteImport } from './routes/_authenticated/net-worth'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
@@ -49,9 +53,18 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
   path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -59,79 +72,90 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthenticatedSimulatorRoute = AuthenticatedSimulatorRouteImport.update({
-  id: '/_authenticated/simulator',
+  id: '/simulator',
   path: '/simulator',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/_authenticated/settings',
+  id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRetirementRoute = AuthenticatedRetirementRouteImport.update({
-  id: '/_authenticated/retirement',
+  id: '/retirement',
   path: '/retirement',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedRecommendationsRoute =
   AuthenticatedRecommendationsRouteImport.update({
-    id: '/_authenticated/recommendations',
+    id: '/recommendations',
     path: '/recommendations',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
-  id: '/_authenticated/profile',
+  id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPeerBenchmarkRoute =
   AuthenticatedPeerBenchmarkRouteImport.update({
-    id: '/_authenticated/peer-benchmark',
+    id: '/peer-benchmark',
     path: '/peer-benchmark',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNetWorthRoute = AuthenticatedNetWorthRouteImport.update({
-  id: '/_authenticated/net-worth',
+  id: '/net-worth',
   path: '/net-worth',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInsuranceRoute = AuthenticatedInsuranceRouteImport.update({
-  id: '/_authenticated/insurance',
+  id: '/insurance',
   path: '/insurance',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
-  id: '/_authenticated/goals',
+  id: '/goals',
   path: '/goals',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFinancialHealthRoute =
   AuthenticatedFinancialHealthRouteImport.update({
-    id: '/_authenticated/financial-health',
+    id: '/financial-health',
     path: '/financial-health',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEmergencyFundRoute =
   AuthenticatedEmergencyFundRouteImport.update({
-    id: '/_authenticated/emergency-fund',
+    id: '/emergency-fund',
     path: '/emergency-fund',
-    getParentRoute: () => rootRouteImport,
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/_authenticated/dashboard',
+  id: '/dashboard',
   path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAiCoachRoute = AuthenticatedAiCoachRouteImport.update({
-  id: '/_authenticated/ai-coach',
+  id: '/ai-coach',
   path: '/ai-coach',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
   '/knowledge': typeof KnowledgeRoute
   '/principles': typeof PrinciplesRoute
@@ -143,16 +167,19 @@ export interface FileRoutesByFullPath {
   '/goals': typeof AuthenticatedGoalsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/net-worth': typeof AuthenticatedNetWorthRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/retirement': typeof AuthenticatedRetirementRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
   '/knowledge': typeof KnowledgeRoute
   '/principles': typeof PrinciplesRoute
@@ -164,17 +191,21 @@ export interface FileRoutesByTo {
   '/goals': typeof AuthenticatedGoalsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
   '/net-worth': typeof AuthenticatedNetWorthRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/retirement': typeof AuthenticatedRetirementRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
   '/knowledge': typeof KnowledgeRoute
   '/principles': typeof PrinciplesRoute
@@ -186,18 +217,21 @@ export interface FileRoutesById {
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
   '/_authenticated/net-worth': typeof AuthenticatedNetWorthRoute
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
   '/_authenticated/retirement': typeof AuthenticatedRetirementRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/about'
+    | '/auth'
     | '/how-it-works'
     | '/knowledge'
     | '/principles'
@@ -209,16 +243,19 @@ export interface FileRouteTypes {
     | '/goals'
     | '/insurance'
     | '/net-worth'
+    | '/onboarding'
     | '/peer-benchmark'
     | '/profile'
     | '/recommendations'
     | '/retirement'
     | '/settings'
     | '/simulator'
+    | '/auth/reset-password'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/auth'
     | '/how-it-works'
     | '/knowledge'
     | '/principles'
@@ -230,16 +267,20 @@ export interface FileRouteTypes {
     | '/goals'
     | '/insurance'
     | '/net-worth'
+    | '/onboarding'
     | '/peer-benchmark'
     | '/profile'
     | '/recommendations'
     | '/retirement'
     | '/settings'
     | '/simulator'
+    | '/auth/reset-password'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
+    | '/auth'
     | '/how-it-works'
     | '/knowledge'
     | '/principles'
@@ -251,34 +292,25 @@ export interface FileRouteTypes {
     | '/_authenticated/goals'
     | '/_authenticated/insurance'
     | '/_authenticated/net-worth'
+    | '/_authenticated/onboarding'
     | '/_authenticated/peer-benchmark'
     | '/_authenticated/profile'
     | '/_authenticated/recommendations'
     | '/_authenticated/retirement'
     | '/_authenticated/settings'
     | '/_authenticated/simulator'
+    | '/auth/reset-password'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AuthRoute: typeof AuthRouteWithChildren
   HowItWorksRoute: typeof HowItWorksRoute
   KnowledgeRoute: typeof KnowledgeRoute
   PrinciplesRoute: typeof PrinciplesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  AuthenticatedAiCoachRoute: typeof AuthenticatedAiCoachRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedEmergencyFundRoute: typeof AuthenticatedEmergencyFundRoute
-  AuthenticatedFinancialHealthRoute: typeof AuthenticatedFinancialHealthRoute
-  AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
-  AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
-  AuthenticatedNetWorthRoute: typeof AuthenticatedNetWorthRoute
-  AuthenticatedPeerBenchmarkRoute: typeof AuthenticatedPeerBenchmarkRoute
-  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
-  AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
-  AuthenticatedRetirementRoute: typeof AuthenticatedRetirementRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedSimulatorRoute: typeof AuthenticatedSimulatorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -311,11 +343,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -325,107 +371,132 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_authenticated/simulator': {
       id: '/_authenticated/simulator'
       path: '/simulator'
       fullPath: '/simulator'
       preLoaderRoute: typeof AuthenticatedSimulatorRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/retirement': {
       id: '/_authenticated/retirement'
       path: '/retirement'
       fullPath: '/retirement'
       preLoaderRoute: typeof AuthenticatedRetirementRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/recommendations': {
       id: '/_authenticated/recommendations'
       path: '/recommendations'
       fullPath: '/recommendations'
       preLoaderRoute: typeof AuthenticatedRecommendationsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/peer-benchmark': {
       id: '/_authenticated/peer-benchmark'
       path: '/peer-benchmark'
       fullPath: '/peer-benchmark'
       preLoaderRoute: typeof AuthenticatedPeerBenchmarkRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/net-worth': {
       id: '/_authenticated/net-worth'
       path: '/net-worth'
       fullPath: '/net-worth'
       preLoaderRoute: typeof AuthenticatedNetWorthRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/insurance': {
       id: '/_authenticated/insurance'
       path: '/insurance'
       fullPath: '/insurance'
       preLoaderRoute: typeof AuthenticatedInsuranceRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/goals': {
       id: '/_authenticated/goals'
       path: '/goals'
       fullPath: '/goals'
       preLoaderRoute: typeof AuthenticatedGoalsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/financial-health': {
       id: '/_authenticated/financial-health'
       path: '/financial-health'
       fullPath: '/financial-health'
       preLoaderRoute: typeof AuthenticatedFinancialHealthRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/emergency-fund': {
       id: '/_authenticated/emergency-fund'
       path: '/emergency-fund'
       fullPath: '/emergency-fund'
       preLoaderRoute: typeof AuthenticatedEmergencyFundRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ai-coach': {
       id: '/_authenticated/ai-coach'
       path: '/ai-coach'
       fullPath: '/ai-coach'
       preLoaderRoute: typeof AuthenticatedAiCoachRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  HowItWorksRoute: HowItWorksRoute,
-  KnowledgeRoute: KnowledgeRoute,
-  PrinciplesRoute: PrinciplesRoute,
-  SitemapDotxmlRoute: SitemapDotxmlRoute,
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAiCoachRoute: typeof AuthenticatedAiCoachRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEmergencyFundRoute: typeof AuthenticatedEmergencyFundRoute
+  AuthenticatedFinancialHealthRoute: typeof AuthenticatedFinancialHealthRoute
+  AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
+  AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
+  AuthenticatedNetWorthRoute: typeof AuthenticatedNetWorthRoute
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPeerBenchmarkRoute: typeof AuthenticatedPeerBenchmarkRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
+  AuthenticatedRetirementRoute: typeof AuthenticatedRetirementRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSimulatorRoute: typeof AuthenticatedSimulatorRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiCoachRoute: AuthenticatedAiCoachRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmergencyFundRoute: AuthenticatedEmergencyFundRoute,
@@ -433,12 +504,37 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
   AuthenticatedNetWorthRoute: AuthenticatedNetWorthRoute,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPeerBenchmarkRoute: AuthenticatedPeerBenchmarkRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
   AuthenticatedRetirementRoute: AuthenticatedRetirementRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSimulatorRoute: AuthenticatedSimulatorRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface AuthRouteChildren {
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
+  AuthRoute: AuthRouteWithChildren,
+  HowItWorksRoute: HowItWorksRoute,
+  KnowledgeRoute: KnowledgeRoute,
+  PrinciplesRoute: PrinciplesRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
