@@ -16,7 +16,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { calculateNitiScore } from "@/lib/finance/niti-score";
 import { formatINR, emergencyFundTarget, requiredMonthlySIP } from "@/lib/finance/core";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Your NitiScore — NitiVitt" },

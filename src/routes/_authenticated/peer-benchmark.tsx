@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell, ModulePlaceholder } from "@/components/page-shell";
 
-export const Route = createFileRoute("/peer-benchmark")({
+export const Route = createFileRoute("/_authenticated/peer-benchmark")({
   head: () => ({
     meta: [
       { title: "Peer benchmarking — NitiVitt" },

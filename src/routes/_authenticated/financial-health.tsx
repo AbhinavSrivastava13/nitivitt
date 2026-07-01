@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell, ModulePlaceholder } from "@/components/page-shell";
 
-export const Route = createFileRoute("/financial-health")({
+export const Route = createFileRoute("/_authenticated/financial-health")({
   head: () => ({
     meta: [
       { title: "Financial health — NitiVitt" },
