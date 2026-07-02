@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+// import { lovable } from "@/integrations/lovable/index";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
@@ -78,21 +78,42 @@ function AuthPage() {
     }
   }
 
+  // async function handleGoogle() {
+  //   setSubmitting(true);
+  //   try {
+  //     const result = await lovable.auth.signInWithOAuth("google", {
+  //       redirect_uri: window.location.origin,
+  //     });
+  //     if (result.error) throw result.error;
+  //     if (result.redirected) return;
+  //     navigate({ to: search.redirect ?? "/dashboard" });
+  //   } catch (err) {
+  //     const msg = err instanceof Error ? err.message : "Google sign-in failed";
+  //     toast.error(msg);
+  //     setSubmitting(false);
+  //   }
+  // }
   async function handleGoogle() {
-    setSubmitting(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) throw result.error;
-      if (result.redirected) return;
-      navigate({ to: search.redirect ?? "/dashboard" });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Google sign-in failed";
-      toast.error(msg);
-      setSubmitting(false);
-    }
+  setSubmitting(true);
+
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) throw error;
+
+  } catch (err) {
+    const msg =
+      err instanceof Error ? err.message : "Google sign-in failed";
+
+    toast.error(msg);
+    setSubmitting(false);
   }
+}
 
   async function handleForgotPassword() {
     try {
