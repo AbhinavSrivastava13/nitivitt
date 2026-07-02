@@ -180,7 +180,7 @@ function UserMenu({ name }: { name: string }) {
                 <li key={it.label}>
                   <Link
                     to={it.to}
-                    search={"search" in it ? it.search : undefined}
+                    onClick={() => setOpen(false)}
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-foreground hover:bg-muted"
                   >
