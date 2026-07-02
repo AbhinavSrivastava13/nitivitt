@@ -120,3 +120,28 @@ export async function insertInsurance(row: {
   const { error } = await supabase.from("insurance").insert(row);
   if (error) throw error;
 }
+
+export async function insertAsset(row: {
+  user_id: string;
+  category: string;
+  name: string;
+  current_value: number;
+  is_liquid?: boolean;
+}) {
+  const { error } = await supabase.from("assets").insert(row);
+  if (error) throw error;
+}
+
+export async function insertLiability(row: {
+  user_id: string;
+  category: string;
+  name: string;
+  outstanding_amount: number;
+  monthly_emi?: number;
+  tenure_months?: number | null;
+  interest_rate?: number | null;
+}) {
+  const { error } = await supabase.from("liabilities").insert(row);
+  if (error) throw error;
+}
+
