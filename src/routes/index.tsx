@@ -183,12 +183,13 @@ function HeroDashboard() {
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-display text-5xl font-semibold text-foreground">
-                  72
+                  742
                 </span>
-                <span className="text-xs text-muted-foreground">/100</span>
+                <span className="text-xs text-muted-foreground">/1000</span>
               </div>
-              <ScoreArc value={72} />
+              <ScoreArc value={74.2} />
             </div>
+
 
             <div className="rounded-xl border border-border bg-primary p-4 text-primary-foreground">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
@@ -372,7 +373,8 @@ function IntelligenceSuite() {
     {
       name: "NitiScore™",
       tagline: "Know your overall financial health.",
-      body: "A single 0–100 score across six pillars — savings, emergency, insurance, investments, debt and retirement. Every point is auditable.",
+      body: "A single 0–1000 score across six pillars — savings, emergency, insurance, investments, debt and retirement. Every point is auditable.",
+      to: "/dashboard",
       icon: Gauge,
       accent: "primary",
     },
@@ -380,6 +382,7 @@ function IntelligenceSuite() {
       name: "NitiAge™",
       tagline: "Discover your financial age.",
       body: "Translates your habits into a single number. Are your finances 5 years ahead, or 7 years behind? Find out — and change it.",
+      to: "/dashboard",
       icon: Hourglass,
       accent: "accent",
     },
@@ -387,6 +390,7 @@ function IntelligenceSuite() {
       name: "NitiPath™",
       tagline: "A personalized financial roadmap.",
       body: "Prioritized, time-bound steps tuned to your income, goals and risk. No filler tasks. No generic advice.",
+      to: "/recommendations",
       icon: RouteIcon,
       accent: "secondary",
     },
@@ -394,6 +398,7 @@ function IntelligenceSuite() {
       name: "NitiGuide™",
       tagline: "AI that explains, never decides.",
       body: "Every recommendation comes with the reason, the logic, the assumptions, and the math. You stay in control.",
+      to: "/ai-coach",
       icon: Brain,
       accent: "primary",
     },
@@ -401,10 +406,13 @@ function IntelligenceSuite() {
       name: "NitiSim™",
       tagline: "Simulate any future, before you commit.",
       body: "Switch jobs, buy a home, take a sabbatical — see the 20-year impact on your wealth before you act.",
+      to: "/simulator",
       icon: Sparkles,
       accent: "accent",
     },
   ];
+
+
 
   return (
     <section className="container-page py-16 md:py-24">
@@ -445,21 +453,23 @@ function SuiteCard({
     body: string;
     icon: typeof Gauge;
     accent: string;
+    to: string;
   };
   large?: boolean;
 }) {
   const Icon = item.icon;
   return (
-    <article
-      className={`group relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated ${
+    <Link
+      to="/auth"
+      search={{ mode: "signin", redirect: item.to }}
+      aria-label={`Explore ${item.name}`}
+      className={`group relative block overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated ${
         large ? "md:col-span-3" : "md:col-span-2"
       }`}
     >
       <div
         className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-40"
-        style={{
-          background: `var(--color-${item.accent})`,
-        }}
+        style={{ background: `var(--color-${item.accent})` }}
         aria-hidden
       />
       <div className="relative">
@@ -481,10 +491,14 @@ function SuiteCard({
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {item.body}
         </p>
+        <p className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+          Explore {item.name} <ArrowRight className="h-3.5 w-3.5" />
+        </p>
       </div>
-    </article>
+    </Link>
   );
 }
+
 
 /* ---------------- HOW IT WORKS ---------------- */
 
