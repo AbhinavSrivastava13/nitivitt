@@ -183,12 +183,13 @@ function HeroDashboard() {
               </div>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="font-display text-5xl font-semibold text-foreground">
-                  72
+                  742
                 </span>
-                <span className="text-xs text-muted-foreground">/100</span>
+                <span className="text-xs text-muted-foreground">/1000</span>
               </div>
-              <ScoreArc value={72} />
+              <ScoreArc value={74.2} />
             </div>
+
 
             <div className="rounded-xl border border-border bg-primary p-4 text-primary-foreground">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-foreground/70">
