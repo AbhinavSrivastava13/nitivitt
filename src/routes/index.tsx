@@ -453,21 +453,23 @@ function SuiteCard({
     body: string;
     icon: typeof Gauge;
     accent: string;
+    to: string;
   };
   large?: boolean;
 }) {
   const Icon = item.icon;
   return (
-    <article
-      className={`group relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated ${
+    <Link
+      to="/auth"
+      search={{ mode: "signin", redirect: item.to }}
+      aria-label={`Explore ${item.name}`}
+      className={`group relative block overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated ${
         large ? "md:col-span-3" : "md:col-span-2"
       }`}
     >
       <div
         className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-40"
-        style={{
-          background: `var(--color-${item.accent})`,
-        }}
+        style={{ background: `var(--color-${item.accent})` }}
         aria-hidden
       />
       <div className="relative">
@@ -489,10 +491,14 @@ function SuiteCard({
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {item.body}
         </p>
+        <p className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+          Explore {item.name} <ArrowRight className="h-3.5 w-3.5" />
+        </p>
       </div>
-    </article>
+    </Link>
   );
 }
+
 
 /* ---------------- HOW IT WORKS ---------------- */
 
