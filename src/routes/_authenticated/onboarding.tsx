@@ -112,9 +112,10 @@ const ZERO_LIAB: LiabilityMap = {
 
 const LIQUID_ASSET_KEYS = new Set<keyof AssetMap>(["bank", "fd", "mutual_funds", "stocks", "gold", "crypto"]);
 
-function sum(o: Record<string, number>) {
-  return Object.values(o).reduce((a, b) => a + (Number(b) || 0), 0);
+function sum(o: Record<string, number> | Record<string, number> & object): number {
+  return Object.values(o as Record<string, number>).reduce((a, b) => a + (Number(b) || 0), 0);
 }
+
 
 function OnboardingWizard() {
   const navigate = useNavigate();
