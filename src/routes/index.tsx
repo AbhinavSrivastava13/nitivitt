@@ -412,35 +412,7 @@ function IntelligenceSuite() {
     },
   ];
 
-    {
-      name: "NitiAge™",
-      tagline: "Discover your financial age.",
-      body: "Translates your habits into a single number. Are your finances 5 years ahead, or 7 years behind? Find out — and change it.",
-      icon: Hourglass,
-      accent: "accent",
-    },
-    {
-      name: "NitiPath™",
-      tagline: "A personalized financial roadmap.",
-      body: "Prioritized, time-bound steps tuned to your income, goals and risk. No filler tasks. No generic advice.",
-      icon: RouteIcon,
-      accent: "secondary",
-    },
-    {
-      name: "NitiGuide™",
-      tagline: "AI that explains, never decides.",
-      body: "Every recommendation comes with the reason, the logic, the assumptions, and the math. You stay in control.",
-      icon: Brain,
-      accent: "primary",
-    },
-    {
-      name: "NitiSim™",
-      tagline: "Simulate any future, before you commit.",
-      body: "Switch jobs, buy a home, take a sabbatical — see the 20-year impact on your wealth before you act.",
-      icon: Sparkles,
-      accent: "accent",
-    },
-  ];
+
 
   return (
     <section className="container-page py-16 md:py-24">
