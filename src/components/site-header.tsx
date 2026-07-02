@@ -149,8 +149,9 @@ function UserMenu({ name }: { name: string }) {
     { to: "/financial-health" as const, label: "Financial Health Report", icon: FileText },
     { to: "/profile" as const, label: "Profile", icon: UserCircle2 },
     { to: "/settings" as const, label: "Settings", icon: Settings },
-    { to: "/financial-health" as const, label: "Update Analysis", icon: RefreshCw, search: { refresh: 1 } as const },
+    { to: "/financial-health" as const, label: "Update Analysis", icon: RefreshCw },
   ];
+
 
   return (
     <div ref={ref} className="relative">
