@@ -28,8 +28,9 @@ import {
 
 const InputSchema = z.object({
   focus: z
-    .enum(["overview", "score", "age", "path", "retirement", "insurance", "emergency"])
+    .enum(["overview", "score", "age", "path", "retirement", "insurance", "emergency", "goals", "custom"])
     .default("overview"),
+  question: z.string().trim().max(500).optional(),
 });
 
 function ageFromDob(dob: string | null): number {
@@ -122,6 +123,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
         nextAction: r.nextAction,
       })),
       goalCount: goals.length,
+      goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), current: Number(g.current_amount ?? 0), targetDate: g.target_date })),
     };
 
     // 4) Call the AI Gateway (Gemini). Key stays server-side.
@@ -145,7 +147,9 @@ Rules — non-negotiable:
 7. Do not use headings, markdown tables, or emojis. Do use short paragraphs.
 8. Aim for 120-180 words unless the focus is "overview" — then 180-240.`;
 
-    const userPrompt = `Explain the user's financial situation with focus="${data.focus}". Use this authoritative JSON exactly — do not modify any number:\n\n${JSON.stringify(structured, null, 2)}`;
+    const userPrompt = data.question
+      ? `The user asks: "${data.question}"\n\nAnswer using ONLY the authoritative NitiCore JSON below. If the answer requires numbers not present, say so honestly and suggest opening NitiSim.\n\n${JSON.stringify(structured, null, 2)}`
+      : `Explain the user's financial situation with focus="${data.focus}". Use this authoritative JSON exactly — do not modify any number:\n\n${JSON.stringify(structured, null, 2)}`;
 
     try {
       const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
