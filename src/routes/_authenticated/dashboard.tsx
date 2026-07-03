@@ -97,7 +97,8 @@ function Dashboard() {
   const recs = generateRecommendations(input);
   const first = profile?.full_name?.split(" ")[0] ?? "there";
 
-  const lastUpdated = (fp as { updated_at?: string } | null)?.updated_at ? new Date((fp as { updated_at: string }).updated_at) : null;
+  const fpUpdated = (fp as unknown as { updated_at?: string } | null)?.updated_at;
+  const lastUpdated = fpUpdated ? new Date(fpUpdated) : null;
   const topRecs = recs.slice(0, 3);
 
   return (
