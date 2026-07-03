@@ -97,6 +97,10 @@ function Dashboard() {
   const recs = generateRecommendations(input);
   const first = profile?.full_name?.split(" ")[0] ?? "there";
 
+  const fpUpdated = (fp as unknown as { updated_at?: string } | null)?.updated_at;
+  const lastUpdated = fpUpdated ? new Date(fpUpdated) : null;
+  const topRecs = recs.slice(0, 3);
+
   return (
     <div className="min-h-screen bg-surface">
       <SiteHeader />
@@ -109,8 +113,13 @@ function Dashboard() {
               Hi, {first}.
             </h1>
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              Here's where you stand today. Every number below is deterministic — computed by NitiCore™ from your profile.
+              Where you stand today and what to do next — computed deterministically by NitiCore™.
             </p>
+            {lastUpdated && (
+              <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                Last updated {lastUpdated.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+              </p>
+            )}
           </div>
           <Link
             to="/financial-health"
@@ -133,71 +142,145 @@ function Dashboard() {
           </div>
         )}
 
-        {/* PRIMARY METRICS */}
-        <section className="mt-8 grid gap-4 lg:grid-cols-4">
-          <PrimaryTile
-            label="NitiScore™" hero
-            value={<><span className="font-display text-6xl text-foreground">{score.value}</span><span className="text-sm text-muted-foreground">/1000</span></>}
-            badge={`Grade ${score.grade}`}
-            sub="Where am I financially?"
+        {/* HERO: NitiScore + NitiAge + NitiPath (Top 3) */}
+        <section className="mt-8 grid gap-4 lg:grid-cols-3">
+          {/* NitiScore — hero */}
+          <Link
             to="/financial-health"
-          />
-          <PrimaryTile
-            label="NitiAge™"
-            value={<><span className="font-display text-6xl text-foreground">{nitiAge.value}</span><span className="text-sm text-muted-foreground">yrs</span></>}
-            badge={`vs. real ${input.ageYears}`}
-            sub="Your financial maturity"
+            className="group relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary-soft/70 to-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">NitiScore™</p>
+              <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">Grade {score.grade}</span>
+            </div>
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="font-display text-7xl font-semibold leading-none text-foreground">{score.value}</span>
+              <span className="text-sm text-muted-foreground">/ 1000</span>
+            </div>
+            <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-all"
+                style={{ width: `${Math.min(100, (score.value / 1000) * 100)}%` }}
+              />
+            </div>
+            <p className="mt-4 text-xs text-muted-foreground">Your overall financial health, out of 1000.</p>
+          </Link>
+
+          {/* NitiAge */}
+          <Link
             to="/financial-health"
-          />
-          <PrimaryTile
-            label="Net Worth"
-            value={<span className="font-display text-4xl text-foreground">{formatINR(netWorth.value)}</span>}
-            badge={netWorth.value >= 0 ? "Positive" : "Negative"}
-            sub="Assets minus liabilities"
-            to="/net-worth"
-          />
-          <PrimaryTile
-            label="Emergency Fund"
-            value={<><span className="font-display text-6xl text-foreground">{Number(emergency.value).toFixed(1)}</span><span className="text-sm text-muted-foreground">months</span></>}
-            badge={emergency.status === "on_track" ? "On track" : emergency.status === "needs_attention" ? "Needs attention" : "Critical"}
-            sub="Liquid buffer vs. essentials"
-            to="/emergency-fund"
-          />
+            className="group rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiAge™</p>
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                  nitiAge.value < input.ageYears ? "bg-secondary-soft text-secondary" : "bg-warning-soft text-warning"
+                }`}
+              >
+                {nitiAge.value < input.ageYears
+                  ? <>Ahead by {input.ageYears - Number(nitiAge.value)}y</>
+                  : nitiAge.value > input.ageYears
+                    ? <>Behind by {Number(nitiAge.value) - input.ageYears}y</>
+                    : <>On par</>}
+              </span>
+            </div>
+            <div className="mt-4 flex items-baseline gap-2">
+              <span className="font-display text-7xl font-semibold leading-none text-foreground">{nitiAge.value}</span>
+              <span className="text-sm text-muted-foreground">yrs</span>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">Real age: <span className="font-semibold text-foreground">{input.ageYears}</span></p>
+            <p className="mt-3 text-xs text-muted-foreground">Financial maturity — how your habits compare to your years.</p>
+          </Link>
+
+          {/* NitiPath — Top 3 */}
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiPath™</p>
+              <Link to="/recommendations" className="text-[11px] font-semibold text-primary hover:underline">View all →</Link>
+            </div>
+            <p className="mt-1 font-display text-lg text-foreground">Your next 3 moves</p>
+            {topRecs.length === 0 ? (
+              <p className="mt-4 text-xs text-muted-foreground">You're clear of critical actions right now.</p>
+            ) : (
+              <ol className="mt-3 space-y-2.5">
+                {topRecs.map((r, i) => (
+                  <li key={r.id}>
+                    <Link
+                      to="/recommendations"
+                      className="group block rounded-lg border border-border bg-surface p-2.5 transition-colors hover:border-primary/40 hover:bg-primary-soft/30"
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold ${
+                          r.priority === "high" ? "bg-warning-soft text-warning" :
+                          r.priority === "medium" ? "bg-primary-soft text-primary" :
+                          "bg-secondary-soft text-secondary"
+                        }`}>{i + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-semibold text-foreground">{r.title}</p>
+                          <p className="mt-0.5 line-clamp-1 text-[11px] text-muted-foreground">{r.nextAction}</p>
+                        </div>
+                        <ArrowRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
         </section>
 
-        {/* NITIPATH */}
-        <section className="mt-10">
-          <SectionHead
-            eyebrow="NitiPath™" title="Your personalized financial roadmap"
-            subtitle="Prioritized, actionable steps. No calculations here — just the moves that matter most."
-            actionLabel="View full path"
-            actionTo="/recommendations"
-          />
-          {recs.length === 0 ? (
-            <div className="mt-4 rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-              You're clear of critical actions right now. Keep automating and check back after your next income event.
+        {/* SECOND ROW: Net Worth + Emergency Fund */}
+        <section className="mt-4 grid gap-4 md:grid-cols-2">
+          <Link
+            to="/net-worth"
+            className="group rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Net Worth</p>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${netWorth.value >= 0 ? "bg-secondary-soft text-secondary" : "bg-warning-soft text-warning"}`}>
+                {netWorth.value >= 0 ? "Positive" : "Negative"}
+              </span>
             </div>
-          ) : (
-            <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {recs.slice(0, 6).map((r) => (
-                <div key={r.id} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-                  <div className="flex items-center justify-between">
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                      r.priority === "high" ? "bg-warning-soft text-warning" :
-                      r.priority === "medium" ? "bg-primary-soft text-primary" :
-                      "bg-secondary-soft text-secondary"
-                    }`}>{r.priority} priority</span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{r.effort} effort</span>
-                  </div>
-                  <p className="mt-3 font-semibold text-foreground">{r.title}</p>
-                  <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2">Why: {r.explanation}</p>
-                  <p className="mt-2 text-xs text-muted-foreground line-clamp-2">Impact: {r.impact}</p>
-                  <p className="mt-3 text-xs font-semibold text-foreground">Next: {r.nextAction}</p>
-                </div>
-              ))}
+            <div className="mt-3 font-display text-4xl text-foreground">{formatINR(netWorth.value)}</div>
+            <div className="mt-4 flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>Assets {formatINR(totalAssets)}</span>
+              <span>Liabilities {formatINR(totalLiabilities)}</span>
             </div>
-          )}
+            <div className="mt-2 flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full bg-secondary" style={{ width: `${totalAssets + totalLiabilities > 0 ? (totalAssets / (totalAssets + totalLiabilities)) * 100 : 0}%` }} />
+              <div className="h-full bg-warning/70" style={{ width: `${totalAssets + totalLiabilities > 0 ? (totalLiabilities / (totalAssets + totalLiabilities)) * 100 : 0}%` }} />
+            </div>
+          </Link>
+
+          <Link
+            to="/emergency-fund"
+            className="group rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Emergency Fund</p>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                emergency.status === "on_track" ? "bg-secondary-soft text-secondary" :
+                emergency.status === "needs_attention" ? "bg-primary-soft text-primary" :
+                "bg-warning-soft text-warning"
+              }`}>
+                {emergency.status === "on_track" ? "On track" : emergency.status === "needs_attention" ? "Needs attention" : "Critical"}
+              </span>
+            </div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="font-display text-4xl text-foreground">{Number(emergency.value).toFixed(1)}</span>
+              <span className="text-sm text-muted-foreground">of 6 months</span>
+            </div>
+            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-secondary transition-all"
+                style={{ width: `${Math.min(100, (Number(emergency.value) / 6) * 100)}%` }}
+              />
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">Liquid buffer vs. essential monthly expenses.</p>
+          </Link>
         </section>
+
 
         {/* NITIGUIDE */}
         <section className="mt-10">

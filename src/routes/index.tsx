@@ -46,6 +46,16 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  beforeLoad: async () => {
+    // Authenticated users never see the landing page — send them straight to the app.
+    if (typeof window === "undefined") return;
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      const { redirect } = await import("@tanstack/react-router");
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   component: LandingPage,
 });
 

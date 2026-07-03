@@ -9,7 +9,7 @@ const PUBLIC_NAV = [
   { to: "/how-it-works", label: "Features" },
   { to: "/principles", label: "How It Works" },
   { to: "/knowledge", label: "Knowledge Hub" },
-  { to: "/about", label: "Pricing" },
+  { to: "/about", label: "About" },
 ] as const;
 
 export function SiteHeader() {
