@@ -13,10 +13,12 @@ export const Route = createFileRoute("/_authenticated/ai-coach")({
       { name: "description", content: "Ask NitiGuide anything about your plan. It explains — never calculates. Every answer is grounded in NitiCore™." },
     ],
   }),
-  component: AICoach;
+  component: AICoach,
 });
 
-const STARTERS: { label: string; focus: Parameters<typeof getNitiGuideExplanation>[0]["data"]["focus"] extends infer T ? T : never; question?: string }[] = [
+type Focus = "overview" | "score" | "age" | "path" | "retirement" | "insurance" | "emergency" | "goals" | "custom";
+
+const STARTERS: { label: string; focus: Focus }[] = [
   { label: "Explain my NitiScore", focus: "score" },
   { label: "Why is my emergency fund weak?", focus: "emergency" },
   { label: "Am I on track for retirement?", focus: "retirement" },
@@ -36,7 +38,7 @@ function AICoach() {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
-  async function ask(payload: { question?: string; focus?: Msg extends never ? never : "overview" | "score" | "age" | "path" | "retirement" | "insurance" | "emergency" | "goals" | "custom"; display: string }) {
+  async function ask(payload: { question?: string; focus?: Focus; display: string }) {
     if (loading) return;
     setMessages((m) => [...m, { role: "user", text: payload.display }]);
     setInput("");
