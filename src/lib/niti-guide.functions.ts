@@ -123,7 +123,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
         nextAction: r.nextAction,
       })),
       goalCount: goals.length,
-      goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), current: Number(g.current_amount ?? 0), targetDate: g.target_date })),
+      goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
     };
 
     // 4) Call the AI Gateway (Gemini). Key stays server-side.
