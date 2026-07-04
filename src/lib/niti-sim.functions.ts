@@ -115,14 +115,15 @@ export const runSimulation = createServerFn({ method: "POST" })
 
     const baseline = snapshot(baseInput);
 
-    // 2) Ask Gemini to translate the natural-language question into structured
+    // 2) Ask the AI layer to translate the natural-language question into structured
     //    variable overrides — nothing else.
-    const gatewayKey = process.env.LOVABLE_API_KEY;
+    const { callAiChat, isAiConfigured } = await import("@/lib/ai-gateway");
+    const aiOn = isAiConfigured();
     let overrides: z.infer<typeof OverrideSchema> = {};
     let scenarioTitle = data.question.slice(0, 60);
     let interpretationNote: string | null = null;
 
-    if (gatewayKey) {
+    if (aiOn) {
       const extractionPrompt = `You are the variable extractor for NitiSim, NitiVitt's scenario simulator.
 
 Return ONLY a JSON object matching this TypeScript type — no prose, no code fences:
@@ -160,36 +161,27 @@ User baseline (INR): ${JSON.stringify({
 
 User question: "${data.question}"`;
 
-      try {
-        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${gatewayKey}`,
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              { role: "system", content: "You return only strict JSON. No prose." },
-              { role: "user", content: extractionPrompt },
-            ],
-            temperature: 0.1,
-            response_format: { type: "json_object" },
-          }),
-        });
-        if (res.ok) {
-          const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-          const raw = json.choices?.[0]?.message?.content ?? "{}";
-          const parsed = OverrideSchema.safeParse(JSON.parse(raw));
+      const extraction = await callAiChat({
+        messages: [
+          { role: "system", content: "You return only strict JSON. No prose." },
+          { role: "user", content: extractionPrompt },
+        ],
+        temperature: 0.1,
+        jsonMode: true,
+      });
+      if (extraction) {
+        try {
+          const parsed = OverrideSchema.safeParse(JSON.parse(extraction.text));
           if (parsed.success) {
             overrides = parsed.data;
             if (parsed.data.scenarioTitle) scenarioTitle = parsed.data.scenarioTitle;
           } else {
             interpretationNote = "Could not confidently interpret the scenario. Showing your baseline unchanged.";
           }
+        } catch {
+          interpretationNote = "Could not confidently interpret the scenario. Showing your baseline unchanged.";
         }
-      } catch (err) {
-        console.error("NitiSim extraction failed", err);
+      } else {
         interpretationNote = "Scenario extraction unavailable. Showing your baseline unchanged.";
       }
     } else {
