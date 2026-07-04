@@ -29,13 +29,28 @@ function AuthCallbackPage() {
     let active = true;
 
     async function finishSignIn() {
-      const params = new URLSearchParams(window.location.search || window.location.hash.replace(/^#/, ""));
-      const errorDescription = params.get("error_description") || params.get("error");
+      const queryParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const getParam = (name: string) => queryParams.get(name) || hashParams.get(name);
+      const errorDescription = getParam("error_description") || getParam("error");
 
       if (errorDescription) {
         toast.error(errorDescription);
         navigate({ to: "/auth" });
         return;
+      }
+
+      const code = getParam("code");
+      if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+        if (!active) return;
+
+        if (exchangeError) {
+          setMessage("We could not complete Google sign-in. Please try again.");
+          toast.error(exchangeError.message);
+          navigate({ to: "/auth" });
+          return;
+        }
       }
 
       const { data, error } = await supabase.auth.getSession();
