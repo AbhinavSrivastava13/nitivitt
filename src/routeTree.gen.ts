@@ -33,6 +33,7 @@ import { Route as AuthenticatedFinancialHealthRouteImport } from './routes/_auth
 import { Route as AuthenticatedEmergencyFundRouteImport } from './routes/_authenticated/emergency-fund'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAiCoachRouteImport } from './routes/_authenticated/ai-coach'
+import { Route as ApiPublicRuntimeDiagnosticsRouteImport } from './routes/api/public/runtime-diagnostics'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -157,6 +158,12 @@ const AuthenticatedAiCoachRoute = AuthenticatedAiCoachRouteImport.update({
   path: '/ai-coach',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicRuntimeDiagnosticsRoute =
+  ApiPublicRuntimeDiagnosticsRouteImport.update({
+    id: '/api/public/runtime-diagnostics',
+    path: '/api/public/runtime-diagnostics',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/api/public/runtime-diagnostics': typeof ApiPublicRuntimeDiagnosticsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -207,6 +215,7 @@ export interface FileRoutesByTo {
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/api/public/runtime-diagnostics': typeof ApiPublicRuntimeDiagnosticsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -234,6 +243,7 @@ export interface FileRoutesById {
   '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/api/public/runtime-diagnostics': typeof ApiPublicRuntimeDiagnosticsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/simulator'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/api/public/runtime-diagnostics'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/simulator'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/api/public/runtime-diagnostics'
   id:
     | '__root__'
     | '/'
@@ -312,6 +324,7 @@ export interface FileRouteTypes {
     | '/_authenticated/simulator'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/api/public/runtime-diagnostics'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -323,6 +336,7 @@ export interface RootRouteChildren {
   KnowledgeRoute: typeof KnowledgeRoute
   PrinciplesRoute: typeof PrinciplesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiPublicRuntimeDiagnosticsRoute: typeof ApiPublicRuntimeDiagnosticsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -495,6 +509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAiCoachRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/runtime-diagnostics': {
+      id: '/api/public/runtime-diagnostics'
+      path: '/api/public/runtime-diagnostics'
+      fullPath: '/api/public/runtime-diagnostics'
+      preLoaderRoute: typeof ApiPublicRuntimeDiagnosticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -556,6 +577,7 @@ const rootRouteChildren: RootRouteChildren = {
   KnowledgeRoute: KnowledgeRoute,
   PrinciplesRoute: PrinciplesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiPublicRuntimeDiagnosticsRoute: ApiPublicRuntimeDiagnosticsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
