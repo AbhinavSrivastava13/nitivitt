@@ -17,6 +17,13 @@ type EnvRecord = Record<string, string | undefined>;
 
 let capturedEnv: EnvRecord | undefined;
 
+function getCloudflareGlobalEnv(): EnvRecord | undefined {
+  const maybeGlobal = globalThis as typeof globalThis & { __env__?: unknown };
+  return maybeGlobal.__env__ && typeof maybeGlobal.__env__ === "object"
+    ? (maybeGlobal.__env__ as EnvRecord)
+    : undefined;
+}
+
 export function captureRuntimeEnv(env: unknown): void {
   if (env && typeof env === "object") {
     // Merge — later captures win, but keep previously-seen keys as fallback.
@@ -38,6 +45,10 @@ export function getRuntimeEnv(name: string): string | undefined {
   const fromCf = capturedEnv?.[name];
   if (fromCf !== undefined && fromCf !== null && fromCf !== "") {
     return normalize(name, fromCf);
+  }
+  const fromCfGlobal = getCloudflareGlobalEnv()?.[name];
+  if (fromCfGlobal !== undefined && fromCfGlobal !== null && fromCfGlobal !== "") {
+    return normalize(name, fromCfGlobal);
   }
   const fromNode = typeof process !== "undefined" ? process.env?.[name] : undefined;
   return normalize(name, fromNode);
