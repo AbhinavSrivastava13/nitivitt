@@ -126,9 +126,9 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
       goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
     };
 
-    // 4) Call the AI Gateway (Gemini). Key stays server-side.
-    const gatewayKey = process.env.LOVABLE_API_KEY;
-    if (!gatewayKey) {
+    // 4) Call the AI layer (Lovable Gateway or Gemini direct — auto-detected).
+    const { callAiChat, isAiConfigured } = await import("@/lib/ai-gateway");
+    if (!isAiConfigured()) {
       return {
         explanation: fallbackExplanation(structured),
         source: "fallback",
@@ -151,40 +151,18 @@ Rules — non-negotiable:
       ? `The user asks: "${data.question}"\n\nAnswer using ONLY the authoritative NitiCore JSON below. If the answer requires numbers not present, say so honestly and suggest opening NitiSim.\n\n${JSON.stringify(structured, null, 2)}`
       : `Explain the user's financial situation with focus="${data.focus}". Use this authoritative JSON exactly — do not modify any number:\n\n${JSON.stringify(structured, null, 2)}`;
 
-    try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${gatewayKey}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          temperature: 0.4,
-        }),
-      });
+    const result = await callAiChat({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.4,
+    });
 
-      if (!res.ok) {
-        console.error("NitiGuide gateway error", res.status, await res.text().catch(() => ""));
-        return { explanation: fallbackExplanation(structured), source: "fallback" };
-      }
-
-      const json = (await res.json()) as {
-        choices?: { message?: { content?: string } }[];
-      };
-      const text = json.choices?.[0]?.message?.content?.trim();
-      if (!text) {
-        return { explanation: fallbackExplanation(structured), source: "fallback" };
-      }
-      return { explanation: text, source: "gemini" };
-    } catch (err) {
-      console.error("NitiGuide fetch failed", err);
+    if (!result) {
       return { explanation: fallbackExplanation(structured), source: "fallback" };
     }
+    return { explanation: result.text, source: result.provider };
   });
 
 function fallbackExplanation(s: {
