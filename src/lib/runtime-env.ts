@@ -8,7 +8,8 @@
  *
  * Resolution order:
  *   1. Cloudflare `env` captured for this Worker instance.
- *   2. `process.env`  (Node/Lovable Cloud SSR).
+ *   2. Nitro's Cloudflare binding store (`globalThis.__env__`).
+ *   3. `process.env`  (Node/Lovable Cloud SSR).
  *
  * Also normalizes SUPABASE_URL to always include an `https://` scheme.
  */
