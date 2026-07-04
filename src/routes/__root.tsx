@@ -129,6 +129,16 @@ function RootShell({ children }: { children: ReactNode }) {
     SUPABASE_PUBLISHABLE_KEY:
       getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY") ?? getRuntimeEnv("VITE_SUPABASE_PUBLISHABLE_KEY") ?? "",
   };
+  if (!runtimeEnv.SUPABASE_URL || !runtimeEnv.SUPABASE_PUBLISHABLE_KEY) {
+    console.error(
+      `[NitiVitt] Missing runtime Supabase browser config: ${[
+        !runtimeEnv.SUPABASE_URL ? "SUPABASE_URL" : undefined,
+        !runtimeEnv.SUPABASE_PUBLISHABLE_KEY ? "SUPABASE_PUBLISHABLE_KEY" : undefined,
+      ]
+        .filter(Boolean)
+        .join(", ")}`,
+    );
+  }
   const inline = `window.__NITIVITT_ENV=${JSON.stringify(runtimeEnv)};`;
 
   return (
