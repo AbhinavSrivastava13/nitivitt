@@ -7,6 +7,10 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // Runtime config is injected by SSR from the deployment environment.
+  // Do not bake VITE_SUPABASE_* from .env into the browser bundle, otherwise
+  // Cloudflare can keep using Lovable's old Supabase project after export.
+  envDefine: false,
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
