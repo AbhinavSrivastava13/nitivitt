@@ -45,6 +45,19 @@ export default {
     // Capture it before anything else runs so downstream server code
     // (auth-middleware, client.server, ai-gateway) can read it.
     captureRuntimeEnv(env);
+
+    // Loud diagnostic: catch missing/placeholder Supabase config early.
+    const e = (env ?? {}) as Record<string, string | undefined>;
+    const key = e.SUPABASE_PUBLISHABLE_KEY;
+    if (!e.SUPABASE_URL || !key || /XXXX|PLACEHOLDER|<.+>/i.test(key)) {
+      console.error(
+        `[NitiVitt] Bad Supabase Worker config: SUPABASE_URL=${
+          e.SUPABASE_URL ? "set" : "MISSING"
+        }, SUPABASE_PUBLISHABLE_KEY=${
+          !key ? "MISSING" : /XXXX|PLACEHOLDER|<.+>/i.test(key) ? "PLACEHOLDER" : "set"
+        }`,
+      );
+    }
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
