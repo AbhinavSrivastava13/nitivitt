@@ -2,6 +2,22 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+type BrowserRuntimeEnv = {
+  SUPABASE_URL?: string;
+  SUPABASE_PUBLISHABLE_KEY?: string;
+};
+
+function normalizeSupabaseUrl(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed.replace(/^\/+/, '')}`;
+}
+
+function getBrowserRuntimeEnv(): BrowserRuntimeEnv | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return (window as unknown as { __NITIVITT_ENV?: BrowserRuntimeEnv }).__NITIVITT_ENV;
+}
+
 function isNewSupabaseApiKey(value: string): boolean {
   return value.startsWith('sb_publishable_') || value.startsWith('sb_secret_');
 }
@@ -30,20 +46,19 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 function createSupabaseClient() {
   // Resolution order (platform-agnostic):
   //   1. window.__NITIVITT_ENV — injected at SSR from runtime env (Cloudflare Workers, etc.)
-  //   2. import.meta.env.VITE_*  — Vite build-time replacement (Lovable Cloud default)
+  //   2. import.meta.env.VITE_*  — Vite build-time replacement only when no runtime injection exists
   //   3. process.env.*           — Node/SSR fallback
-  const runtime =
-    typeof window !== "undefined"
-      ? (window as unknown as { __NITIVITT_ENV?: { SUPABASE_URL?: string; SUPABASE_PUBLISHABLE_KEY?: string } }).__NITIVITT_ENV
-      : undefined;
+  const runtime = getBrowserRuntimeEnv();
+  const hasRuntimeInjection = typeof window !== 'undefined' && runtime !== undefined;
 
-  const SUPABASE_URL =
+  const SUPABASE_URL = normalizeSupabaseUrl(
     runtime?.SUPABASE_URL ||
-    import.meta.env.VITE_SUPABASE_URL ||
-    (typeof process !== "undefined" ? process.env.SUPABASE_URL : undefined);
+      (!hasRuntimeInjection ? import.meta.env.VITE_SUPABASE_URL : undefined) ||
+      (typeof process !== "undefined" ? process.env.SUPABASE_URL : undefined),
+  );
   const SUPABASE_PUBLISHABLE_KEY =
     runtime?.SUPABASE_PUBLISHABLE_KEY ||
-    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    (!hasRuntimeInjection ? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY : undefined) ||
     (typeof process !== "undefined" ? process.env.SUPABASE_PUBLISHABLE_KEY : undefined);
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
