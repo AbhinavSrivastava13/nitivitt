@@ -25,9 +25,12 @@ export interface ChatResult {
   provider: "lovable-gateway" | "gemini-direct";
 }
 
+import { getRuntimeEnv } from "./runtime-env.server";
+
 function getEnv(name: string): string | undefined {
-  return typeof process !== "undefined" ? process.env?.[name] : undefined;
+  return getRuntimeEnv(name);
 }
+
 
 export function isAiConfigured(): boolean {
   return Boolean(getEnv("LOVABLE_API_KEY") || getEnv("GEMINI_API_KEY"));
