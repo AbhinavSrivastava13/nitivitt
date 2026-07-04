@@ -30,7 +30,7 @@ export function SiteFooter() {
         <div className="max-w-sm">
           <Logo />
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            NitiVitt is a financial guidance platform. We help you make better decisions —
+            NitiVitt is a financial guidance platform. We help you make better decisions -
             we are not a broker, distributor, or advisor.
           </p>
           <p className="mt-6 font-display text-2xl text-foreground">
