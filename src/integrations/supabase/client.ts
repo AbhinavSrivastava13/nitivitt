@@ -28,17 +28,30 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 
 function createSupabaseClient() {
-  // Use import.meta.env for client-side (Vite build-time replacement)
-  // Fall back to process.env for SSR (server-side rendering)
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY;
+  // Resolution order (platform-agnostic):
+  //   1. window.__NITIVITT_ENV — injected at SSR from runtime env (Cloudflare Workers, etc.)
+  //   2. import.meta.env.VITE_*  — Vite build-time replacement (Lovable Cloud default)
+  //   3. process.env.*           — Node/SSR fallback
+  const runtime =
+    typeof window !== "undefined"
+      ? (window as unknown as { __NITIVITT_ENV?: { SUPABASE_URL?: string; SUPABASE_PUBLISHABLE_KEY?: string } }).__NITIVITT_ENV
+      : undefined;
+
+  const SUPABASE_URL =
+    runtime?.SUPABASE_URL ||
+    import.meta.env.VITE_SUPABASE_URL ||
+    (typeof process !== "undefined" ? process.env.SUPABASE_URL : undefined);
+  const SUPABASE_PUBLISHABLE_KEY =
+    runtime?.SUPABASE_PUBLISHABLE_KEY ||
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+    (typeof process !== "undefined" ? process.env.SUPABASE_PUBLISHABLE_KEY : undefined);
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
       ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
+    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Set them in the deployment environment.`;
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }
