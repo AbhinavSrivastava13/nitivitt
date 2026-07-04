@@ -25,7 +25,7 @@ export interface ChatResult {
   provider: "lovable-gateway" | "gemini-direct";
 }
 
-import { getRuntimeEnv } from "./runtime-env.server";
+import { getRuntimeEnv } from "./runtime-env";
 
 function getEnv(name: string): string | undefined {
   return getRuntimeEnv(name);

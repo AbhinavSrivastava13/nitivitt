@@ -2,7 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
-import { captureRuntimeEnv } from "./lib/runtime-env.server";
+import { captureRuntimeEnv } from "./lib/runtime-env";
 
 
 type ServerEntry = {

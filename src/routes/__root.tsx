@@ -12,7 +12,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { getRuntimeEnv } from "../lib/runtime-env.server";
+import { getRuntimeEnv } from "../lib/runtime-env";
 
 
 function NotFoundComponent() {
