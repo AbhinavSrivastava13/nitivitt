@@ -17,15 +17,12 @@
     "nodejs_compat"
   ],
 
+  // SUPABASE_PUBLISHABLE_KEY and GEMINI_API_KEY MUST be set as Cloudflare
+  // Worker secrets (Workers & Pages -> nitivitt -> Settings -> Variables),
+  // NOT committed here. A placeholder value here would be silently shipped
+  // to the browser via SSR and would cause "invalid API key" errors on
+  // every Supabase call.
   "vars": {
     "SUPABASE_URL": "https://qviwzgnwlwjjbjoxzitb.supabase.co"
   }
 }
-// NOTE: SUPABASE_PUBLISHABLE_KEY MUST be set as a Cloudflare Worker
-// secret (or a real value in `vars` above). Do NOT commit a placeholder —
-// a placeholder is silently shipped to the browser and causes
-// "invalid API key" on every Supabase call.
-//
-// Set via dashboard: Workers & Pages → nitivitt → Settings → Variables →
-// Add variable → SUPABASE_PUBLISHABLE_KEY = <real publishable/anon key>.
-// Or CLI: `wrangler secret put SUPABASE_PUBLISHABLE_KEY`.
