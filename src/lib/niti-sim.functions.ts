@@ -203,9 +203,9 @@ User question: "${data.question}"`;
 
     const simulated = snapshot(simulatedInput);
 
-    // 4) Ask Gemini to explain the delta in plain English — using ONLY these numbers.
+    // 4) Ask the AI layer to explain the delta in plain English — using ONLY these numbers.
     let explanation = "";
-    if (gatewayKey) {
+    if (aiOn) {
       const explainPrompt = `You are NitiGuide, the AI explanation layer of NitiVitt.
 
 The user asked NitiSim: "${data.question}"
@@ -227,29 +227,14 @@ Rules:
 - Use ₹ formatting with Indian conventions.
 - If overrides is empty {}, say the scenario couldn't be interpreted and suggest a clearer prompt.`;
 
-      try {
-        const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${gatewayKey}`,
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            messages: [
-              { role: "system", content: "Explain NitiCore output. Never compute. Never invent numbers." },
-              { role: "user", content: explainPrompt },
-            ],
-            temperature: 0.4,
-          }),
-        });
-        if (res.ok) {
-          const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-          explanation = json.choices?.[0]?.message?.content?.trim() ?? "";
-        }
-      } catch (err) {
-        console.error("NitiSim explanation failed", err);
-      }
+      const explain = await callAiChat({
+        messages: [
+          { role: "system", content: "Explain NitiCore output. Never compute. Never invent numbers." },
+          { role: "user", content: explainPrompt },
+        ],
+        temperature: 0.4,
+      });
+      if (explain) explanation = explain.text;
     }
 
     if (!explanation) {
