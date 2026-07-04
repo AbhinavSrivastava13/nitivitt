@@ -121,14 +121,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   // Inject runtime Supabase config so the browser client works on any host
   // (Cloudflare Workers, Lovable Cloud, self-hosted) without a rebuild.
-  const proc = (globalThis as unknown as { process?: { env?: Record<string, string | undefined> } }).process;
-  const env = proc?.env ?? {};
+  // On Cloudflare, env is captured from the Worker's fetch(env) arg — not process.env.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { getRuntimeEnv } = require("@/lib/runtime-env.server") as typeof import("@/lib/runtime-env.server");
   const runtimeEnv = {
-    SUPABASE_URL: env.SUPABASE_URL ?? env.VITE_SUPABASE_URL ?? "",
+    SUPABASE_URL: getRuntimeEnv("SUPABASE_URL") ?? getRuntimeEnv("VITE_SUPABASE_URL") ?? "",
     SUPABASE_PUBLISHABLE_KEY:
-      env.SUPABASE_PUBLISHABLE_KEY ?? env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
+      getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY") ?? getRuntimeEnv("VITE_SUPABASE_PUBLISHABLE_KEY") ?? "",
   };
   const inline = `window.__NITIVITT_ENV=${JSON.stringify(runtimeEnv)};`;
+
   return (
     <html lang="en">
       <head>
