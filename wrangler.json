@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "my-worker-app",
+  "main": "src/index.js",
+  "compatibility_date": "2024-04-01",
+  "workers_dev": false,
+  "route": {
+    "pattern": "nitivitt.in/*",
+    "custom_domain": true
+  }
+}
