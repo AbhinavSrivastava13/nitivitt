@@ -129,11 +129,6 @@ function RootShell({ children }: { children: ReactNode }) {
     SUPABASE_PUBLISHABLE_KEY:
       getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY") ?? getRuntimeEnv("VITE_SUPABASE_PUBLISHABLE_KEY") ?? "",
   };
-
-    SUPABASE_URL: getRuntimeEnv("SUPABASE_URL") ?? getRuntimeEnv("VITE_SUPABASE_URL") ?? "",
-    SUPABASE_PUBLISHABLE_KEY:
-      getRuntimeEnv("SUPABASE_PUBLISHABLE_KEY") ?? getRuntimeEnv("VITE_SUPABASE_PUBLISHABLE_KEY") ?? "",
-  };
   const inline = `window.__NITIVITT_ENV=${JSON.stringify(runtimeEnv)};`;
 
   return (
