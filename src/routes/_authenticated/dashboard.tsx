@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useServerFn } from "@tanstack/react-query";
-import { useServerFn as useSFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
