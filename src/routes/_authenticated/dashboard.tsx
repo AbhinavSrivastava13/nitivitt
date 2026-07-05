@@ -143,7 +143,6 @@ function Dashboard() {
           <div className="flex shrink-0 items-center gap-2">
             <Link
               to="/onboarding"
-              search={{ mode: "review" }}
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted md:text-sm"
             >
               <RefreshCw className="h-3.5 w-3.5" /> Update Analysis
