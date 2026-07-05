@@ -116,7 +116,7 @@ function Hero() {
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
               Most platforms tell you <em className="font-editorial">what</em> to
               invest in. NitiVitt teaches you{" "}
-              <em className="font-editorial">why</em> — with math, transparency,
+              <em className="font-editorial">why</em>&nbsp;- with math, transparency,
               and zero commissions.
             </p>
 
@@ -383,7 +383,7 @@ function IntelligenceSuite() {
     {
       name: "NitiScore™",
       tagline: "Know your overall financial health.",
-      body: "A single 0–1000 score across six pillars — savings, emergency, insurance, investments, debt and retirement. Every point is auditable.",
+      body: "A single 0-1000 score across six pillars - savings, emergency, insurance, investments, debt and retirement. Every point is auditable.",
       to: "/dashboard",
       icon: Gauge,
       accent: "primary",
@@ -391,7 +391,7 @@ function IntelligenceSuite() {
     {
       name: "NitiAge™",
       tagline: "Discover your financial age.",
-      body: "Translates your habits into a single number. Are your finances 5 years ahead, or 7 years behind? Find out — and change it.",
+      body: "Translates your habits into a single number. Are your finances 5 years ahead, or 7 years behind? Find out - and change it.",
       to: "/dashboard",
       icon: Hourglass,
       accent: "accent",
@@ -415,7 +415,7 @@ function IntelligenceSuite() {
     {
       name: "NitiSim™",
       tagline: "Simulate any future, before you commit.",
-      body: "Switch jobs, buy a home, take a sabbatical — see the 20-year impact on your wealth before you act.",
+      body: "Switch jobs, buy a home, take a sabbatical - see the 20-year impact on your wealth before you act.",
       to: "/simulator",
       icon: Sparkles,
       accent: "accent",
@@ -436,7 +436,7 @@ function IntelligenceSuite() {
           </h2>
         </div>
         <p className="max-w-md text-sm text-muted-foreground">
-          Each module is a deterministic engine — built on pure math, designed
+          Each module is a deterministic engine - built on pure math, designed
           to be explained line-by-line. No black boxes, no influencer picks.
         </p>
       </div>
@@ -518,7 +518,7 @@ function HowItWorks() {
       n: "01",
       icon: GraduationCap,
       title: "Tell us about yourself.",
-      body: "A 5-minute guided profile — income, goals, dependents, risk appetite.",
+      body: "A 5-minute guided profile - income, goals, dependents, risk appetite.",
     },
     {
       n: "02",
@@ -588,11 +588,11 @@ function HowItWorks() {
 
 function WhyNitiVitt() {
   const items = [
-    { label: "What", body: "The exact recommendation — in plain language." },
+    { label: "What", body: "The exact recommendation - in simple language." },
     { label: "Why", body: "The financial reason it matters for your situation." },
     { label: "Logic", body: "The principle and rule it follows." },
     { label: "Assumptions", body: "Every input we used, listed openly." },
-    { label: "Calculation", body: "The arithmetic, shown — never hidden." },
+    { label: "Calculation", body: "The arithmetic, shown - never hidden." },
     { label: "Next Step", body: "The concrete action you can take today." },
   ];
   return (
@@ -672,7 +672,7 @@ function FinancialJourney() {
             life stage.
           </h2>
           <p className="mt-3 text-sm text-primary-foreground/70">
-            NitiVitt grows with you — from your first salary to your retirement
+            NitiVitt grows with you - from your first salary to your retirement
             corpus.
           </p>
         </div>
@@ -791,7 +791,7 @@ function Testimonials() {
     },
     {
       quote:
-        "The NitiScore made our financial blind spots painfully obvious — and then showed us the exact path to fix them.",
+        "The NitiScore made our financial blind spots painfully obvious - and then showed us the exact path to fix them.",
       name: "Rohan & Anjali S.",
       role: "Newly married, Pune",
     },
@@ -850,7 +850,7 @@ function FAQ() {
   const faqs = [
     {
       q: "Is NitiVitt a stockbroker or mutual fund distributor?",
-      a: "No. NitiVitt is a financial guidance and education platform. We do not sell financial products, take commissions, or execute trades. We help you make better decisions — you act on them through your existing accounts.",
+      a: "No. NitiVitt is a financial guidance and education platform. We do not sell financial products, take commissions, or execute trades. We help you make better decisions - you act on them through your existing accounts.",
     },
     {
       q: "How is the NitiScore™ calculated?",
@@ -884,7 +884,7 @@ function FAQ() {
             </span>
           </h2>
           <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-            Don't see your question? Reach out — we respond personally to every
+            Don't see your question? Reach out - we respond personally to every
             early user.
           </p>
         </div>
@@ -960,7 +960,7 @@ function Pricing() {
       name: "Expert Consultation",
       price: "Future",
       tag: "Planned",
-      desc: "1:1 sessions with SEBI-registered advisors — fee-only, never commissioned.",
+      desc: "1:1 sessions with SEBI-registered advisors - fee-only, never commissioned.",
       features: [
         "Hand-picked advisors",
         "Reviewed NitiPath",
