@@ -38,6 +38,10 @@ export interface Recommendation {
   priority: Priority;
   severity: Severity;
   explanation: string;
+  /** Human-readable "why this matters" for the user's life — no numbers invented. */
+  whyItMatters: string;
+  /** Human-readable expected financial impact of taking this action. */
+  expectedImpact: string;
   logic: string;
   assumptions: Record<string, number | string | boolean>;
   formulaSummary: string;
@@ -45,6 +49,8 @@ export interface Recommendation {
   effort: "low" | "medium" | "high";
   nextAction: string;
   displayOrder: number;
+  /** Deterministic global impact score used to rank across pillars. Higher = act sooner. */
+  impactScore: number;
 }
 
 /** Canonical financial input the whole engine reads. */

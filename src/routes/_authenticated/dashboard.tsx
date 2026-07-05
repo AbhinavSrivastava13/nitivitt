@@ -1,9 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import {
   Target, Shield, PiggyBank, Wallet, TrendingUp, FlaskConical, GraduationCap,
-  Briefcase, Sparkles, ArrowRight, ArrowUpRight, ArrowDownRight,
+  Briefcase, Sparkles, ArrowRight, ArrowUpRight, ArrowDownRight, RefreshCw,
+  Gauge, Hourglass,
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,8 +21,9 @@ import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   generateRecommendations,
 } from "@/lib/niti-core";
-import type { NitiCoreInput } from "@/lib/niti-core";
+import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
+import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -49,8 +57,12 @@ function useDashboardData() {
   });
 }
 
+type MetricKind = "score" | "age" | "networth" | "emergency";
+
 function Dashboard() {
   const { data, isLoading } = useDashboardData();
+  const [openMetric, setOpenMetric] = useState<MetricKind | null>(null);
+  const [openRec, setOpenRec] = useState<Recommendation | null>(null);
 
   if (isLoading || !data) {
     return (
@@ -128,12 +140,20 @@ function Dashboard() {
               </p>
             )}
           </div>
-          <Link
-            to="/financial-health"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted md:text-sm"
-          >
-            Financial Health Report <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              to="/onboarding"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted md:text-sm"
+            >
+              <RefreshCw className="h-3.5 w-3.5" /> Update Analysis
+            </Link>
+            <Link
+              to="/financial-health"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground hover:opacity-95 md:text-sm"
+            >
+              Financial Health <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </header>
 
         {!hasData && (
@@ -141,125 +161,122 @@ function Dashboard() {
             <p className="font-semibold text-foreground">Add your finances to unlock your real NitiScore.</p>
             <p className="mt-1 text-muted-foreground">Head to your profile and add income, assets, and liabilities.</p>
             <Link
-              to="/profile"
+              to="/onboarding"
               className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground"
             >
-              Complete your profile →
+              Start your review →
             </Link>
           </div>
         )}
 
         {/* ── HERO: 2x2 left grid + full-height NitiPath right ─────── */}
         <section className="mt-6 grid gap-4 lg:grid-cols-3 lg:items-stretch">
-          {/* LEFT: 2x2 metric grid */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-2">
-            {/* NitiScore — visually most prominent */}
-            <Link
-              to="/financial-health"
-              className="group relative overflow-hidden rounded-2xl border border-primary/40 bg-gradient-to-br from-primary-soft/70 to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">NitiScore™</p>
-                <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">Grade {score.grade}</span>
-              </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="font-display text-6xl font-semibold leading-none text-foreground">{score.value}</span>
-                <span className="text-xs text-muted-foreground">/ 1000</span>
-              </div>
-              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-[width] duration-700 ease-out"
-                  style={{ width: `${Math.min(100, (score.value / 1000) * 100)}%` }}
-                />
-              </div>
-              <p className="mt-3 text-[11px] text-muted-foreground">
-                {score.value >= 750 ? "Excellent overall financial health." :
-                  score.value >= 600 ? "Solid foundation — some pillars still need work." :
-                  score.value >= 400 ? "Under strain — a few high-impact fixes will move you fast." :
-                  "Fragile — focus on protection and buffer first."}
-              </p>
-            </Link>
+            {/* NitiScore */}
+            <MetricTile
+              onClick={() => setOpenMetric("score")}
+              accent="primary"
+              eyebrow="NitiScore™"
+              icon={Gauge}
+              badge={{ label: `Grade ${score.grade}`, cls: "bg-primary text-primary-foreground" }}
+              value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{score.value}</span>}
+              unit="/ 1000"
+              footer={
+                <>
+                  <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-[width] duration-700" style={{ width: `${Math.min(100, (score.value / 1000) * 100)}%` }} />
+                  </div>
+                  <p className="mt-3 text-[11px] text-muted-foreground">
+                    {score.value >= 750 ? "Excellent overall financial health." :
+                      score.value >= 600 ? "Solid foundation — some pillars still need work." :
+                      score.value >= 400 ? "Under strain — a few high-impact fixes will move you fast." :
+                      "Fragile — focus on protection and buffer first."}
+                  </p>
+                </>
+              }
+            />
 
             {/* NitiAge */}
-            <Link
-              to="/financial-health"
-              className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiAge™</p>
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${ageBadge.cls}`}>
-                  {ageDelta < 0 ? <ArrowDownRight className="h-3 w-3" /> : ageDelta > 0 ? <ArrowUpRight className="h-3 w-3" /> : null}
-                  {ageBadge.label}
-                </span>
-              </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="font-display text-6xl font-semibold leading-none text-foreground">{nitiAge.value}</span>
-                <span className="text-xs text-muted-foreground">yrs</span>
-              </div>
-              <p className="mt-3 text-[11px] text-muted-foreground">
-                Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · your money habits behave like this age.
-              </p>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                {ageDelta < 0 ? "You are financially older than your years — a good sign." :
-                 ageDelta > 0 ? "You are financially younger than your years — habits need catch-up." :
-                 "Right on track with your years."}
-              </p>
-            </Link>
+            <MetricTile
+              onClick={() => setOpenMetric("age")}
+              accent="secondary"
+              eyebrow="NitiAge™"
+              icon={Hourglass}
+              badge={{
+                label: ageBadge.label,
+                cls: ageBadge.cls,
+                icon: ageDelta < 0 ? ArrowDownRight : ageDelta > 0 ? ArrowUpRight : undefined,
+              }}
+              value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{nitiAge.value}</span>}
+              unit="yrs"
+              footer={
+                <>
+                  <p className="mt-3 text-[11px] text-muted-foreground">
+                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · your money habits behave like this age.
+                  </p>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    {ageDelta < 0 ? "You are financially older than your years — a good sign." :
+                     ageDelta > 0 ? "You are financially younger than your years — habits need catch-up." :
+                     "Right on track with your years."}
+                  </p>
+                </>
+              }
+            />
 
             {/* Net Worth */}
-            <Link
-              to="/net-worth"
-              className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Net Worth</p>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${netWorth.value >= 0 ? "bg-secondary-soft text-secondary" : "bg-warning-soft text-warning"}`}>
-                  {netWorth.value >= 0 ? "Positive" : "Negative"}
-                </span>
-              </div>
-              <div className="mt-3 font-display text-3xl leading-tight text-foreground">{formatINR(netWorth.value)}</div>
-              <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>Assets {formatINR(totalAssets)}</span>
-                <span>Liab. {formatINR(totalLiabilities)}</span>
-              </div>
-              <div className="mt-1.5 flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full bg-secondary transition-[width] duration-700" style={{ width: `${nwAssetsPct}%` }} />
-                <div className="h-full bg-warning/70" style={{ width: `${100 - nwAssetsPct}%` }} />
-              </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                {netWorth.value >= 0 ? "You own more than you owe — keep the compounding on." : "Liabilities exceed assets — prioritise debt paydown."}
-              </p>
-            </Link>
+            <MetricTile
+              onClick={() => setOpenMetric("networth")}
+              accent="muted"
+              eyebrow="Net Worth"
+              icon={TrendingUp}
+              badge={{
+                label: netWorth.value >= 0 ? "Positive" : "Negative",
+                cls: netWorth.value >= 0 ? "bg-secondary-soft text-secondary" : "bg-warning-soft text-warning",
+              }}
+              value={<span className="font-display text-3xl leading-tight text-foreground">{formatINR(netWorth.value)}</span>}
+              footer={
+                <>
+                  <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>Assets {formatINR(totalAssets)}</span>
+                    <span>Liab. {formatINR(totalLiabilities)}</span>
+                  </div>
+                  <div className="mt-1.5 flex h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="h-full bg-secondary transition-[width] duration-700" style={{ width: `${nwAssetsPct}%` }} />
+                    <div className="h-full bg-warning/70" style={{ width: `${100 - nwAssetsPct}%` }} />
+                  </div>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    {netWorth.value >= 0 ? "You own more than you owe — keep compounding." : "Liabilities exceed assets — prioritise debt paydown."}
+                  </p>
+                </>
+              }
+            />
 
             {/* Emergency Fund */}
-            <Link
-              to="/emergency-fund"
-              className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Emergency Fund</p>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${emStatus.cls}`}>{emStatus.label}</span>
-              </div>
-              <div className="mt-3 flex items-baseline gap-2">
-                <span className="font-display text-3xl leading-tight text-foreground">{Number(emergency.value).toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground">/ 6 months</span>
-              </div>
-              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-secondary transition-[width] duration-700"
-                  style={{ width: `${Math.min(100, (Number(emergency.value) / 6) * 100)}%` }}
-                />
-              </div>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                {Number(emergency.value) >= 6 ? "Buffer is full — you can invest with confidence."
-                  : Number(emergency.value) >= 3 ? "Partial cover — keep topping up monthly."
-                  : "Below safety line — prioritise the buffer above returns."}
-              </p>
-            </Link>
+            <MetricTile
+              onClick={() => setOpenMetric("emergency")}
+              accent="muted"
+              eyebrow="Emergency Fund"
+              icon={Wallet}
+              badge={{ label: emStatus.label, cls: emStatus.cls }}
+              value={<span className="font-display text-3xl leading-tight text-foreground">{Number(emergency.value).toFixed(1)}</span>}
+              unit="/ 6 months"
+              footer={
+                <>
+                  <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-secondary transition-[width] duration-700" style={{ width: `${Math.min(100, (Number(emergency.value) / 6) * 100)}%` }} />
+                  </div>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    {Number(emergency.value) >= 6 ? "Buffer is full — you can invest with confidence."
+                      : Number(emergency.value) >= 3 ? "Partial cover — keep topping up monthly."
+                      : "Below safety line — prioritise the buffer above returns."}
+                  </p>
+                </>
+              }
+            />
           </div>
 
-          {/* RIGHT: NitiPath — spans the entire hero height */}
-          <aside className="rounded-2xl border border-primary/30 bg-gradient-to-b from-card to-primary-soft/20 p-5 shadow-soft lg:col-span-1 lg:h-full">
+          {/* RIGHT: NitiPath full-height */}
+          <aside className="flex flex-col rounded-2xl border border-primary/30 bg-gradient-to-b from-card to-primary-soft/20 p-5 shadow-soft lg:col-span-1 lg:h-full">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -270,20 +287,20 @@ function Dashboard() {
               <Link to="/recommendations" className="text-[11px] font-semibold text-primary hover:underline">All →</Link>
             </div>
             <p className="mt-3 font-display text-lg text-foreground">What should I do next?</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">Your top 3 priorities, ranked by impact.</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Your top 3 priorities, ranked by overall financial impact.</p>
 
             {topRecs.length === 0 ? (
               <div className="mt-6 rounded-xl border border-dashed border-border bg-card p-4 text-xs text-muted-foreground">
                 You're clear of critical actions right now. Keep saving and revisit monthly.
               </div>
             ) : (
-              <ol className="mt-4 flex flex-col gap-2.5">
+              <ol className="mt-4 flex flex-1 flex-col gap-3">
                 {topRecs.map((r, i) => (
-                  <li key={r.id}>
-                    <Link
-                      to="/recommendations"
-                      search={{ rec: r.id }}
-                      className="group block rounded-xl border border-border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-soft"
+                  <li key={r.id} className="flex-1">
+                    <button
+                      type="button"
+                      onClick={() => setOpenRec(r)}
+                      className="group flex h-full w-full flex-col rounded-xl border border-border bg-card p-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-soft"
                     >
                       <div className="flex items-start gap-3">
                         <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold ${
@@ -292,19 +309,28 @@ function Dashboard() {
                           "bg-secondary-soft text-secondary"
                         }`}>{i + 1}</span>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <span className={`rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${
                               r.priority === "high" ? "bg-warning/15 text-warning" :
                               r.priority === "medium" ? "bg-primary/10 text-primary" :
                               "bg-muted text-muted-foreground"
                             }`}>P{i + 1} · {r.priority}</span>
+                            <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">{r.category}</span>
                           </div>
-                          <p className="mt-1 text-sm font-semibold leading-tight text-foreground">{r.title}</p>
-                          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground">{r.explanation}</p>
+                          <p className="mt-1.5 text-sm font-semibold leading-tight text-foreground">{r.title}</p>
+                          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground">
+                            <span className="font-medium text-foreground/80">Why:</span> {r.whyItMatters}
+                          </p>
+                          <p className="mt-1 line-clamp-2 text-[11px] leading-snug text-muted-foreground">
+                            <span className="font-medium text-foreground/80">Impact:</span> {r.expectedImpact}
+                          </p>
+                          <p className="mt-1 line-clamp-1 text-[11px] leading-snug text-primary">
+                            → {r.nextAction}
+                          </p>
                         </div>
                         <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                       </div>
-                    </Link>
+                    </button>
                   </li>
                 ))}
               </ol>
@@ -312,48 +338,10 @@ function Dashboard() {
           </aside>
         </section>
 
-        {/* ── NitiSim — single conversational entry ─────────────────── */}
-        <section className="mt-8">
-          <Link
-            to="/simulator"
-            className="group grid gap-4 rounded-2xl border border-border bg-gradient-to-br from-primary-soft/40 via-card to-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center"
-          >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
-              <FlaskConical className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiSim™</p>
-              <p className="mt-1 font-display text-xl text-foreground">Explore any financial decision before you make it.</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                "What if I increase my SIP by ₹3,000?" · "Can I retire at 50?" · "Can I buy a ₹1 Cr home in 5 years?"
-              </p>
-            </div>
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
-              Open NitiSim <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </Link>
-        </section>
-
-        {/* ── NitiGuide — Ask, don't summarise ──────────────────────── */}
-        <section className="mt-4">
-          <Link
-            to="/ai-coach"
-            className="group grid gap-4 rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center"
-          >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
-              <Sparkles className="h-5 w-5" />
-            </span>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiGuide™</p>
-              <p className="mt-1 font-display text-xl text-foreground">Ask why any number looks the way it does.</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                "Why is my score low?" · "Why is my emergency fund weak?" · "Explain this recommendation."
-              </p>
-            </div>
-            <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-4 py-2 text-xs font-semibold text-foreground group-hover:border-primary/40">
-              Ask NitiGuide <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </Link>
+        {/* ── NitiGuide briefing (2/3) + NitiSim launcher (1/3) ────── */}
+        <section className="mt-6 grid gap-4 lg:grid-cols-3 lg:items-stretch">
+          <NitiGuideCard />
+          <NitiSimLauncher />
         </section>
 
         {/* ── Modules ───────────────────────────────────────────────── */}
@@ -387,7 +375,356 @@ function Dashboard() {
         </section>
       </main>
       <SiteFooter />
+
+      <MetricDialog
+        open={openMetric !== null}
+        onClose={() => setOpenMetric(null)}
+        kind={openMetric}
+        score={score}
+        nitiAge={nitiAge}
+        emergency={emergency}
+        netWorth={netWorth}
+        input={input}
+        totalAssets={totalAssets}
+        totalLiabilities={totalLiabilities}
+        topRecs={topRecs}
+      />
+
+      <RecommendationDialog
+        rec={openRec}
+        onClose={() => setOpenRec(null)}
+      />
     </div>
+  );
+}
+
+/* ─────────────── Metric tile ─────────────── */
+
+function MetricTile({
+  onClick, eyebrow, icon: Icon, badge, value, unit, footer, accent,
+}: {
+  onClick: () => void;
+  eyebrow: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge: { label: string; cls: string; icon?: React.ComponentType<{ className?: string }> };
+  value: React.ReactNode;
+  unit?: string;
+  footer: React.ReactNode;
+  accent: "primary" | "secondary" | "muted";
+}) {
+  const border = accent === "primary" ? "border-primary/40 bg-gradient-to-br from-primary-soft/70 to-card"
+    : accent === "secondary" ? "border-secondary/30 bg-card"
+    : "border-border bg-card";
+  const eyebrowColor = accent === "primary" ? "text-primary" : accent === "secondary" ? "text-secondary" : "text-muted-foreground";
+  const BadgeIcon = badge.icon;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group flex h-full min-h-[212px] flex-col rounded-2xl border p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated ${border}`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Icon className={`h-3.5 w-3.5 ${eyebrowColor}`} />
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${eyebrowColor}`}>{eyebrow}</p>
+        </div>
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${badge.cls}`}>
+          {BadgeIcon ? <BadgeIcon className="h-3 w-3" /> : null}
+          {badge.label}
+        </span>
+      </div>
+      <div className="mt-3 flex items-baseline gap-2">
+        {value}
+        {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
+      </div>
+      <div className="mt-auto">{footer}</div>
+      <span className="mt-3 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-primary">
+        Details <ArrowRight className="h-3 w-3" />
+      </span>
+    </button>
+  );
+}
+
+/* ─────────────── NitiGuide briefing card ─────────────── */
+
+function NitiGuideCard() {
+  const fn = useServerFn(getNitiGuideBriefing);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["nitiguide-briefing"],
+    queryFn: () => fn({ data: {} }),
+    staleTime: 1000 * 60 * 30,
+  });
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft lg:col-span-2 lg:h-full">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">NitiGuide™</p>
+        </div>
+        <Link to="/ai-coach" className="text-[11px] font-semibold text-primary hover:underline">Full briefing →</Link>
+      </div>
+      <p className="mt-3 font-display text-lg text-foreground">Your financial briefing.</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">A calm read on where you stand — from your NitiCore™ snapshot.</p>
+
+      <div className="mt-4 max-h-[360px] overflow-y-auto pr-1">
+        {isLoading && (
+          <div className="space-y-2">
+            <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-full animate-pulse rounded bg-muted" />
+            <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
+            <p className="pt-2 text-[11px] text-muted-foreground">NitiGuide is reading your numbers…</p>
+          </div>
+        )}
+        {error && (
+          <p className="text-xs text-warning">
+            {error instanceof Error ? error.message : "Briefing unavailable right now."}
+          </p>
+        )}
+        {data && (
+          <div className="prose prose-sm max-w-none text-sm text-foreground/90 prose-p:my-2 prose-p:leading-relaxed prose-strong:text-foreground">
+            <ReactMarkdown>{data.markdown}</ReactMarkdown>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── NitiSim launcher card ─────────────── */
+
+function NitiSimLauncher() {
+  const prompts = [
+    "Increase my SIP by ₹5,000",
+    "Can I retire by 50?",
+    "Can I afford a ₹1 crore house?",
+    "Prepay my personal loan?",
+  ];
+  return (
+    <div className="flex flex-col rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft lg:col-span-1 lg:h-full">
+      <div className="flex items-center gap-2">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <FlaskConical className="h-4 w-4" />
+        </span>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiSim™</p>
+      </div>
+      <p className="mt-3 font-display text-lg text-foreground">Ask any "what if".</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        The only conversational surface in NitiVitt. Every answer is a NitiCore™ recalculation, explained by Gemini.
+      </p>
+      <ul className="mt-4 flex flex-1 flex-col gap-2">
+        {prompts.map((p) => (
+          <li key={p}>
+            <Link
+              to="/simulator"
+              className="block rounded-lg border border-border bg-card px-3 py-2 text-[12px] text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft/40"
+            >
+              "{p}"
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link
+        to="/simulator"
+        className="mt-4 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-soft hover:opacity-95"
+      >
+        Open NitiSim <ArrowRight className="h-3.5 w-3.5" />
+      </Link>
+    </div>
+  );
+}
+
+/* ─────────────── Metric detail dialog ─────────────── */
+
+function MetricDialog({
+  open, onClose, kind, score, nitiAge, emergency, netWorth, input, totalAssets, totalLiabilities, topRecs,
+}: {
+  open: boolean;
+  onClose: () => void;
+  kind: MetricKind | null;
+  score: ReturnType<typeof calculateNitiScore>;
+  nitiAge: ReturnType<typeof calculateNitiAge>;
+  emergency: ReturnType<typeof calculateEmergencyFund>;
+  netWorth: ReturnType<typeof calculateNetWorth>;
+  input: NitiCoreInput;
+  totalAssets: number;
+  totalLiabilities: number;
+  topRecs: Recommendation[];
+}) {
+  if (!kind) return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent />
+    </Dialog>
+  );
+
+  const helping: string[] = [];
+  const hurting: string[] = [];
+  score.breakdown.forEach((b) => {
+    if (b.pillarScore >= 75) helping.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
+    else if (b.pillarScore < 50) hurting.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        {kind === "score" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-display text-2xl">NitiScore™ — {score.value}/1000 · Grade {score.grade}</DialogTitle>
+              <DialogDescription>Measure of overall financial health across six pillars.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Score breakdown</p>
+                <ul className="mt-2 space-y-2">
+                  {score.breakdown.map((b) => (
+                    <li key={b.pillar} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-foreground">{b.pillar} <span className="text-[10px] text-muted-foreground">· weight {Math.round(b.weight)}%</span></span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-32 overflow-hidden rounded-full bg-muted">
+                          <div className={`h-full rounded-full ${b.pillarScore >= 75 ? "bg-secondary" : b.pillarScore >= 50 ? "bg-primary" : "bg-warning"}`} style={{ width: `${b.pillarScore}%` }} />
+                        </div>
+                        <span className="w-14 text-right text-xs font-semibold text-foreground">{Math.round(b.pillarScore)}/100</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {helping.length > 0 && (
+                <p className="text-sm"><span className="font-semibold text-secondary">What's helping: </span><span className="text-muted-foreground">{helping.join(" · ")}</span></p>
+              )}
+              {hurting.length > 0 && (
+                <p className="text-sm"><span className="font-semibold text-warning">What's hurting: </span><span className="text-muted-foreground">{hurting.join(" · ")}</span></p>
+              )}
+              {topRecs.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions that will raise your score</p>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-foreground">
+                    {topRecs.map((r) => <li key={r.id}>{r.title} — <span className="text-muted-foreground">{r.nextAction}</span></li>)}
+                  </ul>
+                </div>
+              )}
+              <Link to="/financial-health" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+                See full Financial Health Report <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </>
+        )}
+
+        {kind === "age" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-display text-2xl">NitiAge™ — {nitiAge.value} yrs</DialogTitle>
+              <DialogDescription>Your financial maturity translated into an age.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <p><span className="font-semibold text-foreground">Actual age:</span> {input.ageYears} yrs</p>
+              <p><span className="font-semibold text-foreground">Financial age:</span> {nitiAge.value} yrs</p>
+              <p><span className="font-semibold text-foreground">Delta:</span> {Number(nitiAge.value) - input.ageYears} yrs — {Number(nitiAge.value) - input.ageYears < 0 ? "ahead of your years." : Number(nitiAge.value) - input.ageYears > 0 ? "behind your years." : "on par."}</p>
+              <p className="text-muted-foreground">{nitiAge.calculationSummary}</p>
+              <p className="text-muted-foreground">{nitiAge.suggestedNextStep}</p>
+            </div>
+          </>
+        )}
+
+        {kind === "networth" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-display text-2xl">Net Worth — {formatINR(netWorth.value)}</DialogTitle>
+              <DialogDescription>Everything you own minus everything you owe.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <p><span className="font-semibold text-foreground">Total assets:</span> {formatINR(totalAssets)}</p>
+              <p><span className="font-semibold text-foreground">Total liabilities:</span> {formatINR(totalLiabilities)}</p>
+              <p><span className="font-semibold text-foreground">Liquid assets:</span> {formatINR(input.liquidAssets)}</p>
+              <p><span className="font-semibold text-foreground">Monthly EMI:</span> {formatINR(input.monthlyEmi)}</p>
+              <p className="text-muted-foreground">{netWorth.calculationSummary}</p>
+              <Link to="/net-worth" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+                Manage assets & liabilities <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </>
+        )}
+
+        {kind === "emergency" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-display text-2xl">Emergency Fund — {Number(emergency.value).toFixed(1)} months</DialogTitle>
+              <DialogDescription>How many months of essential expenses you can cover without income.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <p><span className="font-semibold text-foreground">Monthly essentials:</span> {formatINR(input.monthlyEssentialExpenses)}</p>
+              <p><span className="font-semibold text-foreground">Liquid buffer:</span> {formatINR(input.liquidAssets)}</p>
+              <p><span className="font-semibold text-foreground">Target:</span> 6 months</p>
+              <p className="text-muted-foreground">{emergency.calculationSummary}</p>
+              <p className="text-muted-foreground">{emergency.suggestedNextStep}</p>
+              <Link to="/emergency-fund" className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+                Open Emergency Fund module <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ─────────────── Recommendation detail dialog ─────────────── */
+
+function RecommendationDialog({ rec, onClose }: { rec: Recommendation | null; onClose: () => void }) {
+  return (
+    <Dialog open={rec !== null} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-xl">
+        {rec && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-display text-2xl">{rec.title}</DialogTitle>
+              <DialogDescription>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                    rec.priority === "high" ? "bg-warning/15 text-warning" :
+                    rec.priority === "medium" ? "bg-primary/10 text-primary" :
+                    "bg-muted text-muted-foreground"
+                  }`}>{rec.priority} priority</span>
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{rec.category}</span>
+                </span>
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 text-sm">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Recommendation</p>
+                <p className="mt-1 text-foreground">{rec.explanation}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Why this matters</p>
+                <p className="mt-1 text-foreground">{rec.whyItMatters}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Expected impact</p>
+                <p className="mt-1 text-foreground">{rec.expectedImpact}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Next action</p>
+                <p className="mt-1 text-primary">{rec.nextAction}</p>
+              </div>
+              <div className="rounded-lg border border-border bg-surface p-3 text-[11px] text-muted-foreground">
+                <p className="font-semibold text-foreground">The math</p>
+                <p className="mt-1">{rec.formulaSummary}</p>
+                <p className="mt-1">{rec.logic}</p>
+              </div>
+              <div className="flex justify-end">
+                <Link to="/recommendations" search={{ rec: rec.id }} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+                  Open in NitiPath <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -399,6 +736,6 @@ const MODULES = [
   { to: "/goals", icon: Target, name: "Goals", hint: "Track & fund" },
   { to: "/peer-benchmark", icon: Briefcase, name: "Peer Benchmark", hint: "Where you stand" },
   { to: "/recommendations", icon: Sparkles, name: "NitiPath", hint: "Full action plan" },
-  { to: "/simulator", icon: FlaskConical, name: "NitiSim", hint: "What-if scenarios" },
-  { to: "/ai-coach", icon: GraduationCap, name: "NitiGuide", hint: "Ask the coach" },
+  { to: "/simulator", icon: FlaskConical, name: "NitiSim", hint: "Ask any what-if" },
+  { to: "/ai-coach", icon: GraduationCap, name: "NitiGuide", hint: "Your briefing" },
 ] as const;
