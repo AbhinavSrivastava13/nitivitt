@@ -179,3 +179,161 @@ function fallbackExplanation(s: {
   const first = s.topActions[0];
   return `Hi ${s.firstName}. Your NitiScore is ${m.nitiScore.value}/1000 (grade ${m.nitiScore.grade}), and your financial age is ${m.nitiAge.value} vs. your actual ${m.nitiAge.actual}. You're currently saving about ${Math.round(m.savingsRatePct)}% of income, with ${m.emergencyMonths.toFixed(1)} months of expenses set aside for emergencies. ${first ? `The most valuable next move is: ${first.title} — ${first.nextAction}` : "You're in a stable position — keep automating your savings."} NitiGuide is temporarily offline, so this is a straight-from-the-numbers summary. Full explanations resume shortly.`;
 }
+
+/**
+ * NitiGuide™ briefing — the "elder-brother explanation".
+ *
+ * Not a chatbot. Given the user's real NitiCore snapshot, this returns a
+ * warm, mentor-style briefing in markdown covering:
+ *   1. Where they stand.
+ *   2. Their habits.
+ *   3. Their strengths.
+ *   4. Their opportunities.
+ *   5. Why the top 3 NitiPath actions matter.
+ *   6. What positive outcomes to expect if they act.
+ *
+ * All numbers come from NitiCore; the AI only translates.
+ */
+const BriefingInput = z.object({}).optional();
+
+export const getNitiGuideBriefing = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((v: unknown) => BriefingInput.parse(v) ?? {})
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+
+    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+      supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("assets").select("*").eq("user_id", userId),
+      supabase.from("liabilities").select("*").eq("user_id", userId),
+      supabase.from("insurance").select("*").eq("user_id", userId),
+      supabase.from("goals").select("*").eq("user_id", userId),
+    ]);
+
+    const profile = profileRes.data;
+    const fp = fpRes.data;
+    const assets = assetsRes.data ?? [];
+    const liabs = liabsRes.data ?? [];
+    const insurance = insRes.data ?? [];
+    const goals = goalsRes.data ?? [];
+
+    const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
+    const liquidAssets = assets.filter((a) => a.is_liquid).reduce((a, b) => a + Number(b.current_value ?? 0), 0);
+    const totalLiabilities = liabs.reduce((a, b) => a + Number(b.outstanding_amount ?? 0), 0);
+    const monthlyEmi = liabs.reduce((a, b) => a + Number(b.monthly_emi ?? 0), 0);
+    const termCover = insurance.filter((i) => i.insurance_type === "term")
+      .reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
+
+    const input: NitiCoreInput = {
+      ageYears: ageFromDob(profile?.date_of_birth ?? null),
+      monthlyIncome: Number(fp?.monthly_income ?? 0),
+      monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
+      monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
+      liquidAssets, totalAssets, totalLiabilities, monthlyEmi,
+      monthlyInvestments: 0, totalInvestments: 0,
+      hasTermInsurance: insurance.some((i) => i.insurance_type === "term"),
+      hasHealthInsurance: insurance.some((i) => i.insurance_type === "health"),
+      termCover,
+      retirementCorpus: 0,
+      retirementAge: Number(fp?.retirement_age ?? 60),
+      riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+    };
+
+    const score = calculateNitiScore(input);
+    const age = calculateNitiAge(input);
+    const emergency = calculateEmergencyFund(input);
+    const savings = calculateSavingsRate(input);
+    const debt = calculateDebtRatio(input);
+    const retirement = calculateRetirement(input);
+    const insAdequacy = calculateInsuranceAdequacy(input);
+    const netWorth = calculateNetWorth(input);
+    const recs = generateRecommendations(input);
+
+    const firstName = profile?.full_name?.split(" ")[0] ?? "there";
+    const payload = {
+      firstName,
+      ageYears: input.ageYears,
+      monthlyIncome: input.monthlyIncome,
+      monthlyExpenses: input.monthlyExpenses,
+      metrics: {
+        nitiScore: { value: score.value, grade: score.grade, breakdown: score.breakdown.map((b) => ({ pillar: b.pillar, score: Math.round(b.pillarScore) })) },
+        nitiAge: { value: age.value, actual: input.ageYears, delta: age.value - input.ageYears },
+        netWorth: netWorth.value,
+        totalAssets, totalLiabilities,
+        savingsRatePct: Number(savings.value),
+        emergencyMonths: Number(emergency.value),
+        debtRatioPct: Number(debt.value),
+        retirement: { status: retirement.status, summary: retirement.calculationSummary },
+        insurance: { adequacyPct: insAdequacy.value, hasTerm: input.hasTermInsurance, hasHealth: input.hasHealthInsurance, termCover },
+      },
+      topActions: recs.slice(0, 3).map((r) => ({
+        title: r.title,
+        priority: r.priority,
+        category: r.category,
+        whyItMatters: r.whyItMatters,
+        expectedImpact: r.expectedImpact,
+        nextAction: r.nextAction,
+      })),
+      goalCount: goals.length,
+      goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
+    };
+
+    const { callAiChat, isAiConfigured } = await import("@/lib/ai-gateway");
+    if (!isAiConfigured()) {
+      return { markdown: briefingFallback(payload), source: "fallback", generatedAt: new Date().toISOString() };
+    }
+
+    const systemPrompt = `You are NitiGuide, the "elder-brother" financial mentor inside NitiVitt.
+
+You are NOT a chatbot. You are writing a personalised financial briefing that this user reads once. Imagine you are a calm, experienced elder brother or family mentor who understands Indian money habits (SIP, EPF, PPF, ELSS, term cover multiples, family responsibilities, EMI culture) sitting across a table explaining someone's financial life to them.
+
+Non-negotiable rules:
+1. Every number you cite MUST come from the JSON provided. You NEVER invent, estimate, or recalculate anything.
+2. Do NOT restate the dashboard verbatim ("your score is X, your age is Y"). Instead, interpret it — what does the pattern mean about how they live and behave with money?
+3. Do NOT simply repeat the NitiPath action titles. Explain WHY each of the top 3 matters for THIS person and what genuinely improves if they act.
+4. Warm, professional, encouraging. No sales tone. No emojis. No headings with #. Use bold section labels sparingly.
+5. Respect Indian context: joint families, dependents, salaried vs self-employed, home ownership aspiration, retirement anxiety.
+6. Length: 320–500 words. Structure the briefing as 5–6 short paragraphs in this order — (a) where they stand, (b) their habits & strengths, (c) their biggest opportunities, (d) how today's behaviour bends future goals, (e) why their top 3 next steps matter, (f) what positive future they can expect if they follow through.
+7. Address them by first name once, near the start.
+8. Return Markdown with paragraph breaks. No JSON, no code fences.`;
+
+    const userPrompt = `Write the briefing using ONLY these authoritative NitiCore numbers. Do not modify any value.\n\n${JSON.stringify(payload, null, 2)}`;
+
+    const result = await callAiChat({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.55,
+    });
+
+    if (!result) {
+      return { markdown: briefingFallback(payload), source: "fallback", generatedAt: new Date().toISOString() };
+    }
+    return { markdown: result.text, source: result.provider, generatedAt: new Date().toISOString() };
+  });
+
+function briefingFallback(p: {
+  firstName: string;
+  metrics: {
+    nitiScore: { value: number; grade: string };
+    nitiAge: { value: number; actual: number; delta: number };
+    savingsRatePct: number;
+    emergencyMonths: number;
+  };
+  topActions: { title: string; whyItMatters: string }[];
+}): string {
+  const m = p.metrics;
+  const lines = [
+    `Hi ${p.firstName}, here's how your financial life is shaping up right now.`,
+    `Your NitiScore of ${m.nitiScore.value}/1000 (grade ${m.nitiScore.grade}) and financial age of ${m.nitiAge.value} against your actual ${m.nitiAge.actual} tell a clear story: your habits are ${m.nitiAge.delta <= 0 ? "already ahead of your years — you're building the discipline that most people take a decade to develop." : "still catching up with where they need to be — that's normal, and completely fixable."}`,
+    `You're saving about ${Math.round(m.savingsRatePct)}% of your income and keep ${m.emergencyMonths.toFixed(1)} months of expenses aside for emergencies. That is the base your future decisions will rest on.`,
+    p.topActions.length
+      ? `The three moves that will move the needle most for you next are focused on: ${p.topActions.map((a) => a.title).join("; ")}. Each one is chosen because it protects or compounds every rupee that follows.`
+      : `You're clear of critical actions right now — the priority becomes protecting and compounding what you already have.`,
+    `NitiGuide is temporarily offline for the full narrative, but the numbers above are your real NitiCore snapshot. Take the top action first — the rest cascades from there.`,
+  ];
+  return lines.join("\n\n");
+}
+
