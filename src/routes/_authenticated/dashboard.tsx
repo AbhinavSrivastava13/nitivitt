@@ -449,7 +449,7 @@ function MetricTile({
 /* ─────────────── NitiGuide briefing card ─────────────── */
 
 function NitiGuideCard() {
-  const fn = useSFn(getNitiGuideBriefing);
+  const fn = useServerFn(getNitiGuideBriefing);
   const { data, isLoading, error } = useQuery({
     queryKey: ["nitiguide-briefing"],
     queryFn: () => fn({ data: {} }),
