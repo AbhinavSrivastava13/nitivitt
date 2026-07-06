@@ -113,7 +113,7 @@ function Dashboard() {
   const agePayload = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
   const ageDirection = agePayload?.direction ?? "on_track";
   const ageDeltaYears = agePayload?.deltaYears ?? 0;
-  const ageDelta = Number(nitiAge.value) - input.ageYears;
+  
   const ageBadge = ageDirection === "ahead"
     ? { label: `Ahead by ${ageDeltaYears}y`, cls: "bg-secondary-soft text-secondary" }
     : ageDirection === "behind"
