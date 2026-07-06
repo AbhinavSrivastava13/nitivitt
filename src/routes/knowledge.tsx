@@ -1,5 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
+import { Clock, CalendarDays } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
+import { listArticles, listCategories } from "@/content/knowledge";
 
 export const Route = createFileRoute("/knowledge")({
   head: () => ({
@@ -8,48 +11,95 @@ export const Route = createFileRoute("/knowledge")({
       {
         name: "description",
         content:
-          "Plain-language explanations of every financial concept NitiVitt uses — from SIP to inflation, term insurance to the 25× rule.",
+          "NitiVitt's financial education library — practical, plain-language articles on investing, insurance, retirement and tax written specifically for Indian households.",
       },
+      { property: "og:title", content: "Knowledge Hub — NitiVitt" },
+      { property: "og:description", content: "Practical Indian personal-finance education from NitiVitt." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
+  }),
+  loader: async () => ({
+    articles: await listArticles(),
+    categories: listCategories(),
   }),
   component: KnowledgeHub,
 });
 
-const TOPICS = [
-  { title: "What is a NitiScore?", time: "3 min", category: "Foundations" },
-  { title: "Why 6 months of emergency fund?", time: "4 min", category: "Safety" },
-  { title: "Term vs. endowment insurance", time: "5 min", category: "Protection" },
-  { title: "SIP math: how compounding actually works", time: "6 min", category: "Investing" },
-  { title: "Inflation-adjusted retirement planning", time: "7 min", category: "Retirement" },
-  { title: "Debt-to-income: the 20/36 rule", time: "4 min", category: "Debt" },
-  { title: "Equity vs. debt allocation by age", time: "5 min", category: "Investing" },
-  { title: "Goal probability and sensitivity", time: "6 min", category: "Planning" },
-];
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
 
 function KnowledgeHub() {
+  const { articles, categories } = Route.useLoaderData();
+  const [active, setActive] = useState<string | "All">("All");
+
+  const filtered = useMemo(() => {
+    if (active === "All") return articles;
+    return articles.filter((a) => a.category === active);
+  }, [articles, active]);
+
   return (
     <PageShell
       eyebrow="Knowledge Hub"
-      title="Understand the money behind the math."
-      lede="Every concept NitiVitt uses, explained in plain English. Because better decisions start with better understanding."
+      title="Learn personal finance, the Indian way."
+      lede="Practical, plain-language articles on investing, insurance, retirement and behaviour — written for Indian households by NitiVitt."
     >
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TOPICS.map((t) => (
-          <article
-            key={t.title}
-            className="group cursor-pointer rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+      <div className="mb-8 flex flex-wrap gap-2">
+        {(["All", ...categories] as const).map((c) => {
+          const isActive = active === c;
+          return (
+            <button
+              key={c}
+              type="button"
+              onClick={() => setActive(c)}
+              className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                isActive
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card text-foreground hover:border-primary/40"
+              }`}
+            >
+              {c}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((a) => (
+          <Link
+            key={a.slug}
+            to="/knowledge/$slug"
+            params={{ slug: a.slug }}
+            className="group flex flex-col rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
-              {t.category}
-            </p>
-            <h3 className="mt-3 text-lg font-semibold text-foreground">{t.title}</h3>
-            <div className="mt-6 flex items-center justify-between text-xs text-muted-foreground">
-              <span>{t.time} read</span>
-              <span className="text-primary transition-transform group-hover:translate-x-0.5">→</span>
+            {a.coverImage && (
+              <div className="mb-4 aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted">
+                <img src={a.coverImage} alt="" className="h-full w-full object-cover" loading="lazy" />
+              </div>
+            )}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">{a.category}</p>
+            <h3 className="mt-3 text-lg font-semibold leading-snug text-foreground group-hover:text-primary">
+              {a.title}
+            </h3>
+            <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">{a.summary}</p>
+            <div className="mt-5 flex items-center justify-between text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <Clock className="h-3.5 w-3.5" /> {a.readingMinutes} min read
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <CalendarDays className="h-3.5 w-3.5" /> Updated {formatDate(a.updatedAt)}
+              </span>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
+
+      {filtered.length === 0 && (
+        <p className="mt-8 rounded-xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
+          No articles in this category yet — check back soon.
+        </p>
+      )}
     </PageShell>
   );
 }
