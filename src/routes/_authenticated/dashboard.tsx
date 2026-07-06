@@ -622,11 +622,23 @@ function MetricDialog({
               <DialogDescription>Your financial maturity translated into an age.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3 text-sm">
-              <p><span className="font-semibold text-foreground">Actual age:</span> {input.ageYears} yrs</p>
-              <p><span className="font-semibold text-foreground">Financial age:</span> {nitiAge.value} yrs</p>
-              <p><span className="font-semibold text-foreground">Delta:</span> {Number(nitiAge.value) - input.ageYears} yrs — {Number(nitiAge.value) - input.ageYears < 0 ? "ahead of your years." : Number(nitiAge.value) - input.ageYears > 0 ? "behind your years." : "on par."}</p>
-              <p className="text-muted-foreground">{nitiAge.calculationSummary}</p>
-              <p className="text-muted-foreground">{nitiAge.suggestedNextStep}</p>
+              {(() => {
+                const p = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
+                const dir = p?.direction ?? "on_track";
+                const dy = p?.deltaYears ?? 0;
+                const verdict = dir === "ahead" ? `Ahead by ${dy} year${dy === 1 ? "" : "s"}` : dir === "behind" ? `Behind by ${dy} year${dy === 1 ? "" : "s"}` : "On par";
+                return (
+                  <>
+                    <p><span className="font-semibold text-foreground">Actual age:</span> {input.ageYears} yrs</p>
+                    <p><span className="font-semibold text-foreground">Financial age:</span> {nitiAge.value} yrs</p>
+                    <p><span className="font-semibold text-foreground">Status:</span> <span className={dir === "ahead" ? "text-secondary" : dir === "behind" ? "text-warning" : "text-muted-foreground"}>{verdict}</span></p>
+                    <p className="text-muted-foreground">{p?.interpretation}</p>
+                    <p className="text-muted-foreground text-xs">Financial Age = your actual age adjusted for savings rate, emergency buffer, debt load, insurance and investing habits. Lower is healthier.</p>
+                    <p className="text-muted-foreground text-xs">{nitiAge.calculationSummary}</p>
+                    <p className="text-muted-foreground">{nitiAge.suggestedNextStep}</p>
+                  </>
+                );
+              })()}
             </div>
           </>
         )}
