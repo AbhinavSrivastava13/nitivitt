@@ -183,11 +183,53 @@ const retirementRule: Rule = (input) => {
 
 const RULES: Rule[] = [emergencyFundRule, insuranceRule, debtRule, savingsRule, retirementRule];
 
+/**
+ * Cross-pillar prioritisation.
+ *
+ * The base impactScore ranks within a pillar. This tier layer enforces
+ * financially-sensible order across pillars so we never tell a user to raise
+ * SIPs while their emergency fund is empty.
+ *
+ * Tier 0 (most urgent): protection — emergency fund below 3 months or missing
+ *   health/term insurance. Nothing compounds if a single ICU bill wipes it.
+ * Tier 1: high-EMI debt reduction when debt ratio > 40%.
+ * Tier 2: everything else, ranked by impactScore.
+ */
+function prioritiseCrossPillar(recs: Recommendation[], input: NitiCoreInput): Recommendation[] {
+  const ef = Number(calculateEmergencyFund(input).value);
+  const dr = Number(calculateDebtRatio(input).value);
+  const protectionUrgent =
+    ef < 3 || !input.hasHealthInsurance || !input.hasTermInsurance;
+  const debtUrgent = dr > 40;
+
+  function tier(r: Recommendation): number {
+    if (protectionUrgent && (r.category === "Emergency" || r.category === "Insurance")) return 0;
+    if (debtUrgent && r.category === "Debt") return 1;
+    return 2;
+  }
+
+  // Dampen redundancy: keep only the highest-impact rec per category.
+  const bestPerCategory = new Map<Recommendation["category"], Recommendation>();
+  for (const r of recs) {
+    const cur = bestPerCategory.get(r.category);
+    if (!cur || r.impactScore > cur.impactScore) bestPerCategory.set(r.category, r);
+  }
+  const deduped = Array.from(bestPerCategory.values());
+
+  return deduped.sort((a, b) => {
+    const ta = tier(a);
+    const tb = tier(b);
+    if (ta !== tb) return ta - tb;
+    if (b.impactScore !== a.impactScore) return b.impactScore - a.impactScore;
+    return a.displayOrder - b.displayOrder;
+  });
+}
+
 export function generateRecommendations(input: NitiCoreInput): Recommendation[] {
-  return RULES
+  const raw = RULES
     .map((r) => r(input))
-    .filter((r): r is Recommendation => r !== null)
-    .sort((a, b) => b.impactScore - a.impactScore || a.displayOrder - b.displayOrder);
+    .filter((r): r is Recommendation => r !== null);
+  return prioritiseCrossPillar(raw, input);
 }
 
 export type { MetricResult, Recommendation };

@@ -110,11 +110,14 @@ function Dashboard() {
   const lastUpdated = fpUpdated ? new Date(fpUpdated) : null;
   const topRecs = recs.slice(0, 3);
 
-  const ageDelta = Number(nitiAge.value) - input.ageYears;
-  const ageBadge = ageDelta < 0
-    ? { label: `Ahead by ${Math.abs(ageDelta)}y`, cls: "bg-secondary-soft text-secondary" }
-    : ageDelta > 0
-      ? { label: `Behind by ${ageDelta}y`, cls: "bg-warning-soft text-warning" }
+  const agePayload = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
+  const ageDirection = agePayload?.direction ?? "on_track";
+  const ageDeltaYears = agePayload?.deltaYears ?? 0;
+  
+  const ageBadge = ageDirection === "ahead"
+    ? { label: `Ahead by ${ageDeltaYears}y`, cls: "bg-secondary-soft text-secondary" }
+    : ageDirection === "behind"
+      ? { label: `Behind by ${ageDeltaYears}y`, cls: "bg-warning-soft text-warning" }
       : { label: "On par", cls: "bg-muted text-muted-foreground" };
 
   const emStatus = emergency.status === "on_track"
@@ -205,19 +208,17 @@ function Dashboard() {
               badge={{
                 label: ageBadge.label,
                 cls: ageBadge.cls,
-                icon: ageDelta < 0 ? ArrowDownRight : ageDelta > 0 ? ArrowUpRight : undefined,
+                icon: ageDirection === "ahead" ? ArrowDownRight : ageDirection === "behind" ? ArrowUpRight : undefined,
               }}
               value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{nitiAge.value}</span>}
               unit="yrs"
               footer={
                 <>
                   <p className="mt-3 text-[11px] text-muted-foreground">
-                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · your money habits behave like this age.
+                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · financial age reflects your money habits.
                   </p>
                   <p className="mt-2 text-[11px] text-muted-foreground">
-                    {ageDelta < 0 ? "You are financially older than your years — a good sign." :
-                     ageDelta > 0 ? "You are financially younger than your years — habits need catch-up." :
-                     "Right on track with your years."}
+                    {agePayload?.interpretation ?? "Financial age matches your actual age."}
                   </p>
                 </>
               }
@@ -621,11 +622,23 @@ function MetricDialog({
               <DialogDescription>Your financial maturity translated into an age.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3 text-sm">
-              <p><span className="font-semibold text-foreground">Actual age:</span> {input.ageYears} yrs</p>
-              <p><span className="font-semibold text-foreground">Financial age:</span> {nitiAge.value} yrs</p>
-              <p><span className="font-semibold text-foreground">Delta:</span> {Number(nitiAge.value) - input.ageYears} yrs — {Number(nitiAge.value) - input.ageYears < 0 ? "ahead of your years." : Number(nitiAge.value) - input.ageYears > 0 ? "behind your years." : "on par."}</p>
-              <p className="text-muted-foreground">{nitiAge.calculationSummary}</p>
-              <p className="text-muted-foreground">{nitiAge.suggestedNextStep}</p>
+              {(() => {
+                const p = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
+                const dir = p?.direction ?? "on_track";
+                const dy = p?.deltaYears ?? 0;
+                const verdict = dir === "ahead" ? `Ahead by ${dy} year${dy === 1 ? "" : "s"}` : dir === "behind" ? `Behind by ${dy} year${dy === 1 ? "" : "s"}` : "On par";
+                return (
+                  <>
+                    <p><span className="font-semibold text-foreground">Actual age:</span> {input.ageYears} yrs</p>
+                    <p><span className="font-semibold text-foreground">Financial age:</span> {nitiAge.value} yrs</p>
+                    <p><span className="font-semibold text-foreground">Status:</span> <span className={dir === "ahead" ? "text-secondary" : dir === "behind" ? "text-warning" : "text-muted-foreground"}>{verdict}</span></p>
+                    <p className="text-muted-foreground">{p?.interpretation}</p>
+                    <p className="text-muted-foreground text-xs">Financial Age = your actual age adjusted for savings rate, emergency buffer, debt load, insurance and investing habits. Lower is healthier.</p>
+                    <p className="text-muted-foreground text-xs">{nitiAge.calculationSummary}</p>
+                    <p className="text-muted-foreground">{nitiAge.suggestedNextStep}</p>
+                  </>
+                );
+              })()}
             </div>
           </>
         )}

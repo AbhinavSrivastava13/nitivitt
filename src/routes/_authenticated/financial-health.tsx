@@ -171,7 +171,18 @@ function FinancialHealthReport() {
               <span className="font-display text-5xl">{age.value}</span>
               <span className="text-xs text-primary-foreground/70">yrs · real {input.ageYears}</span>
             </div>
-            <p className="mt-2 text-xs text-primary-foreground/80">{age.calculationSummary}</p>
+            {(() => {
+              const p = age.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
+              const dir = p?.direction ?? "on_track";
+              const dy = p?.deltaYears ?? 0;
+              const label = dir === "ahead" ? `Ahead by ${dy} yr${dy === 1 ? "" : "s"}` : dir === "behind" ? `Behind by ${dy} yr${dy === 1 ? "" : "s"}` : "On par";
+              return (
+                <>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-primary-foreground/90">{label}</p>
+                  <p className="mt-1 text-xs text-primary-foreground/80">{p?.interpretation ?? age.calculationSummary}</p>
+                </>
+              );
+            })()}
           </div>
         </section>
 

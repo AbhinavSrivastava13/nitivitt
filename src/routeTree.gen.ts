@@ -17,6 +17,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authenticated/simulator'
@@ -72,6 +73,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => KnowledgeRoute,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -163,7 +169,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
-  '/knowledge': typeof KnowledgeRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ai-coach': typeof AuthenticatedAiCoachRoute
@@ -182,13 +188,14 @@ export interface FileRoutesByFullPath {
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/knowledge/$slug': typeof KnowledgeSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
-  '/knowledge': typeof KnowledgeRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ai-coach': typeof AuthenticatedAiCoachRoute
@@ -207,6 +214,7 @@ export interface FileRoutesByTo {
   '/simulator': typeof AuthenticatedSimulatorRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/knowledge/$slug': typeof KnowledgeSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -215,7 +223,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
-  '/knowledge': typeof KnowledgeRoute
+  '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/ai-coach': typeof AuthenticatedAiCoachRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/knowledge/$slug': typeof KnowledgeSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/simulator'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/knowledge/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -286,6 +296,7 @@ export interface FileRouteTypes {
     | '/simulator'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/knowledge/$slug'
   id:
     | '__root__'
     | '/'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/_authenticated/simulator'
     | '/auth/callback'
     | '/auth/reset-password'
+    | '/knowledge/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -320,7 +332,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRouteWithChildren
   HowItWorksRoute: typeof HowItWorksRoute
-  KnowledgeRoute: typeof KnowledgeRoute
+  KnowledgeRoute: typeof KnowledgeRouteWithChildren
   PrinciplesRoute: typeof PrinciplesRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -382,6 +394,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/knowledge/$slug': {
+      id: '/knowledge/$slug'
+      path: '/$slug'
+      fullPath: '/knowledge/$slug'
+      preLoaderRoute: typeof KnowledgeSlugRouteImport
+      parentRoute: typeof KnowledgeRoute
     }
     '/auth/reset-password': {
       id: '/auth/reset-password'
@@ -547,13 +566,25 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
+interface KnowledgeRouteChildren {
+  KnowledgeSlugRoute: typeof KnowledgeSlugRoute
+}
+
+const KnowledgeRouteChildren: KnowledgeRouteChildren = {
+  KnowledgeSlugRoute: KnowledgeSlugRoute,
+}
+
+const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
+  KnowledgeRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRouteWithChildren,
   HowItWorksRoute: HowItWorksRoute,
-  KnowledgeRoute: KnowledgeRoute,
+  KnowledgeRoute: KnowledgeRouteWithChildren,
   PrinciplesRoute: PrinciplesRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
