@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, CalendarDays, User, Share2, Sparkles } from "lucide-r
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getArticleBySlug, getRelated } from "@/content/knowledge";
+import type { ArticleSection, ArticleSummary } from "@/content/knowledge/types";
 
 export const Route = createFileRoute("/knowledge/$slug")({
   loader: async ({ params }) => {
