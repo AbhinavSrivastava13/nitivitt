@@ -132,7 +132,7 @@ function ArticleDetail() {
         {/* Body */}
         <article className="container-page grid gap-10 py-12 md:py-16 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="prose prose-lg max-w-none text-foreground prose-headings:font-display prose-headings:text-foreground prose-p:leading-relaxed prose-p:text-foreground/90 prose-strong:text-foreground prose-a:text-primary prose-li:text-foreground/90">
-            {article.sections.map((s, i) => (
+            {article.sections.map((s: ArticleSection, i: number) => (
               <section key={i}>
                 <h2 className="mt-10 first:mt-0 text-2xl">{s.heading}</h2>
                 <ReactMarkdown>{s.body}</ReactMarkdown>
