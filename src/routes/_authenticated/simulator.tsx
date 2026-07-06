@@ -2,17 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import ReactMarkdown from "react-markdown";
-import { FlaskConical, Send, Sparkles, TrendingUp, TrendingDown, Minus, RotateCcw } from "lucide-react";
+import { FlaskConical, Send, Sparkles, TrendingUp, TrendingDown, Minus, RotateCcw, MessageCircleQuestion } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { runSimulation } from "@/lib/niti-sim.functions";
+import { planSimulation, runSimulation } from "@/lib/niti-sim.functions";
 import { formatINR } from "@/lib/finance/core";
 
 export const Route = createFileRoute("/_authenticated/simulator")({
   head: () => ({
     meta: [
       { title: "NitiSim™ — Simulate any financial decision — NitiVitt" },
-      { name: "description", content: "Ask any 'what if' about your money. NitiSim recomputes your plan using NitiCore™ and Gemini explains the impact." },
+      { name: "description", content: "Ask any 'what if' about your money. NitiSim thinks through the scenario, runs NitiCore™, and explains the impact like a financial mentor." },
     ],
   }),
   component: Simulator,
@@ -28,13 +28,17 @@ const EXAMPLES = [
 ];
 
 type SimResult = Awaited<ReturnType<typeof runSimulation>>;
+type PlanResult = Awaited<ReturnType<typeof planSimulation>>;
 
 type ChatTurn =
   | { id: string; role: "user"; text: string }
-  | { id: string; role: "assistant"; result: SimResult }
+  | { id: string; role: "assistant-ask"; questions: string[] }
+  | { id: string; role: "assistant-general"; text: string }
+  | { id: string; role: "assistant-sim"; result: SimResult }
   | { id: string; role: "assistant-error"; text: string };
 
-const STORAGE_KEY = "nitisim.history.v1";
+const STORAGE_KEY = "nitisim.history.v2";
+const SLOTS_KEY = "nitisim.slots.v2";
 
 function loadHistory(): ChatTurn[] {
   if (typeof window === "undefined") return [];
@@ -57,29 +61,115 @@ function saveHistory(turns: ChatTurn[]) {
   }
 }
 
+function loadSlots(): Record<string, string | number | boolean> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(SLOTS_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+function saveSlots(s: Record<string, string | number | boolean>) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(SLOTS_KEY, JSON.stringify(s));
+  } catch {
+    /* ignore */
+  }
+}
+
 function Simulator() {
-  const fn = useServerFn(runSimulation);
+  const plan = useServerFn(planSimulation);
+  const run = useServerFn(runSimulation);
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [thinkingLabel, setThinkingLabel] = useState("Thinking through the scenario…");
   const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [slots, setSlots] = useState<Record<string, string | number | boolean>>({});
+  const [rootQuestion, setRootQuestion] = useState<string>("");
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => { setTurns(loadHistory()); }, []);
+  useEffect(() => {
+    setTurns(loadHistory());
+    setSlots(loadSlots());
+  }, []);
   useEffect(() => { saveHistory(turns); }, [turns]);
+  useEffect(() => { saveSlots(slots); }, [slots]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [turns, loading]);
   useEffect(() => { inputRef.current?.focus(); }, []);
+
+  function priorTurnsForServer(current: ChatTurn[]) {
+    return current
+      .slice(-10)
+      .map((t) => {
+        if (t.role === "user") return { role: "user" as const, content: t.text };
+        if (t.role === "assistant-ask") return { role: "assistant" as const, content: t.questions.join(" ") };
+        if (t.role === "assistant-general") return { role: "assistant" as const, content: t.text };
+        if (t.role === "assistant-sim") return { role: "assistant" as const, content: `Simulated: ${t.result.scenarioTitle}` };
+        return null;
+      })
+      .filter((x): x is { role: "user" | "assistant"; content: string } => x !== null);
+  }
 
   async function submit(q: string) {
     const trimmed = q.trim();
     if (!trimmed || loading) return;
     const uid = crypto.randomUUID();
-    setTurns((t) => [...t, { id: uid, role: "user", text: trimmed }]);
+    const nextTurns: ChatTurn[] = [...turns, { id: uid, role: "user", text: trimmed }];
+    setTurns(nextTurns);
     setQuestion("");
     setLoading(true);
+    setThinkingLabel("Thinking through the scenario…");
+    // Anchor the root scenario question for planner continuity.
+    const anchorQuestion = rootQuestion || trimmed;
+    if (!rootQuestion) setRootQuestion(trimmed);
+
     try {
-      const res = await fn({ data: { question: trimmed } });
-      setTurns((t) => [...t, { id: crypto.randomUUID(), role: "assistant", result: res }]);
+      const planned: PlanResult = await plan({
+        data: {
+          question: anchorQuestion,
+          slots,
+          priorTurns: priorTurnsForServer(nextTurns),
+        },
+      });
+
+      if (planned.slots) setSlots(planned.slots as Record<string, string | number | boolean>);
+
+      if (planned.kind === "ask") {
+        setTurns((t) => [...t, {
+          id: crypto.randomUUID(),
+          role: "assistant-ask",
+          questions: planned.followupQuestions ?? ["Could you share a bit more detail?"],
+        }]);
+        return;
+      }
+
+      if (planned.kind === "general") {
+        setTurns((t) => [...t, {
+          id: crypto.randomUUID(),
+          role: "assistant-general",
+          text: planned.reply ?? "I don't have enough to simulate that yet.",
+        }]);
+        return;
+      }
+
+      // kind === "simulate"
+      setThinkingLabel("Running the scenario through NitiCore™…");
+      const result = await run({
+        data: {
+          question: anchorQuestion,
+          scenarioTitle: planned.scenarioTitle ?? "Your scenario",
+          overrides: planned.overrides ?? {},
+        },
+      });
+      setTurns((t) => [...t, { id: crypto.randomUUID(), role: "assistant-sim", result }]);
+      // Simulation completed — reset scenario anchor + slots for next question.
+      setRootQuestion("");
+      setSlots({});
     } catch (err) {
       setTurns((t) => [
         ...t,
@@ -93,7 +183,10 @@ function Simulator() {
 
   function reset() {
     setTurns([]);
+    setSlots({});
+    setRootQuestion("");
     saveHistory([]);
+    saveSlots({});
   }
 
   return (
@@ -110,7 +203,7 @@ function Simulator() {
             </div>
             <h1 className="mt-3 font-display text-4xl text-foreground md:text-5xl">Explore any financial decision.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Ask any "what if" in plain language. NitiSim reads your real profile, recomputes with NitiCore™, and Gemini explains the impact.
+              Ask any "what if" in plain language. NitiSim thinks through your scenario like a financial advisor — asking follow-ups where needed — then runs NitiCore™ and explains the impact.
             </p>
           </div>
           {turns.length > 0 && (
@@ -141,7 +234,7 @@ function Simulator() {
                   ))}
                 </div>
                 <p className="mt-4 text-[11px] text-muted-foreground">
-                  Every simulation is powered by NitiCore™. Gemini never invents numbers — it only explains what changed and why it matters.
+                  NitiSim will ask follow-ups if your question is missing key details (timing, financing, down payment). Every simulation is deterministic — NitiCore™ does the math, Gemini only explains what it means.
                 </p>
               </div>
             )}
@@ -163,6 +256,41 @@ function Simulator() {
                   </div>
                 );
               }
+              if (t.role === "assistant-ask") {
+                return (
+                  <div key={t.id} className="rounded-2xl border border-border bg-surface p-4 md:p-5">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary-soft text-secondary">
+                        <MessageCircleQuestion className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Before I simulate</p>
+                        <p className="mt-1 text-sm text-foreground">Answer any of these so I can plan this properly:</p>
+                        <ul className="mt-3 space-y-2">
+                          {t.questions.map((q, i) => (
+                            <li key={i} className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground">{q}</li>
+                          ))}
+                        </ul>
+                        <p className="mt-3 text-[11px] text-muted-foreground">Type your answers in one message below — you can combine them.</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+              if (t.role === "assistant-general") {
+                return (
+                  <div key={t.id} className="rounded-2xl border border-border bg-surface p-4 md:p-5">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                        <Sparkles className="h-4 w-4" />
+                      </span>
+                      <div className="prose prose-sm min-w-0 max-w-none text-foreground">
+                        <ReactMarkdown>{t.text}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
               return <AssistantTurn key={t.id} result={t.result} />;
             })}
 
@@ -171,7 +299,7 @@ function Simulator() {
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" style={{ animationDelay: "0ms" }} />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" style={{ animationDelay: "120ms" }} />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary" style={{ animationDelay: "240ms" }} />
-                Running the scenario through NitiCore™…
+                {thinkingLabel}
               </div>
             )}
             <div ref={endRef} />
@@ -192,7 +320,7 @@ function Simulator() {
                     void submit(question);
                   }
                 }}
-                placeholder="Ask a what-if question. Enter to send, Shift+Enter for a new line."
+                placeholder={rootQuestion ? "Reply to the follow-up above…" : "Ask a what-if question. Enter to send, Shift+Enter for a new line."}
                 rows={2}
                 className="flex-1 resize-none rounded-lg border border-border bg-surface px-4 py-2.5 text-sm outline-none focus:border-primary"
               />
@@ -230,6 +358,14 @@ function AssistantTurn({ result }: { result: SimResult }) {
           <SnapshotCard title="Current situation" snap={result.baseline} tone="muted" />
           <SnapshotCard title="Updated metrics" snap={result.simulated} tone="primary" compare={result.baseline} />
         </div>
+        {result.propagation && result.propagation.length > 0 && (
+          <div className="mt-3 rounded-lg border border-border bg-card p-3 text-[11px] text-muted-foreground">
+            <p className="font-semibold text-foreground">How this change propagates</p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+              {result.propagation.map((p, i) => (<li key={i}>{p}</li>))}
+            </ul>
+          </div>
+        )}
       </div>
 
       <div className="rounded-2xl border border-border bg-gradient-to-br from-primary-soft/40 to-card p-4 md:p-5">
@@ -239,7 +375,7 @@ function AssistantTurn({ result }: { result: SimResult }) {
           </span>
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">NitiGuide™ explains</p>
-            <div className="prose prose-sm mt-2 max-w-none text-foreground prose-p:my-2 prose-p:text-foreground/90">
+            <div className="prose prose-sm mt-2 max-w-none text-foreground prose-p:my-2 prose-p:text-foreground/90 prose-strong:text-foreground">
               <ReactMarkdown>{result.explanation}</ReactMarkdown>
             </div>
           </div>
@@ -252,13 +388,19 @@ function AssistantTurn({ result }: { result: SimResult }) {
 type Snap = SimResult["baseline"];
 
 function SnapshotCard({ title, snap, tone, compare }: { title: string; snap: Snap; tone: "muted" | "primary"; compare?: Snap }) {
+  const ageLabel = snap.nitiAgeDirection === "ahead"
+    ? `${snap.nitiAge} yrs · ahead by ${snap.nitiAgeDeltaYears}`
+    : snap.nitiAgeDirection === "behind"
+      ? `${snap.nitiAge} yrs · behind by ${snap.nitiAgeDeltaYears}`
+      : `${snap.nitiAge} yrs · on par`;
   const rows: { label: string; value: string; base?: number; sim?: number; higherIsBetter: boolean }[] = [
     { label: "NitiScore™", value: `${snap.nitiScore}/1000 · ${snap.grade}`, base: compare?.nitiScore, sim: snap.nitiScore, higherIsBetter: true },
-    { label: "NitiAge™", value: `${snap.nitiAge} yrs`, base: compare?.nitiAge, sim: snap.nitiAge, higherIsBetter: false },
+    { label: "NitiAge™", value: ageLabel, base: compare?.nitiAge, sim: snap.nitiAge, higherIsBetter: false },
     { label: "Net Worth", value: formatINR(snap.netWorth), base: compare?.netWorth, sim: snap.netWorth, higherIsBetter: true },
     { label: "Savings rate", value: `${snap.savingsRatePct.toFixed(1)}%`, base: compare?.savingsRatePct, sim: snap.savingsRatePct, higherIsBetter: true },
     { label: "Emergency fund", value: `${snap.emergencyMonths.toFixed(1)} mo`, base: compare?.emergencyMonths, sim: snap.emergencyMonths, higherIsBetter: true },
     { label: "Debt ratio", value: `${snap.debtRatioPct.toFixed(1)}%`, base: compare?.debtRatioPct, sim: snap.debtRatioPct, higherIsBetter: false },
+    { label: "Insurance cover", value: `${snap.insuranceAdequacyPct.toFixed(0)}%`, base: compare?.insuranceAdequacyPct, sim: snap.insuranceAdequacyPct, higherIsBetter: true },
     { label: "Retirement", value: snap.retirementStatus.replace("_", " "), higherIsBetter: true },
   ];
   return (
