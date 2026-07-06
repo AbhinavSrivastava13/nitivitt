@@ -162,7 +162,7 @@ function ArticleDetail() {
               <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Related reading</p>
                 <ul className="mt-3 space-y-3">
-                  {related.map((r) => (
+                  {related.map((r: ArticleSummary) => (
                     <li key={r.slug}>
                       <Link
                         to="/knowledge/$slug"
