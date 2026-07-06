@@ -1,95 +1,156 @@
-# NitiVitt Dashboard & AI Experience Refinement
 
-Scope is large. Splitting into ordered, backward-compatible slices. Nothing in `src/lib/niticore/*` or migrations will change.
+# NitiVitt — Intelligence & Product Logic Refinement
 
-## 1. Dashboard layout (`src/routes/_authenticated/dashboard.tsx`)
+Scope-preserving milestone. No UI redesign, no schema changes, no NitiCore™ formula changes. Every change is additive or a targeted logic fix.
 
-New grid on `lg+`:
+## 1. NitiAge™ — semantics fix
 
+**Problem:** `financialAge = actualAge + adjust`. When `adjust < 0` financialAge < actualAge — that means the user is *ahead*, not behind. UI copy today can invert this.
+
+**Fix (single source of truth in `services/niti-age.ts`):**
+- Keep the math. Add `aiPayload.delta` (already there) and add explicit fields:
+  - `direction: "ahead" | "behind" | "on_track"`
+  - `deltaYears: number` (always positive; sign encoded in `direction`)
+  - `interpretation: string` explaining "Financial Age = actual age adjusted by habits (savings, emergency fund, debt, insurance, investing). Lower = healthier."
+- Every consumer (dashboard hero card, metric dialog, financial-health page, NitiSim snapshot) reads `direction`/`deltaYears` instead of recomputing sign. Green for `ahead`, amber for `on_track`, red for `behind`.
+
+## 2. NitiSim™ — reason-before-simulate
+
+**New behavior:** NitiSim runs a lightweight conversational planner turn before any simulation.
+
+Flow per user question:
+1. Server fn `interpretSimQuestion` (Gemini) receives: question + baseline profile + last N turns + already-collected slots.
+2. Returns one of:
+   - `{ kind: "ask", questions: string[], missingSlots: string[] }` — up to 3 targeted follow-ups.
+   - `{ kind: "simulate", overrides, scenarioTitle, rationale }` — enough info gathered.
+   - `{ kind: "not_a_simulation", reply }` — general question → Gemini answers using NitiGuide tone, no NitiCore run.
+3. Only on `simulate` do we call NitiCore and produce before/after snapshots.
+
+**Client changes (`simulator.tsx`):**
+- `ChatTurn` union gains `assistant-question` (renders follow-up chips the user can tap).
+- Slot state (`Record<string, unknown>`) stored per conversation in localStorage alongside history so partially-answered scenarios survive reload.
+- "Reset scenario" clears slots + turns.
+
+**Server changes (`niti-sim.functions.ts`):**
+- Split into two exported server fns: `planSimulation` (interpret) and `runSimulation` (deterministic + explain). `runSimulation` keeps existing signature but now accepts finalized `overrides` from the planner; it no longer does its own extraction.
+- Full profile is loaded once per call: profiles, financial_profiles, assets, liabilities, insurance, and additionally `goals`, `recommendations` (existing tables — read-only), passed to both the planner and the explainer as context.
+
+## 3. NitiSim explanations — advisor tone
+
+New explainer prompt structure. Gemini receives baseline, simulated, overrides, user's goals, existing top recommendations, and the direction/severity of each metric delta. Output sections (markdown, ~180–260 words):
+- **What changes** — plain English restatement.
+- **Why the score moved** — cites the pillars that shifted.
+- **Short-term impact** (0–12 mo) and **long-term impact** (3–10 yr).
+- **Is this a sensible decision?** — explicit verdict considering emergency fund adequacy, debt load, retirement gap.
+- **Alternatives worth considering** — 1–2 options when relevant.
+
+Guardrails unchanged: Gemini never invents numbers; only quotes values from the JSON payload.
+
+## 4. NitiSim context-awareness
+
+Add to the payload sent to the explainer:
+- Emergency fund months (baseline & simulated), debt ratio, savings rate, retirement gap/status.
+- Top 3 open recommendations from NitiPath™.
+- Active goals with target amounts & horizons (if any rows in `goals`).
+
+Explainer prompt instructs Gemini to weigh the decision against these — e.g. "if buying reduces emergency fund below 3 months, flag it".
+
+## 5. NitiGuide™ — mentor briefing quality
+
+Keep briefing (non-chat) shape. Rewrite the prompt in `niti-guide.functions.ts` to produce these sections instead of metric restatement:
+1. **Overall assessment** (2–3 sentences)
+2. **Strengths** (bulleted, referencing the pillar names)
+3. **Areas needing attention** (bulleted, with the *why*)
+4. **Behavioural observations** (Indian financial context — e.g. FD-heavy allocation, under-insurance, EMI stacking)
+5. **Goal progress** (only if goals exist)
+6. **What to do next** (mirrors top 3 NitiPath recs, but explains *why they matter* and *what improves* if acted on)
+7. **Encouragement** (1 short paragraph)
+
+Cache key stays `(userId, snapshotHash)`, TTL 30 min client-side.
+
+## 6. NitiCore™ recommendations — cross-pillar prioritisation
+
+In `recommendation-engine.ts`, add a post-processing pass that re-ranks the already-generated recs:
+- **Foundational-first rule:** if emergency fund < 3 months OR no health insurance OR no term insurance (with dependents), any recommendation from those pillars is boosted above investment/retirement recs regardless of raw impactScore.
+- **Debt-before-invest rule:** if debt ratio > 40% and there's a high-interest liability, debt-reduction recs outrank new-SIP recs.
+- **Dampen redundancy:** if two recs from the same pillar would appear in the top 3, keep the highest-impact one and demote the sibling.
+
+No formula changes; only a deterministic sort/boost layer with clear priority tiers.
+
+## 7. Simulation accuracy — propagation audit
+
+Extend override handling in `runSimulation` so a single change propagates cleanly:
+- `monthlyInvestments` delta increments a projected `totalInvestments` (delta × months to a 12-month horizon) and adds to `totalAssets` for the simulated snapshot only.
+- `monthlyEmi` change adjusts `monthlyExpenses` if the user didn't supply an expense override.
+- `totalLiabilities` change adjusts `monthlyEmi` proportionally when the planner infers a loan structure.
+- `retirementCorpus`/`retirementAge` flow into `calculateRetirement` unchanged.
+
+All propagation is deterministic and documented in `aiPayload.propagation` for transparency.
+
+## 8. Knowledge Hub — data-driven education library
+
+**Architecture (future-CMS-ready):**
 ```text
-+----------------------+----------------------+---------------------------+
-|  NitiScore™          |  NitiAge™            |                           |
-+----------------------+----------------------+     NitiPath™ (Top 3)     |
-|  Net Worth           |  Emergency Fund      |     full-height column    |
-+----------------------+----------------------+---------------------------+
-|          NitiGuide™ (briefing)              |     NitiSim™ (chat)       |
-+---------------------------------------------+---------------------------+
+src/content/knowledge/
+├── types.ts                  // Article, ArticleSummary, Category
+├── articles.ts               // static array today; swappable for a fetch()
+└── articles/
+    ├── understanding-nitiscore.ts
+    ├── understanding-nitiage.ts
+    ├── emergency-fund.ts
+    ├── mutual-funds-vs-fd.ts
+    ├── sip-for-beginners.ts
+    ├── retirement-planning-india.ts
+    ├── insurance-planning.ts
+    ├── home-loan-vs-renting.ts
+    ├── tax-saving-basics.ts
+    └── common-mistakes.ts
 ```
 
-- Left: `grid-cols-2 grid-rows-2` with equal card dimensions.
-- Right: NitiPath spans both rows (`row-span-2`) and matches left column's total height via `h-full`.
-- Below: NitiGuide (2/3) + NitiSim (1/3), equal height row.
-- Mobile: stacks linearly, preserves current order.
+`Article` type:
+```ts
+type Article = {
+  slug: string; title: string; subtitle: string;
+  category: string; readingMinutes: number;
+  updatedAt: string; author: string; coverImage?: string;
+  summary: string;
+  sections: Array<{ heading: string; body: string /* markdown */ }>;
+  keyTakeaways: string[];
+  relatedSlugs: string[];
+};
+```
 
-NitiPath card renders only top 3 recommendations. Each row shows Priority badge, Title, Why, Expected Impact, Next Action. Clicking opens the existing recommendation detail (reuse `RecommendationDetailDialog` if present, else a new `<Dialog>` inline).
+A single `getArticles()` / `getArticleBySlug(slug)` module boundary — swapping to Supabase or a headless CMS later is a one-file change.
 
-## 2. Interactive hero metrics
+**Routes:**
+- `src/routes/knowledge.tsx` — rewritten as a filterable card grid. Each card fully clickable, shows cover / category / title / summary / reading time / updated date.
+- `src/routes/knowledge.$slug.tsx` — article detail: hero (title, subtitle, meta), markdown body via `react-markdown`, key takeaways card, related articles, share button (`navigator.share` + copy-link fallback), Back to Knowledge Hub.
+- Per-route `head()` with unique title/description/og for each article slug.
 
-Add a `<MetricDetailDialog>` opened by clicking any of the 4 hero cards. Contents are read from existing NitiCore outputs — no new math:
+**Content:** 10 articles as listed, written for Indian users, ~600–900 words each, structured with headings.
 
-- NitiScore: score, grade, pillar breakdown, helping/hurting factors, top actions (derived from existing recommendations tagged by pillar).
-- NitiAge: current age vs financial age, delta, drivers.
-- Net Worth: assets total, liabilities total, top contributors from `assets`/`liabilities` tables.
-- Emergency Fund: current months covered, target months, gap, monthly top-up needed (reuse existing calc).
+**Product boundary:** Knowledge Hub answers "teach me about personal finance" — no personalized data reads, no NitiCore calls. Cross-links to NitiGuide/NitiSim for personalization prompts.
 
-All values come from the already-loaded snapshot; dialog is pure presentation.
+## 9. Consistency sweep
 
-## 3. NitiGuide as a briefing (not a chat)
-
-- Remove the chat UI on the dashboard NitiGuide card and on `/ai-coach` (or repurpose that route as the standalone briefing page).
-- New server function `generateNitiGuideBriefing` in `src/lib/niti-guide.functions.ts`:
-  - `requireSupabaseAuth` middleware.
-  - Loads profile + latest NitiCore snapshot + top recommendations.
-  - Calls `google/gemini-3-flash-preview` via existing `ai-gateway` helper with a prompt encoding the "wise elder mentor" tone, Indian context, and strict instruction: **do not invent numbers; only reference values provided**.
-  - Returns markdown sections: Where you stand, Your habits, Strengths, Opportunities, Impact on goals, Why your top 3 matter, What changes if you follow them.
-- Cache the briefing per (user, snapshot hash) in a lightweight `niti_guide_briefings` table — only added if a table is truly needed; otherwise store on `financial_scores.briefing_markdown` via a single additive column. Prefer the additive column to avoid a new table. If schema change is judged unnecessary, keep in-memory + regenerate on Update Analysis.
-- Render with `react-markdown` in the dashboard NitiGuide card (scrollable, expand-to-full-view button).
-
-## 4. NitiSim as the only chat surface
-
-- Dashboard card: compact composer with 4-6 example prompt chips ("Increase SIP by ₹5,000", "₹20L car next year?", "Retire at 50?", …) + "Open full simulator" link.
-- `/simulator` route: full chat UI using AI Elements (`Conversation`, `Message`, `PromptInput`, `Tool`) per chat-ui-composition guidance. Assistant messages have no background; user bubble uses `bg-primary text-primary-foreground`.
-- Server route `src/routes/api/nitisim.ts` (streaming):
-  1. Gemini extracts structured variables via `tool` calls (`applySimulation` tool with Zod schema: `sipDelta`, `oneOffPurchase`, `newLoan`, `retirementAge`, etc.).
-  2. Tool `execute` runs existing NitiCore functions on a *clone* of the snapshot with the requested overrides — no new math, just re-invoke deterministic engines with adjusted inputs.
-  3. Returns before/after JSON: NitiScore, NitiAge, Net Worth, Emergency Fund months, Savings Rate, Retirement Readiness.
-  4. Gemini receives the tool result and produces the plain-English "Current → What changed → Updated metrics → Explanation → Long-term impact" narrative.
-- Persist per-user conversation history in a new lightweight table `nitisim_messages(user_id, thread_id, role, content, created_at, parts jsonb)` **only if** the user's existing schema doesn't already provide it; otherwise keep single-conversation history in `localStorage`. Confirm before adding the table.
-
-## 5. Update Analysis = annual review flow
-
-- "Update Analysis" button navigates to `/onboarding?mode=review`.
-- Onboarding form reads existing values from `financial_profiles`, `assets`, `liabilities`, `goals`, `insurance`, `investments` and pre-fills every field.
-- On submit: same existing NitiCore pipeline runs → dashboard, briefing, and Financial Health Report all invalidate via TanStack Query keys → `last_updated_at` on `profiles` (or `financial_profiles`) bumps.
-- No new tables; reuses existing onboarding mutations.
-
-## 6. Recommendation quality (no formula changes)
-
-In `src/lib/niticore/recommendations.ts` (or equivalent), after the existing per-module recommendation list is produced:
-
-- Score each recommendation by a global impact heuristic: `expectedScoreDelta × pillarWeight × urgencyFactor` where all inputs already exist on the recommendation object.
-- Re-sort globally instead of per module.
-- Enrich each rec with `whyItMatters`, `expectedImpact`, `nextAction` fields — these become the fields NitiPath and detail dialogs render.
-- Underlying pillar scoring is untouched.
-
-## 7. Product responsibilities enforced
-
-- Remove any duplicated advice text from NitiGuide that overlaps NitiPath — NitiGuide narrates, NitiPath prescribes.
-- Financial Health Report keeps sole ownership of full calculation transparency; dashboard detail dialogs link to it instead of duplicating tables.
+After the changes above, one pass across dashboard, financial-health, recommendations, retirement, emergency-fund, net-worth, ai-coach, simulator to make sure:
+- NitiAge status label matches direction everywhere.
+- Terminology unified: "NitiScore™", "NitiAge™", "NitiPath™", "NitiSim™", "NitiGuide™".
+- Colours: green = healthy/ahead, amber = attention, red = critical/behind — no inversions.
 
 ## Technical notes
 
-- Ordering to keep the app runnable at each step: (1) layout + interactive metric dialogs, (2) recommendation re-ranking + NitiPath top 3, (3) Update Analysis flow, (4) NitiGuide briefing, (5) NitiSim chat + tool-calling.
-- All new server calls use `createServerFn` + `requireSupabaseAuth`; streaming NitiSim uses `/api/nitisim` server route.
-- Gemini calls: `google/gemini-3-flash-preview` via existing `createLovableAiGatewayProvider`. No provider changes.
-- Type-safe Zod schemas for the simulation tool; NitiCore invoked only inside tool `execute`.
-- Every AI response is grounded in a JSON payload of NitiCore outputs passed as context; prompts explicitly forbid inventing numeric values.
-- Backward compatibility: existing routes, auth, RLS, and NitiCore engines untouched; new features are additive.
+- No DB schema changes. Reads only from existing tables (`profiles`, `financial_profiles`, `assets`, `liabilities`, `insurance`, `goals`, `recommendations`).
+- All AI calls stay on the server via `createServerFn` + `requireSupabaseAuth` (already wired).
+- Model unchanged: `google/gemini-3-flash-preview` via existing `ai-gateway.ts`.
+- NitiCore formulas untouched; only additive fields on results and a re-rank layer on recommendations.
+- NitiSim state (turns + slots) persists in localStorage only — no server persistence added this milestone.
 
-## Open questions before I build
+## Order of execution
 
-1. Add the new `nitisim_messages` table for persistent per-user chat history, or keep NitiSim history in `localStorage` for now?
-2. Store the NitiGuide briefing (a) as an additive `briefing_markdown` column on `financial_scores`, (b) regenerate on every dashboard load with a short in-memory cache, or (c) a new `niti_guide_briefings` table?
-3. For Update Analysis, should the pre-filled onboarding be the exact existing multi-step flow reused as-is, or a single consolidated "review" page? Reuse is faster and safer; consolidated is a bigger UI change.
-
-Please confirm (or answer the three questions) and I will implement in the order above.
+1. NitiAge semantics + all consumer sites (small, unblocks display consistency).
+2. Recommendation re-rank layer.
+3. NitiSim planner split + explainer rewrite + propagation.
+4. NitiGuide prompt rewrite.
+5. Knowledge Hub content module + list route + detail route + 10 articles.
+6. Consistency sweep + manual smoke via preview.
