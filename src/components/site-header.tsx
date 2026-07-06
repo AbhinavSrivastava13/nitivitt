@@ -6,8 +6,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
 const PUBLIC_NAV = [
-  { to: "/how-it-works", label: "Features" },
-  { to: "/principles", label: "How It Works" },
+  { to: "/how-it-works", label: "How It Work" },
+  { to: "/principles", label: "Principles" },
   { to: "/knowledge", label: "Knowledge Hub" },
   { to: "/about", label: "About" },
 ] as const;
