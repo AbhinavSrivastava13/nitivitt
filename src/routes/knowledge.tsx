@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Clock, CalendarDays } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { listArticles, listCategories } from "@/content/knowledge";
+import type { ArticleSummary } from "@/content/knowledge/types";
 
 export const Route = createFileRoute("/knowledge")({
   head: () => ({
