@@ -208,19 +208,17 @@ function Dashboard() {
               badge={{
                 label: ageBadge.label,
                 cls: ageBadge.cls,
-                icon: ageDelta < 0 ? ArrowDownRight : ageDelta > 0 ? ArrowUpRight : undefined,
+                icon: ageDirection === "ahead" ? ArrowDownRight : ageDirection === "behind" ? ArrowUpRight : undefined,
               }}
               value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{nitiAge.value}</span>}
               unit="yrs"
               footer={
                 <>
                   <p className="mt-3 text-[11px] text-muted-foreground">
-                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · your money habits behave like this age.
+                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · financial age reflects your money habits.
                   </p>
                   <p className="mt-2 text-[11px] text-muted-foreground">
-                    {ageDelta < 0 ? "You are financially older than your years — a good sign." :
-                     ageDelta > 0 ? "You are financially younger than your years — habits need catch-up." :
-                     "Right on track with your years."}
+                    {agePayload?.interpretation ?? "Financial age matches your actual age."}
                   </p>
                 </>
               }
