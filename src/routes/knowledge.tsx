@@ -67,7 +67,7 @@ function KnowledgeHub() {
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((a) => (
+        {filtered.map((a: ArticleSummary) => (
           <Link
             key={a.slug}
             to="/knowledge/$slug"
