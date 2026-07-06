@@ -110,11 +110,14 @@ function Dashboard() {
   const lastUpdated = fpUpdated ? new Date(fpUpdated) : null;
   const topRecs = recs.slice(0, 3);
 
+  const agePayload = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
+  const ageDirection = agePayload?.direction ?? "on_track";
+  const ageDeltaYears = agePayload?.deltaYears ?? 0;
   const ageDelta = Number(nitiAge.value) - input.ageYears;
-  const ageBadge = ageDelta < 0
-    ? { label: `Ahead by ${Math.abs(ageDelta)}y`, cls: "bg-secondary-soft text-secondary" }
-    : ageDelta > 0
-      ? { label: `Behind by ${ageDelta}y`, cls: "bg-warning-soft text-warning" }
+  const ageBadge = ageDirection === "ahead"
+    ? { label: `Ahead by ${ageDeltaYears}y`, cls: "bg-secondary-soft text-secondary" }
+    : ageDirection === "behind"
+      ? { label: `Behind by ${ageDeltaYears}y`, cls: "bg-warning-soft text-warning" }
       : { label: "On par", cls: "bg-muted text-muted-foreground" };
 
   const emStatus = emergency.status === "on_track"
