@@ -37,7 +37,7 @@ function KnowledgeHub() {
 
   const filtered = useMemo(() => {
     if (active === "All") return articles;
-    return articles.filter((a) => a.category === active);
+    return articles.filter((a: ArticleSummary) => a.category === active);
   }, [articles, active]);
 
   return (
