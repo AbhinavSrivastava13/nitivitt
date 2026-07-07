@@ -51,6 +51,13 @@ export interface Recommendation {
   displayOrder: number;
   /** Deterministic global impact score used to rank across pillars. Higher = act sooner. */
   impactScore: number;
+  /**
+   * Optional plain-English note describing how this recommendation
+   * interacts with OTHER pillars — e.g. "raising SIP now would delay
+   * building your 6-month buffer". Filled in by the cross-pillar
+   * prioritiser when a meaningful trade-off exists.
+   */
+  crossPillarNote?: string;
 }
 
 /** Canonical financial input the whole engine reads. */
