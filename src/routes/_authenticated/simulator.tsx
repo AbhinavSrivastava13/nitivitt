@@ -90,17 +90,27 @@ function Simulator() {
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [slots, setSlots] = useState<Record<string, string | number | boolean>>({});
   const [rootQuestion, setRootQuestion] = useState<string>("");
+  // Fresh-by-default: every new session starts empty. Prior conversation is
+  // available via "Continue previous" only if the user explicitly opts in.
+  const [previousExists, setPreviousExists] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    setTurns(loadHistory());
-    setSlots(loadSlots());
+    // Detect (but do NOT auto-load) a previous conversation.
+    const prior = loadHistory();
+    setPreviousExists(prior.length > 0);
   }, []);
   useEffect(() => { saveHistory(turns); }, [turns]);
   useEffect(() => { saveSlots(slots); }, [slots]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [turns, loading]);
   useEffect(() => { inputRef.current?.focus(); }, []);
+
+  function continuePrevious() {
+    setTurns(loadHistory());
+    setSlots(loadSlots());
+    setPreviousExists(false);
+  }
 
   function priorTurnsForServer(current: ChatTurn[]) {
     return current
