@@ -38,6 +38,22 @@ export async function listArticles(): Promise<ArticleSummary[]> {
   );
 }
 
+/**
+ * Return the previous & next articles in reading order (the same sorted
+ * order as `listArticles`), for detail-page navigation.
+ */
+export async function getPrevNext(
+  slug: string,
+): Promise<{ prev: ArticleSummary | null; next: ArticleSummary | null }> {
+  const sorted = await listArticles();
+  const idx = sorted.findIndex((a) => a.slug === slug);
+  if (idx < 0) return { prev: null, next: null };
+  return {
+    prev: idx > 0 ? sorted[idx - 1] : null,
+    next: idx < sorted.length - 1 ? sorted[idx + 1] : null,
+  };
+}
+
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
   return ARTICLES.find((a) => a.slug === slug) ?? null;
 }

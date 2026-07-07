@@ -198,14 +198,39 @@ const RULES: Rule[] = [emergencyFundRule, insuranceRule, debtRule, savingsRule, 
 function prioritiseCrossPillar(recs: Recommendation[], input: NitiCoreInput): Recommendation[] {
   const ef = Number(calculateEmergencyFund(input).value);
   const dr = Number(calculateDebtRatio(input).value);
+  const sr = Number(calculateSavingsRate(input).value);
   const protectionUrgent =
     ef < 3 || !input.hasHealthInsurance || !input.hasTermInsurance;
   const debtUrgent = dr > 40;
+  const bufferThin = ef < 6;
 
   function tier(r: Recommendation): number {
     if (protectionUrgent && (r.category === "Emergency" || r.category === "Insurance")) return 0;
     if (debtUrgent && r.category === "Debt") return 1;
     return 2;
+  }
+
+  // Contextual cross-pillar note — how this action interacts with the others.
+  function noteFor(r: Recommendation): string | undefined {
+    if (r.category === "Emergency" && bufferThin) {
+      return "Fund the buffer before increasing SIPs — otherwise a small shock forces you to redeem investments at the wrong time.";
+    }
+    if (r.category === "Insurance") {
+      return "Term & health cover slightly reduce monthly cash flow but drastically improve resilience — the single highest ROI move when either is missing.";
+    }
+    if (r.category === "Debt" && debtUrgent) {
+      return "Reducing high-EMI debt frees monthly cash for SIPs — a compounding double benefit. Prioritise this over new investment recommendations.";
+    }
+    if (r.category === "Retirement" && bufferThin) {
+      return "Retirement contributions matter, but not at the cost of your 6-month buffer. Build the buffer first, then raise the SIP.";
+    }
+    if (r.category === "Savings" && sr < 30) {
+      return "A steady 30% savings rate matters more than picking better funds. This lever compounds across every other pillar.";
+    }
+    if (r.category === "Investments" && protectionUrgent) {
+      return "Hold new investments until protection (emergency fund + insurance) is in place — otherwise you'll be forced to sell during a crisis.";
+    }
+    return undefined;
   }
 
   // Dampen redundancy: keep only the highest-impact rec per category.
@@ -214,7 +239,10 @@ function prioritiseCrossPillar(recs: Recommendation[], input: NitiCoreInput): Re
     const cur = bestPerCategory.get(r.category);
     if (!cur || r.impactScore > cur.impactScore) bestPerCategory.set(r.category, r);
   }
-  const deduped = Array.from(bestPerCategory.values());
+  const deduped = Array.from(bestPerCategory.values()).map((r) => {
+    const note = noteFor(r);
+    return note ? { ...r, crossPillarNote: note } : r;
+  });
 
   return deduped.sort((a, b) => {
     const ta = tier(a);

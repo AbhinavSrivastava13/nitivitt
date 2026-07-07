@@ -273,6 +273,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
         category: r.category,
         whyItMatters: r.whyItMatters,
         expectedImpact: r.expectedImpact,
+        crossPillarNote: r.crossPillarNote,
         nextAction: r.nextAction,
       })),
       goalCount: goals.length,

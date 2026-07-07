@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, User, LayoutDashboard, FileText, Settings, RefreshCw, UserCircle2 } from "lucide-react";
+import { ChevronDown, LogOut, User, LayoutDashboard, FileText, Settings, RefreshCw, UserCircle2, Sparkles } from "lucide-react";
 import { Logo } from "./brand/logo";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ const PUBLIC_NAV = [
   { to: "/how-it-works", label: "How It Work" },
   { to: "/principles", label: "Principles" },
   { to: "/knowledge", label: "Knowledge Hub" },
+  { to: "/services", label: "Services" },
   { to: "/about", label: "About" },
 ] as const;
 
@@ -147,6 +148,7 @@ function UserMenu({ name }: { name: string }) {
   const items = [
     { to: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
     { to: "/financial-health" as const, label: "Financial Health Report", icon: FileText },
+    { to: "/services" as const, label: "Services", icon: Sparkles },
     { to: "/profile" as const, label: "Profile", icon: UserCircle2 },
     { to: "/settings" as const, label: "Settings", icon: Settings },
     { to: "/financial-health" as const, label: "Update Analysis", icon: RefreshCw },

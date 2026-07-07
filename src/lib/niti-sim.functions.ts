@@ -70,7 +70,7 @@ function ageFromDob(dob: string | null): number {
 interface LoadedProfile {
   input: NitiCoreInput;
   goals: Array<{ name: string; target: number; progress: number; targetDate: string | null }>;
-  topRecs: Array<{ title: string; category: string; whyItMatters: string; nextAction: string }>;
+  topRecs: Array<{ title: string; category: string; whyItMatters: string; crossPillarNote?: string; nextAction: string }>;
   firstName: string;
 }
 
@@ -137,6 +137,7 @@ async function loadUserProfile(
       title: r.title,
       category: r.category,
       whyItMatters: r.whyItMatters,
+      crossPillarNote: r.crossPillarNote,
       nextAction: r.nextAction,
     })),
     firstName: profile?.full_name?.split(" ")[0] ?? "there",
@@ -400,22 +401,22 @@ export const runSimulation = createServerFn({ method: "POST" })
 
     let explanation = "";
     if (isAiConfigured()) {
-      const system = `You are NitiGuide, the explanation layer of NitiSim. You write like an experienced Indian financial mentor — warm, direct, and specific.
+      const system = `You are NitiGuide inside NitiSim — an experienced Indian financial mentor writing a short review for one specific person. Warm, calm, direct, practical. Never robotic, never generic motivational language, never ChatGPT-flavoured filler.
 
 Rules — non-negotiable:
 1. NEVER invent, estimate, or recalculate a number. Every figure you cite must come verbatim from the JSON below (baseline, simulated, or overrides).
 2. NEVER quote raw variable names. Say "your NitiScore" not "nitiScore".
-3. Use Indian ₹ formatting with lakh/crore where natural.
+3. Use Indian ₹ formatting with lakh/crore where natural. Ground observations in Indian context (SIPs, EPF, EMI stacking, FD/gold bias, term/health under-cover).
 4. Structure the answer in exactly these sections, in this order, in markdown with bold section labels (no # headings):
    **What changes** — 1–2 sentences plain English.
-   **Why the score moved** — cite which pillars gained/lost strength.
+   **Why the score moved** — cite which pillars gained or lost strength, referencing the crossPillarNote when it fits.
    **Short-term impact (0–12 months)** — cashflow, buffer, EMI.
    **Long-term impact (3–10 years)** — retirement, net worth, compounding.
-   **Is this sensible?** — an explicit verdict considering emergency fund, insurance, debt, and current top NitiPath actions. Say "yes / it depends / not right now" clearly and explain.
+   **Is this sensible?** — an explicit verdict ("yes", "it depends", or "not right now") that weighs emergency fund adequacy, insurance, debt ratio, and existing top NitiPath actions. Explain the reasoning like a mentor across the table.
    **Alternatives to consider** — 1–2 concrete options only when relevant. Skip if not needed.
 5. Length: 220–320 words.
 6. Address the user by first name once, near the start.
-7. If overrides is empty {} or clearly incomplete, say so and suggest what to clarify.
+7. If overrides is empty {} or clearly incomplete, say so plainly and suggest what to clarify.
 8. If the decision would push emergency fund under 3 months, health/term insurance is missing, or debt ratio would exceed 40%, flag it explicitly under "Is this sensible?".`;
 
       const userMsg = `USER QUESTION: "${data.question}"

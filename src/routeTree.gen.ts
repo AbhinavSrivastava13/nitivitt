@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ServicesRouteImport } from './routes/services'
 import { Route as PrinciplesRouteImport } from './routes/principles'
 import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
@@ -17,6 +18,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -38,6 +40,11 @@ import { Route as AuthenticatedAiCoachRouteImport } from './routes/_authenticate
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrinciplesRoute = PrinciplesRouteImport.update({
@@ -73,6 +80,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesSlugRoute = ServicesSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ServicesRoute,
 } as any)
 const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
   id: '/$slug',
@@ -171,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ai-coach': typeof AuthenticatedAiCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -189,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/services/$slug': typeof ServicesSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -197,6 +211,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ai-coach': typeof AuthenticatedAiCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -215,6 +230,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/services/$slug': typeof ServicesSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -225,6 +241,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
+  '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/ai-coach': typeof AuthenticatedAiCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -243,6 +260,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
+  '/services/$slug': typeof ServicesSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -253,6 +271,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/knowledge'
     | '/principles'
+    | '/services'
     | '/sitemap.xml'
     | '/ai-coach'
     | '/dashboard'
@@ -271,6 +290,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/reset-password'
     | '/knowledge/$slug'
+    | '/services/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -279,6 +299,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/knowledge'
     | '/principles'
+    | '/services'
     | '/sitemap.xml'
     | '/ai-coach'
     | '/dashboard'
@@ -297,6 +318,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/reset-password'
     | '/knowledge/$slug'
+    | '/services/$slug'
   id:
     | '__root__'
     | '/'
@@ -306,6 +328,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/knowledge'
     | '/principles'
+    | '/services'
     | '/sitemap.xml'
     | '/_authenticated/ai-coach'
     | '/_authenticated/dashboard'
@@ -324,6 +347,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/reset-password'
     | '/knowledge/$slug'
+    | '/services/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -334,6 +358,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   KnowledgeRoute: typeof KnowledgeRouteWithChildren
   PrinciplesRoute: typeof PrinciplesRoute
+  ServicesRoute: typeof ServicesRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
@@ -344,6 +369,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/principles': {
@@ -394,6 +426,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/services/$slug': {
+      id: '/services/$slug'
+      path: '/$slug'
+      fullPath: '/services/$slug'
+      preLoaderRoute: typeof ServicesSlugRouteImport
+      parentRoute: typeof ServicesRoute
     }
     '/knowledge/$slug': {
       id: '/knowledge/$slug'
@@ -578,6 +617,18 @@ const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
   KnowledgeRouteChildren,
 )
 
+interface ServicesRouteChildren {
+  ServicesSlugRoute: typeof ServicesSlugRoute
+}
+
+const ServicesRouteChildren: ServicesRouteChildren = {
+  ServicesSlugRoute: ServicesSlugRoute,
+}
+
+const ServicesRouteWithChildren = ServicesRoute._addFileChildren(
+  ServicesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -586,6 +637,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   KnowledgeRoute: KnowledgeRouteWithChildren,
   PrinciplesRoute: PrinciplesRoute,
+  ServicesRoute: ServicesRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
