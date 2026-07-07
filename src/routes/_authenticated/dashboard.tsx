@@ -719,6 +719,12 @@ function RecommendationDialog({ rec, onClose }: { rec: Recommendation | null; on
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Expected impact</p>
                 <p className="mt-1 text-foreground">{rec.expectedImpact}</p>
               </div>
+              {rec.crossPillarNote && (
+                <div className="rounded-lg border border-secondary/30 bg-secondary-soft/40 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-secondary">Cross-pillar trade-off</p>
+                  <p className="mt-1 text-sm text-foreground">{rec.crossPillarNote}</p>
+                </div>
+              )}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Next action</p>
                 <p className="mt-1 text-primary">{rec.nextAction}</p>
