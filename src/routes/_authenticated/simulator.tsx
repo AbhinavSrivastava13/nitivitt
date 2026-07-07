@@ -197,6 +197,7 @@ function Simulator() {
     setRootQuestion("");
     saveHistory([]);
     saveSlots({});
+    setPreviousExists(false);
   }
 
   return (
@@ -230,22 +231,38 @@ function Simulator() {
         <div className="mt-6 rounded-2xl border border-border bg-card shadow-soft">
           <div className="max-h-[640px] min-h-[420px] space-y-5 overflow-y-auto p-5 md:p-6">
             {turns.length === 0 && !loading && (
-              <div className="rounded-xl border border-dashed border-border bg-surface p-6">
-                <p className="text-sm font-semibold text-foreground">Start with a question, or try one of these:</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {EXAMPLES.map((e) => (
+              <div className="space-y-4">
+                {previousExists && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-primary-soft/40 px-4 py-3">
+                    <p className="text-xs text-foreground">
+                      You have a previous conversation saved in this browser. Every new question starts fresh unless you continue it.
+                    </p>
                     <button
-                      key={e}
-                      onClick={() => void submit(e)}
-                      className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft/50"
+                      type="button"
+                      onClick={continuePrevious}
+                      className="rounded-md border border-border bg-card px-3 py-1.5 text-[11px] font-semibold text-foreground hover:border-primary/40"
                     >
-                      {e}
+                      Continue previous
                     </button>
-                  ))}
+                  </div>
+                )}
+                <div className="rounded-xl border border-dashed border-border bg-surface p-6">
+                  <p className="text-sm font-semibold text-foreground">Start with a question, or try one of these:</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {EXAMPLES.map((e) => (
+                      <button
+                        key={e}
+                        onClick={() => void submit(e)}
+                        className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:border-primary/40 hover:bg-primary-soft/50"
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-4 text-[11px] text-muted-foreground">
+                    NitiSim will ask follow-ups if your question is missing key details (timing, financing, down payment). Every simulation is deterministic — NitiCore™ does the math; the AI only explains what it means.
+                  </p>
                 </div>
-                <p className="mt-4 text-[11px] text-muted-foreground">
-                  NitiSim will ask follow-ups if your question is missing key details (timing, financing, down payment). Every simulation is deterministic — NitiCore™ does the math, Gemini only explains what it means.
-                </p>
               </div>
             )}
 
