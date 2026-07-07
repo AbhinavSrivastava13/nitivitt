@@ -70,7 +70,7 @@ function ageFromDob(dob: string | null): number {
 interface LoadedProfile {
   input: NitiCoreInput;
   goals: Array<{ name: string; target: number; progress: number; targetDate: string | null }>;
-  topRecs: Array<{ title: string; category: string; whyItMatters: string; nextAction: string }>;
+  topRecs: Array<{ title: string; category: string; whyItMatters: string; crossPillarNote?: string; nextAction: string }>;
   firstName: string;
 }
 
