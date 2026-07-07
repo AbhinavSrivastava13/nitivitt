@@ -137,6 +137,7 @@ async function loadUserProfile(
       title: r.title,
       category: r.category,
       whyItMatters: r.whyItMatters,
+      crossPillarNote: r.crossPillarNote,
       nextAction: r.nextAction,
     })),
     firstName: profile?.full_name?.split(" ")[0] ?? "there",
