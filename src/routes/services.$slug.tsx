@@ -104,7 +104,7 @@ function ServiceDetail() {
               <p className="mt-3 text-base leading-relaxed text-foreground/90">{service.whyItMatters}</p>
             </section>
 
-            {service.visionSections.map((s, i) => (
+            {service.visionSections.map((s: { heading: string; body: string }, i: number) => (
               <section key={i}>
                 <h2 className="font-display text-2xl text-foreground">{s.heading}</h2>
                 <p className="mt-3 text-base leading-relaxed text-foreground/90">{s.body}</p>
@@ -121,7 +121,7 @@ function ServiceDetail() {
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Expected benefits</p>
               </div>
               <ul className="mt-4 space-y-3 text-sm text-foreground">
-                {service.expectedBenefits.map((b, i) => (
+                {service.expectedBenefits.map((b: string, i: number) => (
                   <li key={i} className="flex gap-2">
                     <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <span>{b}</span>

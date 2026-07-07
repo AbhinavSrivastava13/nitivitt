@@ -42,7 +42,7 @@ function ServicesPage() {
       lede="A curated ecosystem of guidance services — always fee-only, always grounded in NitiCore™. Explore the roadmap; every service listed here is being designed with the same transparency and math-first philosophy as the app you're using today."
     >
       <div className="grid gap-5 md:grid-cols-2">
-        {services.map((s) => (
+        {services.map((s: Service) => (
           <Link
             key={s.slug}
             to="/services/$slug"
@@ -67,7 +67,7 @@ function ServicesPage() {
             </div>
 
             <ul className="mt-4 space-y-1.5 text-sm text-foreground/90">
-              {s.expectedBenefits.slice(0, 2).map((b, i) => (
+              {s.expectedBenefits.slice(0, 2).map((b: string, i: number) => (
                 <li key={i} className="flex gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                   <span>{b}</span>
