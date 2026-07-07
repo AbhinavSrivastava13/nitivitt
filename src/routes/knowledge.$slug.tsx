@@ -1,17 +1,20 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import ReactMarkdown from "react-markdown";
-import { ArrowLeft, Clock, CalendarDays, User, Share2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, CalendarDays, User, Share2, Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { getArticleBySlug, getRelated } from "@/content/knowledge";
+import { getArticleBySlug, getPrevNext, getRelated } from "@/content/knowledge";
 import type { ArticleSection, ArticleSummary } from "@/content/knowledge/types";
 
 export const Route = createFileRoute("/knowledge/$slug")({
   loader: async ({ params }) => {
     const article = await getArticleBySlug(params.slug);
     if (!article) throw notFound();
-    const related = await getRelated(params.slug);
-    return { article, related };
+    const [related, { prev, next }] = await Promise.all([
+      getRelated(params.slug),
+      getPrevNext(params.slug),
+    ]);
+    return { article, related, prev, next };
   },
   head: ({ loaderData }) => {
     const a = loaderData?.article;
@@ -66,7 +69,7 @@ function formatDate(iso: string) {
 }
 
 function ArticleDetail() {
-  const { article, related } = Route.useLoaderData();
+  const { article, related, prev, next } = Route.useLoaderData();
 
   async function share() {
     if (typeof window === "undefined") return;
@@ -182,7 +185,33 @@ function ArticleDetail() {
         </article>
 
         <div className="border-t border-border">
-          <div className="container-page py-10 text-center">
+          <div className="container-page grid gap-3 py-8 md:grid-cols-2">
+            {prev ? (
+              <Link
+                to="/knowledge/$slug"
+                params={{ slug: prev.slug }}
+                className="group flex flex-col rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40"
+              >
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <ArrowLeft className="h-3 w-3" /> Previous
+                </span>
+                <span className="mt-1 text-sm font-semibold text-foreground group-hover:text-primary">{prev.title}</span>
+              </Link>
+            ) : <span />}
+            {next ? (
+              <Link
+                to="/knowledge/$slug"
+                params={{ slug: next.slug }}
+                className="group flex flex-col rounded-xl border border-border bg-card p-4 text-right transition-colors hover:border-primary/40"
+              >
+                <span className="inline-flex items-center justify-end gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Next <ArrowRight className="h-3 w-3" />
+                </span>
+                <span className="mt-1 text-sm font-semibold text-foreground group-hover:text-primary">{next.title}</span>
+              </Link>
+            ) : <span />}
+          </div>
+          <div className="container-page pb-10 text-center">
             <Link
               to="/knowledge"
               className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:border-primary/40"
