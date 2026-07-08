@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,6 +15,12 @@ import {
   insertInsurance,
   insertAsset,
   insertLiability,
+  getProfile,
+  getFinancialProfile,
+  listAssets,
+  listLiabilities,
+  listGoals,
+  listInsurance,
 } from "@/lib/services/profile.service";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
