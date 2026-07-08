@@ -1,11 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { AnalysisSequence } from "@/components/analysis-sequence";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
@@ -28,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/financial-health")({
   component: FinancialHealthReport,
 });
 
-const LAST_UPDATED_KEY = "nitivitt:health-report:last-updated";
+
 
 function ageFromDob(dob: string | null): number {
   if (!dob) return 30;
@@ -54,27 +51,8 @@ function useReportData() {
 
 function FinancialHealthReport() {
   const { data, isLoading } = useReportData();
-  const qc = useQueryClient();
-  const [analyzing, setAnalyzing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string>(() => {
-    if (typeof window === "undefined") return "";
-    return window.localStorage.getItem(LAST_UPDATED_KEY) ?? "";
-  });
+  const fpUpdated = (data?.fp as unknown as { updated_at?: string } | null)?.updated_at;
 
-  async function handleUpdate() {
-    setAnalyzing(true);
-    await qc.invalidateQueries({ queryKey: ["dashboard"] });
-    await qc.invalidateQueries({ queryKey: ["health-report"] });
-    await qc.invalidateQueries({ queryKey: ["niti-guide"] });
-  }
-
-  function completeUpdate() {
-    setAnalyzing(false);
-    const now = new Date().toISOString();
-    if (typeof window !== "undefined") window.localStorage.setItem(LAST_UPDATED_KEY, now);
-    setLastUpdated(now);
-    toast.success("Analysis refreshed. All metrics are current.");
-  }
 
   if (isLoading || !data) {
     return (
@@ -119,14 +97,13 @@ function FinancialHealthReport() {
   const insAdequacy = calculateInsuranceAdequacy(input);
   const retirement = calculateRetirement(input);
 
-  const updatedLabel = lastUpdated
-    ? new Date(lastUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+  const updatedLabel = fpUpdated
+    ? new Date(fpUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
     : "Not yet refreshed";
 
   return (
     <div className="min-h-screen bg-surface">
       <SiteHeader />
-      {analyzing && <AnalysisSequence onComplete={completeUpdate} title="Refreshing your Financial Health Report" subtitle="NitiCore™ is re-running every metric against your latest data." />}
       <main className="container-page py-10 md:py-14">
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to dashboard
@@ -137,20 +114,19 @@ function FinancialHealthReport() {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Financial Health Report</p>
             <h1 className="mt-2 font-display text-4xl text-foreground md:text-5xl">The complete diagnostic.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Every metric that powers your NitiScore™, with the formula, assumptions and next step attached. This is the only page where you refresh your analysis — one source of truth.
+              Every metric that powers your NitiScore™, with the formula, assumptions and next step attached. Update anything by reviewing your profile - it is the single source of truth.
             </p>
             <p className="mt-2 text-[11px] font-medium text-muted-foreground">Last updated: {updatedLabel}</p>
           </div>
-          <button
-            type="button"
-            onClick={handleUpdate}
-            disabled={analyzing}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft disabled:opacity-60"
+          <Link
+            to="/onboarding"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft hover:opacity-95"
           >
             <RefreshCw className="h-4 w-4" />
-            Update Analysis
-          </button>
+            Review Profile
+          </Link>
         </div>
+
 
         {/* Overall summary */}
         <section className="mt-8 grid gap-4 lg:grid-cols-3">

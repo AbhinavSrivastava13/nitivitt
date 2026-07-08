@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,6 +15,12 @@ import {
   insertInsurance,
   insertAsset,
   insertLiability,
+  getProfile,
+  getFinancialProfile,
+  listAssets,
+  listLiabilities,
+  listGoals,
+  listInsurance,
 } from "@/lib/services/profile.service";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
@@ -124,6 +130,7 @@ function OnboardingWizard() {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
   const [s, setS] = useState<State>({
     full_name: "", date_of_birth: "", gender: "", occupation: "", city: "",
     marital_status: "single", dependents: 0, earning_members: 1,
@@ -140,6 +147,92 @@ function OnboardingWizard() {
     risk_profile: "moderate",
     goals: [],
   });
+
+  // Prefill from Supabase when the user has an existing profile.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData.user;
+      if (!user) return;
+      const [profile, fp, assets, liabs, goals, insurance] = await Promise.all([
+        getProfile(user.id),
+        getFinancialProfile(user.id),
+        listAssets(user.id),
+        listLiabilities(user.id),
+        listGoals(user.id),
+        listInsurance(user.id),
+      ]);
+      if (cancelled) return;
+
+      const nextAssets: AssetMap = { ...ZERO_ASSETS };
+      for (const a of assets) {
+        const key = a.category as keyof AssetMap;
+        if (key in nextAssets) nextAssets[key] = (nextAssets[key] ?? 0) + Number(a.current_value ?? 0);
+        else nextAssets.other = (nextAssets.other ?? 0) + Number(a.current_value ?? 0);
+      }
+      const nextLiab: LiabilityMap = { ...ZERO_LIAB };
+      let emiSum = 0;
+      let tenure = 0;
+      for (const l of liabs) {
+        const key = l.category as keyof LiabilityMap;
+        if (key in nextLiab) nextLiab[key] = (nextLiab[key] ?? 0) + Number(l.outstanding_amount ?? 0);
+        emiSum += Number(l.monthly_emi ?? 0);
+        if (l.tenure_months) tenure = Math.max(tenure, Number(l.tenure_months));
+      }
+      const insByType = (t: string) =>
+        insurance.filter((i) => i.insurance_type === t).reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
+      const nextGoals: GoalDraft[] = goals.map((g) => ({
+        goal_type: g.goal_type ?? "other",
+        name: g.name ?? "",
+        target_amount: Number(g.target_amount ?? 0),
+        target_year: g.target_date ? new Date(g.target_date).getFullYear() : new Date().getFullYear() + 5,
+        current_progress: 0,
+        monthly_contribution: 0,
+        priority: (g.priority as GoalDraft["priority"]) ?? "medium",
+      }));
+
+      const hasAnyProfile = !!(profile?.full_name || fp?.monthly_income);
+      if (hasAnyProfile) setIsReturning(true);
+
+      setS((prev) => ({
+        ...prev,
+        full_name: profile?.full_name ?? prev.full_name,
+        date_of_birth: profile?.date_of_birth ?? prev.date_of_birth,
+        gender: profile?.gender ?? prev.gender,
+        occupation: profile?.occupation ?? prev.occupation,
+        city: profile?.city ?? prev.city,
+        marital_status: profile?.marital_status ?? prev.marital_status,
+        dependents: profile?.dependents ?? prev.dependents,
+        // Income/expenses: only totals are persisted → put into a single line so numbers survive round-trip
+        income: fp?.monthly_income
+          ? { ...ZERO_INCOME, salary: Number(fp.monthly_income) }
+          : prev.income,
+        expenses: fp?.monthly_expenses
+          ? {
+              ...ZERO_EXPENSES,
+              rent_emi: Number(fp.monthly_essential_expenses ?? 0),
+              lifestyle: Math.max(0, Number(fp.monthly_expenses ?? 0) - Number(fp.monthly_essential_expenses ?? 0)),
+            }
+          : prev.expenses,
+        risk_profile: (fp?.risk_profile as State["risk_profile"]) ?? prev.risk_profile,
+        retirement_age: fp?.retirement_age ?? prev.retirement_age,
+        assets: nextAssets,
+        liabilities: nextLiab,
+        monthly_emi_total: emiSum || prev.monthly_emi_total,
+        loan_tenure_months: tenure || prev.loan_tenure_months,
+        has_health: insByType("health") > 0, health_cover: insByType("health"),
+        has_term: insByType("term") > 0, term_cover: insByType("term"),
+        has_employer: insByType("employer") > 0, employer_cover: insByType("employer"),
+        has_critical: insByType("critical_illness") > 0, critical_cover: insByType("critical_illness"),
+        has_pa: insByType("personal_accident") > 0, pa_cover: insByType("personal_accident"),
+        goals: nextGoals,
+      }));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const totalIncome = sum(s.income);
   const totalExpenses = sum(s.expenses);
@@ -213,6 +306,15 @@ function OnboardingWizard() {
       risk_profile: s.risk_profile,
       retirement_age: s.retirement_age,
     });
+
+    // Wipe existing child rows so a review-and-save produces one clean snapshot
+    // (idempotent regardless of whether the user is onboarding or reviewing).
+    await Promise.all([
+      supabase.from("assets").delete().eq("user_id", user.id),
+      supabase.from("liabilities").delete().eq("user_id", user.id),
+      supabase.from("insurance").delete().eq("user_id", user.id),
+      supabase.from("goals").delete().eq("user_id", user.id),
+    ]);
 
     // Assets
     for (const key of Object.keys(s.assets) as (keyof AssetMap)[]) {
@@ -294,9 +396,14 @@ function OnboardingWizard() {
       <main className="container-page py-10 md:py-14">
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
-            Step {step + 1} of {STEPS.length}
+            {isReturning ? "Review Profile" : "Onboarding"} · Step {step + 1} of {STEPS.length}
           </p>
           <h1 className="mt-2 font-display text-3xl text-foreground md:text-4xl">{STEPS[step]}</h1>
+          {isReturning && step === 0 && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your details are already filled in. Update anything that has changed and save - NitiVitt will refresh every metric automatically.
+            </p>
+          )}
 
           <div className="mt-3 flex gap-1.5">
             {STEPS.map((_, i) => (
@@ -492,7 +599,7 @@ function OnboardingWizard() {
                 disabled={submitting}
                 className="rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
               >
-                {submitting ? "Saving…" : "Finish"}
+                {submitting ? "Saving…" : isReturning ? "Save Changes" : "Finish"}
               </button>
             )}
           </div>
