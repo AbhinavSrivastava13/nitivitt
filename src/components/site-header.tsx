@@ -151,7 +151,7 @@ function UserMenu({ name }: { name: string }) {
     { to: "/services" as const, label: "Services", icon: Sparkles },
     { to: "/profile" as const, label: "Profile", icon: UserCircle2 },
     { to: "/settings" as const, label: "Settings", icon: Settings },
-    { to: "/financial-health" as const, label: "Update Analysis", icon: RefreshCw },
+    { to: "/onboarding" as const, label: "Review Profile", icon: RefreshCw },
   ];
 
 
