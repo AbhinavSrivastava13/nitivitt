@@ -31,7 +31,7 @@ export function SiteFooter() {
           <Logo />
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
             NitiVitt is a financial guidance platform. We help you make better decisions -
-            we are not a broker, distributor, or advisor.
+            we are not a broker, distributor or advisor.
           </p>
           <p className="mt-6 font-display text-2xl text-foreground">
             Know Better. Plan Better. Grow Better.
@@ -64,7 +64,7 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} NitiVitt. Wise wealth, for every Indian.</p>
           <p className="max-w-2xl text-balance md:text-right">
             NitiVitt provides educational financial guidance only. We do not sell financial
-            products, take commissions, or guarantee returns. Always verify with a SEBI-registered
+            products, take commissions or guarantee returns. Always verify with a SEBI-registered
             advisor before acting.
           </p>
         </div>
