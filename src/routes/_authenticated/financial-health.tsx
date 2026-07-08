@@ -97,14 +97,13 @@ function FinancialHealthReport() {
   const insAdequacy = calculateInsuranceAdequacy(input);
   const retirement = calculateRetirement(input);
 
-  const updatedLabel = lastUpdated
-    ? new Date(lastUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+  const updatedLabel = fpUpdated
+    ? new Date(fpUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
     : "Not yet refreshed";
 
   return (
     <div className="min-h-screen bg-surface">
       <SiteHeader />
-      {analyzing && <AnalysisSequence onComplete={completeUpdate} title="Refreshing your Financial Health Report" subtitle="NitiCore™ is re-running every metric against your latest data." />}
       <main className="container-page py-10 md:py-14">
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to dashboard
@@ -115,20 +114,19 @@ function FinancialHealthReport() {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Financial Health Report</p>
             <h1 className="mt-2 font-display text-4xl text-foreground md:text-5xl">The complete diagnostic.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Every metric that powers your NitiScore™, with the formula, assumptions and next step attached. This is the only page where you refresh your analysis — one source of truth.
+              Every metric that powers your NitiScore™, with the formula, assumptions and next step attached. Update anything by reviewing your profile - it is the single source of truth.
             </p>
             <p className="mt-2 text-[11px] font-medium text-muted-foreground">Last updated: {updatedLabel}</p>
           </div>
-          <button
-            type="button"
-            onClick={handleUpdate}
-            disabled={analyzing}
-            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft disabled:opacity-60"
+          <Link
+            to="/onboarding"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft hover:opacity-95"
           >
             <RefreshCw className="h-4 w-4" />
-            Update Analysis
-          </button>
+            Review Profile
+          </Link>
         </div>
+
 
         {/* Overall summary */}
         <section className="mt-8 grid gap-4 lg:grid-cols-3">
