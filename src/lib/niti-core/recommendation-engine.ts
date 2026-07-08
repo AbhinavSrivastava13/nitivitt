@@ -61,7 +61,7 @@ const emergencyFundRule: Rule = (input) => {
     logic: "Aim for ≥ 6× monthly essential expenses in a liquid fund.",
     assumptions: r.assumptions,
     formulaSummary: r.calculationSummary,
-    impact: "High — protects every other financial goal.",
+    impact: "High - protects every other financial goal.",
     effort,
     nextAction: r.suggestedNextStep,
     displayOrder: 10,
@@ -89,7 +89,7 @@ const insuranceRule: Rule = (input) => {
     logic: "Term cover ≥ 15× annual income; health cover ≥ ₹10 L family-floater.",
     assumptions: r.assumptions,
     formulaSummary: r.calculationSummary,
-    impact: "High — protects dependents and savings.",
+    impact: "High - protects dependents and savings.",
     effort,
     nextAction: r.suggestedNextStep,
     displayOrder: 20,
@@ -117,7 +117,7 @@ const debtRule: Rule = (input) => {
     logic: "EMI-to-income ratio should stay under 20% (healthy) / 40% (max).",
     assumptions: r.assumptions,
     formulaSummary: r.calculationSummary,
-    impact: "High — frees monthly cash for investments.",
+    impact: "High - frees monthly cash for investments.",
     effort,
     nextAction: r.suggestedNextStep,
     displayOrder: 30,
@@ -145,7 +145,7 @@ const savingsRule: Rule = (input) => {
     logic: "(Income − Expenses)/Income × 100 should be ≥ 30%.",
     assumptions: r.assumptions,
     formulaSummary: r.calculationSummary,
-    impact: "Very high — compounds for decades.",
+    impact: "Very high - compounds for decades.",
     effort,
     nextAction: r.suggestedNextStep,
     displayOrder: 40,
@@ -173,7 +173,7 @@ const retirementRule: Rule = (input) => {
     logic: "Corpus needed ≈ future annual expenses ÷ withdrawal rate.",
     assumptions: r.assumptions,
     formulaSummary: r.calculationSummary,
-    impact: "High — quality of life for 25+ years.",
+    impact: "High - quality of life for 25+ years.",
     effort,
     nextAction: r.suggestedNextStep,
     displayOrder: 50,
@@ -213,13 +213,13 @@ function prioritiseCrossPillar(recs: Recommendation[], input: NitiCoreInput): Re
   // Contextual cross-pillar note — how this action interacts with the others.
   function noteFor(r: Recommendation): string | undefined {
     if (r.category === "Emergency" && bufferThin) {
-      return "Fund the buffer before increasing SIPs — otherwise a small shock forces you to redeem investments at the wrong time.";
+      return "Fund the buffer before increasing SIPs - otherwise a small shock forces you to redeem investments at the wrong time.";
     }
     if (r.category === "Insurance") {
-      return "Term & health cover slightly reduce monthly cash flow but drastically improve resilience — the single highest ROI move when either is missing.";
+      return "Term & health cover slightly reduce monthly cash flow but drastically improve resilience - the single highest ROI move when either is missing.";
     }
     if (r.category === "Debt" && debtUrgent) {
-      return "Reducing high-EMI debt frees monthly cash for SIPs — a compounding double benefit. Prioritise this over new investment recommendations.";
+      return "Reducing high-EMI debt frees monthly cash for SIPs - a compounding double benefit. Prioritise this over new investment recommendations.";
     }
     if (r.category === "Retirement" && bufferThin) {
       return "Retirement contributions matter, but not at the cost of your 6-month buffer. Build the buffer first, then raise the SIP.";
@@ -228,7 +228,7 @@ function prioritiseCrossPillar(recs: Recommendation[], input: NitiCoreInput): Re
       return "A steady 30% savings rate matters more than picking better funds. This lever compounds across every other pillar.";
     }
     if (r.category === "Investments" && protectionUrgent) {
-      return "Hold new investments until protection (emergency fund + insurance) is in place — otherwise you'll be forced to sell during a crisis.";
+      return "Hold new investments until protection (emergency fund + insurance) is in place - otherwise you'll be forced to sell during a crisis.";
     }
     return undefined;
   }
