@@ -1,11 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { RefreshCw, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { AnalysisSequence } from "@/components/analysis-sequence";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
