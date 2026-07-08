@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/financial-health")({
   component: FinancialHealthReport,
 });
 
-const LAST_UPDATED_KEY = "nitivitt:health-report:last-updated";
+
 
 function ageFromDob(dob: string | null): number {
   if (!dob) return 30;
