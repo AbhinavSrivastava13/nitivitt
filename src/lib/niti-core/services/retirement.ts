@@ -34,7 +34,7 @@ export function calculateRetirement(input: NitiCoreInput): MetricResult {
     suggestedNextStep:
       gap > 0
         ? "Increase monthly retirement contribution (SIP/NPS/EPF) to close the gap."
-        : "Stay the course — rebalance yearly.",
+        : "Stay the course - rebalance yearly.",
     aiPayload: { requiredCorpus, projected, gap },
   };
 }
