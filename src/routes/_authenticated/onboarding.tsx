@@ -307,6 +307,15 @@ function OnboardingWizard() {
       retirement_age: s.retirement_age,
     });
 
+    // Wipe existing child rows so a review-and-save produces one clean snapshot
+    // (idempotent regardless of whether the user is onboarding or reviewing).
+    await Promise.all([
+      supabase.from("assets").delete().eq("user_id", user.id),
+      supabase.from("liabilities").delete().eq("user_id", user.id),
+      supabase.from("insurance").delete().eq("user_id", user.id),
+      supabase.from("goals").delete().eq("user_id", user.id),
+    ]);
+
     // Assets
     for (const key of Object.keys(s.assets) as (keyof AssetMap)[]) {
       const val = s.assets[key];
