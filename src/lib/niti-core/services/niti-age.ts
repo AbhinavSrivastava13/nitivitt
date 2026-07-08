@@ -59,10 +59,10 @@ export function calculateNitiAge(input: NitiCoreInput): MetricResult<number> {
 
   const interpretation =
     direction === "ahead"
-      ? `Your financial age is ${deltaYears} year${deltaYears === 1 ? "" : "s"} lower than your actual age — your money habits are healthier than average for your age.`
+      ? `Your financial age is ${deltaYears} year${deltaYears === 1 ? "" : "s"} lower than your actual age - your money habits are healthier than average for your age.`
       : direction === "behind"
-        ? `Your financial age is ${deltaYears} year${deltaYears === 1 ? "" : "s"} higher than your actual age — your habits need to catch up with where you are in life.`
-        : `Your financial age matches your actual age — you are exactly where you should be.`;
+        ? `Your financial age is ${deltaYears} year${deltaYears === 1 ? "" : "s"} higher than your actual age - your habits need to catch up with where you are in life.`
+        : `Your financial age matches your actual age - you are exactly where you should be.`;
 
   const aiPayload: NitiAgeAiPayload = {
     actualAge: input.ageYears,
@@ -84,10 +84,10 @@ export function calculateNitiAge(input: NitiCoreInput): MetricResult<number> {
     priority: direction === "behind" && deltaYears >= 4 ? "high" : direction === "behind" ? "medium" : "low",
     suggestedNextStep:
       direction === "behind"
-        ? "Focus on the top NitiPath™ actions — savings rate and emergency buffer move NitiAge the fastest."
+        ? "Focus on the top NitiPath™ actions - savings rate and emergency buffer move NitiAge the fastest."
         : direction === "on_track"
-          ? "Solid — a small boost to savings rate or emergency months will move you into 'ahead'."
-          : "You're financially ahead of your years — protect it by keeping insurance current and investments automated.",
+          ? "Solid - a small boost to savings rate or emergency months will move you into 'ahead'."
+          : "You're financially ahead of your years - protect it by keeping insurance current and investments automated.",
     aiPayload: aiPayload as unknown as Record<string, unknown>,
   };
 }
