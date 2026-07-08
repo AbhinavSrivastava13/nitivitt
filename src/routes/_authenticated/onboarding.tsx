@@ -396,9 +396,14 @@ function OnboardingWizard() {
       <main className="container-page py-10 md:py-14">
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
-            Step {step + 1} of {STEPS.length}
+            {isReturning ? "Review Profile" : "Onboarding"} · Step {step + 1} of {STEPS.length}
           </p>
           <h1 className="mt-2 font-display text-3xl text-foreground md:text-4xl">{STEPS[step]}</h1>
+          {isReturning && step === 0 && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your details are already filled in. Update anything that has changed and save - NitiVitt will refresh every metric automatically.
+            </p>
+          )}
 
           <div className="mt-3 flex gap-1.5">
             {STEPS.map((_, i) => (
