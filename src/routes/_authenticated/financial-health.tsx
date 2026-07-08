@@ -51,27 +51,8 @@ function useReportData() {
 
 function FinancialHealthReport() {
   const { data, isLoading } = useReportData();
-  const qc = useQueryClient();
-  const [analyzing, setAnalyzing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string>(() => {
-    if (typeof window === "undefined") return "";
-    return window.localStorage.getItem(LAST_UPDATED_KEY) ?? "";
-  });
+  const fpUpdated = (data?.fp as unknown as { updated_at?: string } | null)?.updated_at;
 
-  async function handleUpdate() {
-    setAnalyzing(true);
-    await qc.invalidateQueries({ queryKey: ["dashboard"] });
-    await qc.invalidateQueries({ queryKey: ["health-report"] });
-    await qc.invalidateQueries({ queryKey: ["niti-guide"] });
-  }
-
-  function completeUpdate() {
-    setAnalyzing(false);
-    const now = new Date().toISOString();
-    if (typeof window !== "undefined") window.localStorage.setItem(LAST_UPDATED_KEY, now);
-    setLastUpdated(now);
-    toast.success("Analysis refreshed. All metrics are current.");
-  }
 
   if (isLoading || !data) {
     return (
