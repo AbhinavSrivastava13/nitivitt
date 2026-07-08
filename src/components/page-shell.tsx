@@ -76,7 +76,7 @@ export function ModulePlaceholder({ module, description, features }: ComingSoonP
         </p>
         <p className="mt-3 font-display text-2xl text-foreground">{module}</p>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          We're shipping this module with the same discipline as the rest of NitiVitt — every
+          We're shipping this module with the same discipline as the rest of NitiVitt - every
           calculation transparent, every recommendation auditable.
         </p>
       </aside>
