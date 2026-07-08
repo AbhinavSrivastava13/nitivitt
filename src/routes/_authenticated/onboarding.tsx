@@ -594,7 +594,7 @@ function OnboardingWizard() {
                 disabled={submitting}
                 className="rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
               >
-                {submitting ? "Saving…" : "Finish"}
+                {submitting ? "Saving…" : isReturning ? "Save Changes" : "Finish"}
               </button>
             )}
           </div>
