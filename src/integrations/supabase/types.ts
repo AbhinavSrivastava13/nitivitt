@@ -53,13 +53,21 @@ export type Database = {
       financial_profiles: {
         Row: {
           annual_income: number | null
+          annual_investment: number | null
           created_at: string
+          earning_members: number | null
           employment_type: string | null
+          existing_portfolio: number | null
+          expense_breakdown: Json | null
           id: string
+          income_breakdown: Json | null
           monthly_essential_expenses: number | null
           monthly_expenses: number | null
           monthly_income: number | null
+          monthly_sip: number | null
           retirement_age: number | null
+          retirement_corpus_target: number | null
+          retirement_lifestyle: string | null
           risk_profile: string | null
           salary_growth_rate: number | null
           updated_at: string
@@ -67,13 +75,21 @@ export type Database = {
         }
         Insert: {
           annual_income?: number | null
+          annual_investment?: number | null
           created_at?: string
+          earning_members?: number | null
           employment_type?: string | null
+          existing_portfolio?: number | null
+          expense_breakdown?: Json | null
           id?: string
+          income_breakdown?: Json | null
           monthly_essential_expenses?: number | null
           monthly_expenses?: number | null
           monthly_income?: number | null
+          monthly_sip?: number | null
           retirement_age?: number | null
+          retirement_corpus_target?: number | null
+          retirement_lifestyle?: string | null
           risk_profile?: string | null
           salary_growth_rate?: number | null
           updated_at?: string
@@ -81,13 +97,21 @@ export type Database = {
         }
         Update: {
           annual_income?: number | null
+          annual_investment?: number | null
           created_at?: string
+          earning_members?: number | null
           employment_type?: string | null
+          existing_portfolio?: number | null
+          expense_breakdown?: Json | null
           id?: string
+          income_breakdown?: Json | null
           monthly_essential_expenses?: number | null
           monthly_expenses?: number | null
           monthly_income?: number | null
+          monthly_sip?: number | null
           retirement_age?: number | null
+          retirement_corpus_target?: number | null
+          retirement_lifestyle?: string | null
           risk_profile?: string | null
           salary_growth_rate?: number | null
           updated_at?: string
@@ -121,6 +145,75 @@ export type Database = {
           id?: string
           score_type?: string
           score_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_snapshots: {
+        Row: {
+          created_at: string
+          debt_ratio: number | null
+          emergency_months: number | null
+          id: string
+          monthly_expenses: number | null
+          monthly_income: number | null
+          net_worth: number | null
+          niti_age: number | null
+          niti_age_delta_years: number | null
+          niti_age_direction: string | null
+          niti_score: number | null
+          niti_score_grade: string | null
+          raw_input: Json | null
+          recommendations: Json | null
+          retirement_status: string | null
+          savings_rate: number | null
+          taken_at: string
+          total_assets: number | null
+          total_liabilities: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          debt_ratio?: number | null
+          emergency_months?: number | null
+          id?: string
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          net_worth?: number | null
+          niti_age?: number | null
+          niti_age_delta_years?: number | null
+          niti_age_direction?: string | null
+          niti_score?: number | null
+          niti_score_grade?: string | null
+          raw_input?: Json | null
+          recommendations?: Json | null
+          retirement_status?: string | null
+          savings_rate?: number | null
+          taken_at?: string
+          total_assets?: number | null
+          total_liabilities?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          debt_ratio?: number | null
+          emergency_months?: number | null
+          id?: string
+          monthly_expenses?: number | null
+          monthly_income?: number | null
+          net_worth?: number | null
+          niti_age?: number | null
+          niti_age_delta_years?: number | null
+          niti_age_direction?: string | null
+          niti_score?: number | null
+          niti_score_grade?: string | null
+          raw_input?: Json | null
+          recommendations?: Json | null
+          retirement_status?: string | null
+          savings_rate?: number | null
+          taken_at?: string
+          total_assets?: number | null
+          total_liabilities?: number | null
           user_id?: string
         }
         Relationships: []
