@@ -178,9 +178,14 @@ export interface FinancialSnapshotInsert {
 }
 
 export async function insertFinancialSnapshot(row: FinancialSnapshotInsert) {
-  const { error } = await supabase.from("financial_snapshots").insert(row);
+  const { error } = await supabase
+    .from("financial_snapshots")
+    // Snapshot payload uses generic `unknown` to keep the caller free of jsonb-typing noise;
+    // the row shape itself is validated by the Postgres column set.
+    .insert(row as never);
   if (error) throw error;
 }
+
 
 export async function listFinancialSnapshots(userId: string, limit = 20) {
   const { data, error } = await supabase
