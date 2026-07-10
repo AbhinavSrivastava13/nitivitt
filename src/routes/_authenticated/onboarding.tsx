@@ -21,7 +21,20 @@ import {
   listLiabilities,
   listGoals,
   listInsurance,
+  insertFinancialSnapshot,
 } from "@/lib/services/profile.service";
+import {
+  calculateNitiScore,
+  calculateNitiAge,
+  calculateEmergencyFund,
+  calculateNetWorth,
+  calculateSavingsRate,
+  calculateDebtRatio,
+  calculateRetirement,
+  generateRecommendations,
+} from "@/lib/niti-core";
+import type { NitiCoreInput } from "@/lib/niti-core";
+
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
