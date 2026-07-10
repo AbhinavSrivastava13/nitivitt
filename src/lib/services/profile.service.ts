@@ -57,12 +57,15 @@ export async function upsertProfile(row: Partial<ProfileRow> & { id: string }) {
 export async function upsertFinancialProfile(row: Partial<FinancialProfileRow> & { user_id: string }) {
   const { data, error } = await supabase
     .from("financial_profiles")
-    .upsert(row, { onConflict: "user_id" })
+    // Cast: jsonb columns (income_breakdown / expense_breakdown) accept plain objects
+    // but the generated `Json` type is stricter than our domain shape.
+    .upsert(row as never, { onConflict: "user_id" })
     .select()
     .single();
   if (error) throw error;
   return data;
 }
+
 
 export async function getFinancialProfile(userId: string) {
   const { data, error } = await supabase
