@@ -154,3 +154,50 @@ export async function insertLiability(row: {
   if (error) throw error;
 }
 
+
+/* ------------------------------ Snapshots ------------------------------ */
+
+export interface FinancialSnapshotInsert {
+  user_id: string;
+  niti_score?: number | null;
+  niti_score_grade?: string | null;
+  niti_age?: number | null;
+  niti_age_direction?: string | null;
+  niti_age_delta_years?: number | null;
+  net_worth?: number | null;
+  total_assets?: number | null;
+  total_liabilities?: number | null;
+  savings_rate?: number | null;
+  debt_ratio?: number | null;
+  emergency_months?: number | null;
+  retirement_status?: string | null;
+  monthly_income?: number | null;
+  monthly_expenses?: number | null;
+  recommendations?: unknown;
+  raw_input?: unknown;
+}
+
+export async function insertFinancialSnapshot(row: FinancialSnapshotInsert) {
+  const { error } = await supabase.from("financial_snapshots").insert(row);
+  if (error) throw error;
+}
+
+export async function listFinancialSnapshots(userId: string, limit = 20) {
+  const { data, error } = await supabase
+    .from("financial_snapshots")
+    .select("*")
+    .eq("user_id", userId)
+    .order("taken_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function countFinancialSnapshots(userId: string) {
+  const { count, error } = await supabase
+    .from("financial_snapshots")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+  if (error) throw error;
+  return count ?? 0;
+}
