@@ -133,7 +133,7 @@ function Dashboard() {
       <SiteHeader />
       <main className="container-page py-8 md:py-10">
         {/* ── Top header ────────────────────────────────────────────── */}
-        <header className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+        <header className="flex flex-col gap-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div className="min-w-0">
             {(() => {
               const hr = new Date().getHours();
@@ -146,8 +146,9 @@ function Dashboard() {
                     : "Here's where your finances stand today.";
               return (
                 <>
-                  <h1 className="truncate font-display text-2xl text-foreground md:text-3xl">
-                    {tod}, {first}.
+                  <h1 className="font-display text-2xl leading-tight text-foreground md:text-3xl">
+                    {tod},{" "}
+                    <span className="break-words">{first}</span>.
                   </h1>
                   <p className="mt-1 text-sm text-muted-foreground">{sub}</p>
                 </>
@@ -159,7 +160,7 @@ function Dashboard() {
               </p>
             )}
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:flex-nowrap">
             <Link
               to="/onboarding"
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted md:text-sm"
@@ -174,6 +175,7 @@ function Dashboard() {
             </Link>
           </div>
         </header>
+
 
         {!hasData && (
           <div className="mt-5 rounded-2xl border border-dashed border-border bg-card/50 p-5 text-sm">
