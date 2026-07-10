@@ -6,7 +6,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
+  countFinancialSnapshots,
 } from "@/lib/services/profile.service";
+
 import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   calculateSavingsRate, calculateDebtRatio, calculateInsuranceAdequacy, calculateRetirement,
