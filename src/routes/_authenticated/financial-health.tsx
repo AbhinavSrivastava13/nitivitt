@@ -6,7 +6,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
+  countFinancialSnapshots,
 } from "@/lib/services/profile.service";
+
 import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   calculateSavingsRate, calculateDebtRatio, calculateInsuranceAdequacy, calculateRetirement,
@@ -39,12 +41,14 @@ function useReportData() {
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       const user = data.user!;
-      const [profile, fp, assets, liabs, goals, insurance] = await Promise.all([
+      const [profile, fp, assets, liabs, goals, insurance, snapshotCount] = await Promise.all([
         getProfile(user.id), getFinancialProfile(user.id),
         listAssets(user.id), listLiabilities(user.id),
         listGoals(user.id), listInsurance(user.id),
+        countFinancialSnapshots(user.id),
       ]);
-      return { user, profile, fp, assets, liabs, goals, insurance };
+      return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount };
+
     },
   });
 }
@@ -128,7 +132,25 @@ function FinancialHealthReport() {
         </div>
 
 
-        {/* Overall summary */}
+        {/* Financial journey — will populate once multiple snapshots exist */}
+        {typeof data.snapshotCount === "number" && (
+          <section className="mt-6 rounded-2xl border border-dashed border-border bg-card/60 p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Your financial journey</p>
+            {data.snapshotCount <= 1 ? (
+              <p className="mt-2 text-sm text-muted-foreground">
+                This is your first recorded review. Every time you Review Profile, NitiVitt will save a snapshot of your key
+                metrics — NitiScore™, NitiAge™, net worth, savings rate and more — so you can see how your finances evolve
+                over the months and years. Come back after your next review to start seeing your progress.
+              </p>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">
+                You have {data.snapshotCount} recorded reviews. Progress charts comparing them will land in an upcoming
+                milestone — your history is already being captured in the background.
+              </p>
+            )}
+          </section>
+        )}
+
         <section className="mt-8 grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-soft">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Overall financial summary</p>

@@ -21,7 +21,20 @@ import {
   listLiabilities,
   listGoals,
   listInsurance,
+  insertFinancialSnapshot,
 } from "@/lib/services/profile.service";
+import {
+  calculateNitiScore,
+  calculateNitiAge,
+  calculateEmergencyFund,
+  calculateNetWorth,
+  calculateSavingsRate,
+  calculateDebtRatio,
+  calculateRetirement,
+  generateRecommendations,
+} from "@/lib/niti-core";
+import type { NitiCoreInput } from "@/lib/niti-core";
+
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
@@ -195,6 +208,32 @@ function OnboardingWizard() {
       const hasAnyProfile = !!(profile?.full_name || fp?.monthly_income);
       if (hasAnyProfile) setIsReturning(true);
 
+      const fpAny = fp as (typeof fp & {
+        earning_members?: number | null;
+        monthly_sip?: number | null;
+        annual_investment?: number | null;
+        existing_portfolio?: number | null;
+        retirement_corpus_target?: number | null;
+        retirement_lifestyle?: string | null;
+        income_breakdown?: Partial<IncomeMap> | null;
+        expense_breakdown?: Partial<ExpenseMap> | null;
+      }) | null;
+
+      const restoredIncome: IncomeMap = fpAny?.income_breakdown
+        ? { ...ZERO_INCOME, ...fpAny.income_breakdown }
+        : fpAny?.monthly_income
+          ? { ...ZERO_INCOME, salary: Number(fpAny.monthly_income) }
+          : { ...ZERO_INCOME };
+      const restoredExpenses: ExpenseMap = fpAny?.expense_breakdown
+        ? { ...ZERO_EXPENSES, ...fpAny.expense_breakdown }
+        : fpAny?.monthly_expenses
+          ? {
+              ...ZERO_EXPENSES,
+              rent_emi: Number(fpAny.monthly_essential_expenses ?? 0),
+              lifestyle: Math.max(0, Number(fpAny.monthly_expenses ?? 0) - Number(fpAny.monthly_essential_expenses ?? 0)),
+            }
+          : { ...ZERO_EXPENSES };
+
       setS((prev) => ({
         ...prev,
         full_name: profile?.full_name ?? prev.full_name,
@@ -204,19 +243,16 @@ function OnboardingWizard() {
         city: profile?.city ?? prev.city,
         marital_status: profile?.marital_status ?? prev.marital_status,
         dependents: profile?.dependents ?? prev.dependents,
-        // Income/expenses: only totals are persisted → put into a single line so numbers survive round-trip
-        income: fp?.monthly_income
-          ? { ...ZERO_INCOME, salary: Number(fp.monthly_income) }
-          : prev.income,
-        expenses: fp?.monthly_expenses
-          ? {
-              ...ZERO_EXPENSES,
-              rent_emi: Number(fp.monthly_essential_expenses ?? 0),
-              lifestyle: Math.max(0, Number(fp.monthly_expenses ?? 0) - Number(fp.monthly_essential_expenses ?? 0)),
-            }
-          : prev.expenses,
-        risk_profile: (fp?.risk_profile as State["risk_profile"]) ?? prev.risk_profile,
-        retirement_age: fp?.retirement_age ?? prev.retirement_age,
+        earning_members: fpAny?.earning_members ?? prev.earning_members,
+        income: restoredIncome,
+        expenses: restoredExpenses,
+        risk_profile: (fpAny?.risk_profile as State["risk_profile"]) ?? prev.risk_profile,
+        retirement_age: fpAny?.retirement_age ?? prev.retirement_age,
+        retirement_corpus: Number(fpAny?.retirement_corpus_target ?? 0) || prev.retirement_corpus,
+        retirement_lifestyle: (fpAny?.retirement_lifestyle as State["retirement_lifestyle"]) ?? prev.retirement_lifestyle,
+        monthly_sip: Number(fpAny?.monthly_sip ?? 0) || prev.monthly_sip,
+        annual_investment: Number(fpAny?.annual_investment ?? 0) || prev.annual_investment,
+        existing_portfolio: Number(fpAny?.existing_portfolio ?? 0) || prev.existing_portfolio,
         assets: nextAssets,
         liabilities: nextLiab,
         monthly_emi_total: emiSum || prev.monthly_emi_total,
@@ -228,6 +264,7 @@ function OnboardingWizard() {
         has_pa: insByType("personal_accident") > 0, pa_cover: insByType("personal_accident"),
         goals: nextGoals,
       }));
+
     })();
     return () => {
       cancelled = true;
@@ -305,7 +342,16 @@ function OnboardingWizard() {
       monthly_essential_expenses: essentials,
       risk_profile: s.risk_profile,
       retirement_age: s.retirement_age,
+      earning_members: s.earning_members,
+      monthly_sip: s.monthly_sip,
+      annual_investment: s.annual_investment,
+      existing_portfolio: s.existing_portfolio,
+      retirement_corpus_target: s.retirement_corpus,
+      retirement_lifestyle: s.retirement_lifestyle,
+      income_breakdown: { ...s.income },
+      expense_breakdown: { ...s.expenses },
     });
+
 
     // Wipe existing child rows so a review-and-save produces one clean snapshot
     // (idempotent regardless of whether the user is onboarding or reviewing).
@@ -375,7 +421,71 @@ function OnboardingWizard() {
     }
 
     await markOnboardingComplete(user.id);
+
+    // Build the same NitiCore input the dashboard consumes so the snapshot
+    // stores what the user would have seen on the dashboard right now.
+    const totalAssets = sum(s.assets) + s.existing_portfolio;
+    const totalLiab = sum(s.liabilities);
+    const liquidAssets = (Object.keys(s.assets) as (keyof AssetMap)[])
+      .filter((k) => LIQUID_ASSET_KEYS.has(k))
+      .reduce((a, k) => a + (s.assets[k] || 0), 0);
+    const ageYears = s.date_of_birth
+      ? Math.max(18, Math.floor((Date.now() - new Date(s.date_of_birth).getTime()) / (365.25 * 24 * 3600 * 1000)))
+      : 30;
+    const input: NitiCoreInput = {
+      ageYears,
+      monthlyIncome: totalIncome,
+      monthlyExpenses: totalExpenses,
+      monthlyEssentialExpenses: essentials,
+      liquidAssets,
+      totalAssets,
+      totalLiabilities: totalLiab,
+      monthlyEmi: s.monthly_emi_total,
+      monthlyInvestments: s.monthly_sip,
+      totalInvestments: s.existing_portfolio,
+      hasTermInsurance: s.has_term,
+      hasHealthInsurance: s.has_health || s.has_employer,
+      termCover: s.term_cover,
+      retirementCorpus: s.retirement_corpus,
+      retirementAge: s.retirement_age,
+      riskProfile: s.risk_profile,
+    };
+    const score = calculateNitiScore(input);
+    const age = calculateNitiAge(input);
+    const emergency = calculateEmergencyFund(input);
+    const netWorth = calculateNetWorth(input);
+    const savings = calculateSavingsRate(input);
+    const debt = calculateDebtRatio(input);
+    const retirement = calculateRetirement(input);
+    const recs = generateRecommendations(input);
+    const agePayload = age.aiPayload as { direction?: string; deltaYears?: number } | undefined;
+
+    try {
+      await insertFinancialSnapshot({
+        user_id: user.id,
+        niti_score: Number(score.value),
+        niti_score_grade: score.grade,
+        niti_age: Number(age.value),
+        niti_age_direction: agePayload?.direction ?? null,
+        niti_age_delta_years: agePayload?.deltaYears ?? null,
+        net_worth: Number(netWorth.value),
+        total_assets: totalAssets,
+        total_liabilities: totalLiab,
+        savings_rate: Number(savings.value),
+        debt_ratio: Number(debt.value),
+        emergency_months: Number(emergency.value),
+        retirement_status: retirement.status,
+        monthly_income: totalIncome,
+        monthly_expenses: totalExpenses,
+        recommendations: recs.slice(0, 10),
+        raw_input: input as unknown,
+      });
+    } catch (snapErr) {
+      // Snapshot is additive — never block the primary save flow.
+      console.warn("Failed to record financial snapshot", snapErr);
+    }
   }
+
 
   async function handleFinish() {
     setSubmitting(true);

@@ -107,14 +107,20 @@ function ProfilePage() {
             <Row label="Occupation" value={profile?.occupation} />
             <Row label="Marital status" value={profile?.marital_status} />
             <Row label="Dependents" value={profile?.dependents ?? 0} />
+            <Row label="Earning members" value={(fp as { earning_members?: number | null } | null)?.earning_members ?? "—"} />
           </Section>
 
-          <Section title="Income">
+          <Section title="Income & Retirement">
             <Row label="Monthly income" value={formatINR(Number(fp?.monthly_income ?? 0))} />
             <Row label="Annual income" value={formatINR(Number(fp?.annual_income ?? 0))} />
+            <Row label="Monthly SIP" value={formatINR(Number((fp as { monthly_sip?: number | null } | null)?.monthly_sip ?? 0))} />
+            <Row label="Existing portfolio" value={formatINR(Number((fp as { existing_portfolio?: number | null } | null)?.existing_portfolio ?? 0))} />
             <Row label="Risk profile" value={fp?.risk_profile} />
             <Row label="Planned retirement age" value={fp?.retirement_age ?? "—"} />
+            <Row label="Retirement lifestyle" value={(fp as { retirement_lifestyle?: string | null } | null)?.retirement_lifestyle ?? "—"} />
+            <Row label="Retirement corpus target" value={formatINR(Number((fp as { retirement_corpus_target?: number | null } | null)?.retirement_corpus_target ?? 0))} />
           </Section>
+
 
           <Section title="Expenses">
             <Row label="Total monthly expenses" value={formatINR(Number(fp?.monthly_expenses ?? 0))} />
