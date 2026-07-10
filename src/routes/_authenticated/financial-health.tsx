@@ -41,12 +41,14 @@ function useReportData() {
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       const user = data.user!;
-      const [profile, fp, assets, liabs, goals, insurance] = await Promise.all([
+      const [profile, fp, assets, liabs, goals, insurance, snapshotCount] = await Promise.all([
         getProfile(user.id), getFinancialProfile(user.id),
         listAssets(user.id), listLiabilities(user.id),
         listGoals(user.id), listInsurance(user.id),
+        countFinancialSnapshots(user.id),
       ]);
-      return { user, profile, fp, assets, liabs, goals, insurance };
+      return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount };
+
     },
   });
 }
