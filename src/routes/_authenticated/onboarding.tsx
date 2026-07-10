@@ -342,7 +342,16 @@ function OnboardingWizard() {
       monthly_essential_expenses: essentials,
       risk_profile: s.risk_profile,
       retirement_age: s.retirement_age,
+      earning_members: s.earning_members,
+      monthly_sip: s.monthly_sip,
+      annual_investment: s.annual_investment,
+      existing_portfolio: s.existing_portfolio,
+      retirement_corpus_target: s.retirement_corpus,
+      retirement_lifestyle: s.retirement_lifestyle,
+      income_breakdown: { ...s.income },
+      expense_breakdown: { ...s.expenses },
     });
+
 
     // Wipe existing child rows so a review-and-save produces one clean snapshot
     // (idempotent regardless of whether the user is onboarding or reviewing).
