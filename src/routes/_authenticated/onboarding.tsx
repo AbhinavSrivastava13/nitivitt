@@ -421,7 +421,71 @@ function OnboardingWizard() {
     }
 
     await markOnboardingComplete(user.id);
+
+    // Build the same NitiCore input the dashboard consumes so the snapshot
+    // stores what the user would have seen on the dashboard right now.
+    const totalAssets = sum(s.assets) + s.existing_portfolio;
+    const totalLiab = sum(s.liabilities);
+    const liquidAssets = (Object.keys(s.assets) as (keyof AssetMap)[])
+      .filter((k) => LIQUID_ASSET_KEYS.has(k))
+      .reduce((a, k) => a + (s.assets[k] || 0), 0);
+    const ageYears = s.date_of_birth
+      ? Math.max(18, Math.floor((Date.now() - new Date(s.date_of_birth).getTime()) / (365.25 * 24 * 3600 * 1000)))
+      : 30;
+    const input: NitiCoreInput = {
+      ageYears,
+      monthlyIncome: totalIncome,
+      monthlyExpenses: totalExpenses,
+      monthlyEssentialExpenses: essentials,
+      liquidAssets,
+      totalAssets,
+      totalLiabilities: totalLiab,
+      monthlyEmi: s.monthly_emi_total,
+      monthlyInvestments: s.monthly_sip,
+      totalInvestments: s.existing_portfolio,
+      hasTermInsurance: s.has_term,
+      hasHealthInsurance: s.has_health || s.has_employer,
+      termCover: s.term_cover,
+      retirementCorpus: s.retirement_corpus,
+      retirementAge: s.retirement_age,
+      riskProfile: s.risk_profile,
+    };
+    const score = calculateNitiScore(input);
+    const age = calculateNitiAge(input);
+    const emergency = calculateEmergencyFund(input);
+    const netWorth = calculateNetWorth(input);
+    const savings = calculateSavingsRate(input);
+    const debt = calculateDebtRatio(input);
+    const retirement = calculateRetirement(input);
+    const recs = generateRecommendations(input);
+    const agePayload = age.aiPayload as { direction?: string; deltaYears?: number } | undefined;
+
+    try {
+      await insertFinancialSnapshot({
+        user_id: user.id,
+        niti_score: Number(score.value),
+        niti_score_grade: score.grade,
+        niti_age: Number(age.value),
+        niti_age_direction: agePayload?.direction ?? null,
+        niti_age_delta_years: agePayload?.deltaYears ?? null,
+        net_worth: Number(netWorth.value),
+        total_assets: totalAssets,
+        total_liabilities: totalLiab,
+        savings_rate: Number(savings.value),
+        debt_ratio: Number(debt.value),
+        emergency_months: Number(emergency.value),
+        retirement_status: retirement.status,
+        monthly_income: totalIncome,
+        monthly_expenses: totalExpenses,
+        recommendations: recs.slice(0, 10),
+        raw_input: input as unknown,
+      });
+    } catch (snapErr) {
+      // Snapshot is additive — never block the primary save flow.
+      console.warn("Failed to record financial snapshot", snapErr);
+    }
   }
+
 
   async function handleFinish() {
     setSubmitting(true);
