@@ -12,12 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as PrinciplesRouteImport } from './routes/principles'
-import { Route as KnowledgeRouteImport } from './routes/knowledge'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as KnowledgeIndexRouteImport } from './routes/knowledge.index'
 import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
@@ -52,11 +52,6 @@ const PrinciplesRoute = PrinciplesRouteImport.update({
   path: '/principles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KnowledgeRoute = KnowledgeRouteImport.update({
-  id: '/knowledge',
-  path: '/knowledge',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
@@ -81,15 +76,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KnowledgeIndexRoute = KnowledgeIndexRouteImport.update({
+  id: '/knowledge/',
+  path: '/knowledge/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesSlugRoute = ServicesSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => ServicesRoute,
 } as any)
 const KnowledgeSlugRoute = KnowledgeSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => KnowledgeRoute,
+  id: '/knowledge/$slug',
+  path: '/knowledge/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -181,7 +181,6 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
-  '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -203,13 +202,13 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
+  '/knowledge/': typeof KnowledgeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
-  '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -231,6 +230,7 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
+  '/knowledge': typeof KnowledgeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -239,7 +239,6 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/auth': typeof AuthRouteWithChildren
   '/how-it-works': typeof HowItWorksRoute
-  '/knowledge': typeof KnowledgeRouteWithChildren
   '/principles': typeof PrinciplesRoute
   '/services': typeof ServicesRouteWithChildren
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -261,6 +260,7 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
   '/services/$slug': typeof ServicesSlugRoute
+  '/knowledge/': typeof KnowledgeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -269,7 +269,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/how-it-works'
-    | '/knowledge'
     | '/principles'
     | '/services'
     | '/sitemap.xml'
@@ -291,13 +290,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/knowledge/$slug'
     | '/services/$slug'
+    | '/knowledge/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/auth'
     | '/how-it-works'
-    | '/knowledge'
     | '/principles'
     | '/services'
     | '/sitemap.xml'
@@ -319,6 +318,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/knowledge/$slug'
     | '/services/$slug'
+    | '/knowledge'
   id:
     | '__root__'
     | '/'
@@ -326,7 +326,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/auth'
     | '/how-it-works'
-    | '/knowledge'
     | '/principles'
     | '/services'
     | '/sitemap.xml'
@@ -348,6 +347,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/knowledge/$slug'
     | '/services/$slug'
+    | '/knowledge/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -356,10 +356,11 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRouteWithChildren
   HowItWorksRoute: typeof HowItWorksRoute
-  KnowledgeRoute: typeof KnowledgeRouteWithChildren
   PrinciplesRoute: typeof PrinciplesRoute
   ServicesRoute: typeof ServicesRouteWithChildren
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  KnowledgeSlugRoute: typeof KnowledgeSlugRoute
+  KnowledgeIndexRoute: typeof KnowledgeIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -383,13 +384,6 @@ declare module '@tanstack/react-router' {
       path: '/principles'
       fullPath: '/principles'
       preLoaderRoute: typeof PrinciplesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/knowledge': {
-      id: '/knowledge'
-      path: '/knowledge'
-      fullPath: '/knowledge'
-      preLoaderRoute: typeof KnowledgeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -427,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/knowledge/': {
+      id: '/knowledge/'
+      path: '/knowledge'
+      fullPath: '/knowledge/'
+      preLoaderRoute: typeof KnowledgeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services/$slug': {
       id: '/services/$slug'
       path: '/$slug'
@@ -436,10 +437,10 @@ declare module '@tanstack/react-router' {
     }
     '/knowledge/$slug': {
       id: '/knowledge/$slug'
-      path: '/$slug'
+      path: '/knowledge/$slug'
       fullPath: '/knowledge/$slug'
       preLoaderRoute: typeof KnowledgeSlugRouteImport
-      parentRoute: typeof KnowledgeRoute
+      parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
       id: '/auth/reset-password'
@@ -605,18 +606,6 @@ const AuthRouteChildren: AuthRouteChildren = {
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
-interface KnowledgeRouteChildren {
-  KnowledgeSlugRoute: typeof KnowledgeSlugRoute
-}
-
-const KnowledgeRouteChildren: KnowledgeRouteChildren = {
-  KnowledgeSlugRoute: KnowledgeSlugRoute,
-}
-
-const KnowledgeRouteWithChildren = KnowledgeRoute._addFileChildren(
-  KnowledgeRouteChildren,
-)
-
 interface ServicesRouteChildren {
   ServicesSlugRoute: typeof ServicesSlugRoute
 }
@@ -635,10 +624,11 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AuthRoute: AuthRouteWithChildren,
   HowItWorksRoute: HowItWorksRoute,
-  KnowledgeRoute: KnowledgeRouteWithChildren,
   PrinciplesRoute: PrinciplesRoute,
   ServicesRoute: ServicesRouteWithChildren,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  KnowledgeSlugRoute: KnowledgeSlugRoute,
+  KnowledgeIndexRoute: KnowledgeIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -5,7 +5,7 @@ import { PageShell } from "@/components/page-shell";
 import { listArticles, listCategories } from "@/content/knowledge";
 import type { ArticleSummary } from "@/content/knowledge/types";
 
-export const Route = createFileRoute("/knowledge")({
+export const Route = createFileRoute("/knowledge/")({
   head: () => ({
     meta: [
       { title: "Knowledge Hub — NitiVitt" },

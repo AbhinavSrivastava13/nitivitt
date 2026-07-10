@@ -27,7 +27,16 @@ export interface FinancialProfileRow {
   salary_growth_rate: number | null;
   retirement_age: number | null;
   employment_type: string | null;
+  earning_members: number | null;
+  monthly_sip: number | null;
+  annual_investment: number | null;
+  existing_portfolio: number | null;
+  retirement_corpus_target: number | null;
+  retirement_lifestyle: string | null;
+  income_breakdown: Record<string, number> | null;
+  expense_breakdown: Record<string, number> | null;
 }
+
 
 export async function getProfile(userId: string) {
   const { data, error } = await supabase
