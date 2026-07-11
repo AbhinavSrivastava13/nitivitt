@@ -255,6 +255,27 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
     const recs = generateRecommendations(input);
 
     const firstName = profile?.full_name?.split(" ")[0] ?? "there";
+
+    // Progress-aware journey payload (only when a previous review exists).
+    const { computeJourney } = await import("@/lib/journey/compute-journey");
+    const journey = computeJourney(
+      {
+        nitiScore: score.value,
+        nitiScoreGrade: score.grade,
+        nitiAge: age.value,
+        actualAge: input.ageYears,
+        netWorth: netWorth.value,
+        totalLiabilities: input.totalLiabilities,
+        savingsRatePct: Number(savings.value),
+        emergencyMonths: Number(emergency.value),
+        debtRatioPct: Number(debt.value),
+        retirementStatus: retirement.status,
+        hasTermInsurance: input.hasTermInsurance,
+        hasHealthInsurance: input.hasHealthInsurance,
+      },
+      previousSnapshot as Parameters<typeof computeJourney>[1],
+    );
+
     const payload = {
       firstName,
       ageYears: input.ageYears,
@@ -282,7 +303,19 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       })),
       goalCount: goals.length,
       goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
+      journey: journey.hasHistory
+        ? {
+            previousReviewAt: journey.previousTakenAt,
+            deltas: journey.deltas.map((d) => ({
+              label: d.label, current: d.current, previous: d.previous,
+              deltaText: d.deltaText, positive: d.positive,
+            })),
+            milestones: journey.milestones.map((m) => m.label),
+            sinceLastReview: journey.sinceLastReview,
+          }
+        : null,
     };
+
 
     const { callAiChat, isAiConfigured } = await import("@/lib/ai-gateway");
     if (!isAiConfigured()) {
