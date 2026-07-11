@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, ArrowLeft } from "lucide-react";
+import { RefreshCw, ArrowLeft, ArrowUp, ArrowDown, Check } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
-  countFinancialSnapshots,
+  countFinancialSnapshots, listFinancialSnapshots,
 } from "@/lib/services/profile.service";
 
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/lib/niti-core";
 import type { NitiCoreInput } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
+import { computeJourney } from "@/lib/journey/compute-journey";
 
 export const Route = createFileRoute("/_authenticated/financial-health")({
   head: () => ({
@@ -41,14 +42,17 @@ function useReportData() {
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       const user = data.user!;
-      const [profile, fp, assets, liabs, goals, insurance, snapshotCount] = await Promise.all([
+      const [profile, fp, assets, liabs, goals, insurance, snapshotCount, snapshots] = await Promise.all([
         getProfile(user.id), getFinancialProfile(user.id),
         listAssets(user.id), listLiabilities(user.id),
         listGoals(user.id), listInsurance(user.id),
         countFinancialSnapshots(user.id),
+        listFinancialSnapshots(user.id, 2),
       ]);
-      return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount };
-
+      // Use the second-most-recent snapshot as the "previous review" baseline —
+      // the most recent snapshot represents the current state.
+      const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
+      return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount, previousSnapshot };
     },
   });
 }
