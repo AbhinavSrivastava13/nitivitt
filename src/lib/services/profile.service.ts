@@ -209,3 +209,19 @@ export async function countFinancialSnapshots(userId: string) {
   if (error) throw error;
   return count ?? 0;
 }
+
+/**
+ * Returns the most recent financial snapshot for the user (or null when none),
+ * used as the "previous review" baseline for Financial Journey deltas.
+ */
+export async function getLatestFinancialSnapshot(userId: string) {
+  const { data, error } = await supabase
+    .from("financial_snapshots")
+    .select("*")
+    .eq("user_id", userId)
+    .order("taken_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data ?? null;
+}

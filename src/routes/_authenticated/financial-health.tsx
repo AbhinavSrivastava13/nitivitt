@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, ArrowLeft } from "lucide-react";
+import { RefreshCw, ArrowLeft, ArrowUp, ArrowDown, Check } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
-  countFinancialSnapshots,
+  countFinancialSnapshots, listFinancialSnapshots,
 } from "@/lib/services/profile.service";
 
 import {
@@ -16,6 +16,7 @@ import {
 } from "@/lib/niti-core";
 import type { NitiCoreInput } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
+import { computeJourney } from "@/lib/journey/compute-journey";
 
 export const Route = createFileRoute("/_authenticated/financial-health")({
   head: () => ({
@@ -41,14 +42,17 @@ function useReportData() {
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       const user = data.user!;
-      const [profile, fp, assets, liabs, goals, insurance, snapshotCount] = await Promise.all([
+      const [profile, fp, assets, liabs, goals, insurance, snapshotCount, snapshots] = await Promise.all([
         getProfile(user.id), getFinancialProfile(user.id),
         listAssets(user.id), listLiabilities(user.id),
         listGoals(user.id), listInsurance(user.id),
         countFinancialSnapshots(user.id),
+        listFinancialSnapshots(user.id, 2),
       ]);
-      return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount };
-
+      // Use the second-most-recent snapshot as the "previous review" baseline —
+      // the most recent snapshot represents the current state.
+      const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
+      return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount, previousSnapshot };
     },
   });
 }
@@ -105,6 +109,27 @@ function FinancialHealthReport() {
     ? new Date(fpUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
     : "Not yet refreshed";
 
+  const journey = computeJourney(
+    {
+      nitiScore: score.value,
+      nitiScoreGrade: score.grade,
+      nitiAge: age.value,
+      actualAge: input.ageYears,
+      netWorth: netWorth.value,
+      totalLiabilities: input.totalLiabilities,
+      savingsRatePct: Number(savings.value),
+      emergencyMonths: Number(emergency.value),
+      debtRatioPct: Number(debt.value),
+      retirementStatus: retirement.status,
+      hasTermInsurance: input.hasTermInsurance,
+      hasHealthInsurance: input.hasHealthInsurance,
+    },
+    data.previousSnapshot as Parameters<typeof computeJourney>[1],
+  );
+  const prevReviewLabel = journey.previousTakenAt
+    ? new Date(journey.previousTakenAt).toLocaleDateString("en-IN", { dateStyle: "medium" })
+    : null;
+
   return (
     <div className="min-h-screen bg-surface">
       <SiteHeader />
@@ -131,25 +156,76 @@ function FinancialHealthReport() {
           </Link>
         </div>
 
-
-        {/* Financial journey — will populate once multiple snapshots exist */}
-        {typeof data.snapshotCount === "number" && (
+        {/* Financial Journey */}
+        {!journey.hasHistory ? (
           <section className="mt-6 rounded-2xl border border-dashed border-border bg-card/60 p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Your financial journey</p>
-            {data.snapshotCount <= 1 ? (
-              <p className="mt-2 text-sm text-muted-foreground">
-                This is your first recorded review. Every time you Review Profile, NitiVitt will save a snapshot of your key
-                metrics — NitiScore™, NitiAge™, net worth, savings rate and more — so you can see how your finances evolve
-                over the months and years. Come back after your next review to start seeing your progress.
+            <p className="mt-2 text-sm text-muted-foreground">
+              This is your first recorded review. From your next Review Profile onwards, NitiVitt will track how your
+              NitiScore™, NitiAge™, net worth, emergency fund and debt evolve — so you can see meaningful progress over
+              months and years, not just today's snapshot.
+            </p>
+          </section>
+        ) : (
+          <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Your financial journey</p>
+              {prevReviewLabel && (
+                <p className="text-[11px] text-muted-foreground">Compared with your review on {prevReviewLabel}</p>
+              )}
+            </div>
+
+            {journey.deltas.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Not much has moved since your last review. Steady months are often the foundation of long-term progress —
+                keep the habits going.
               </p>
             ) : (
-              <p className="mt-2 text-sm text-muted-foreground">
-                You have {data.snapshotCount} recorded reviews. Progress charts comparing them will land in an upcoming
-                milestone — your history is already being captured in the background.
-              </p>
+              <>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {journey.deltas.map((d) => (
+                    <JourneyDeltaCard key={d.label} d={d} />
+                  ))}
+                </div>
+
+                {journey.sinceLastReview.length > 0 && (
+                  <div className="mt-6 rounded-xl bg-surface p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Since your last review</p>
+                    <ul className="mt-2 space-y-1 text-sm text-foreground/90">
+                      {journey.sinceLastReview.map((line) => (
+                        <li key={line} className="flex gap-2"><span className="text-secondary">•</span>{line}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="mt-5 space-y-2">
+                  {journey.deltas.map((d) => (
+                    <p key={`${d.label}-nar`} className="text-sm text-muted-foreground">{d.narrative}</p>
+                  ))}
+                </div>
+              </>
             )}
           </section>
         )}
+
+        {/* Milestones achieved */}
+        {journey.milestones.length > 0 && (
+          <section className="mt-6 rounded-2xl border border-border bg-card p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Milestones achieved</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {journey.milestones.map((m) => (
+                <span
+                  key={m.key}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-secondary-soft px-3 py-1.5 text-xs font-medium text-secondary"
+                >
+                  <Check className="h-3.5 w-3.5" /> {m.label}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
 
         <section className="mt-8 grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-soft">
@@ -296,6 +372,27 @@ function Assumption({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg border border-border bg-surface px-3 py-2.5">
       <dt className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</dt>
       <dd className="mt-0.5 text-sm font-semibold text-foreground">{value}</dd>
+    </div>
+  );
+}
+
+function JourneyDeltaCard({ d }: { d: import("@/lib/journey/compute-journey").JourneyDelta }) {
+  const tone = d.positive
+    ? "bg-secondary-soft text-secondary"
+    : d.direction === "flat"
+      ? "bg-muted text-muted-foreground"
+      : "bg-warning-soft text-warning";
+  const Icon = d.direction === "up" ? ArrowUp : d.direction === "down" ? ArrowDown : ArrowUp;
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{d.label}</p>
+      <p className="mt-1.5 font-display text-2xl text-foreground">{d.current}</p>
+      <div className="mt-2 flex items-center gap-2">
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone}`}>
+          <Icon className="h-3 w-3" /> {d.deltaText}
+        </span>
+        <span className="text-[11px] text-muted-foreground">from {d.previous}</span>
+      </div>
     </div>
   );
 }

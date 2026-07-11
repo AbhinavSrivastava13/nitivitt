@@ -202,14 +202,18 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes] = await Promise.all([
+    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, snapsRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("assets").select("*").eq("user_id", userId),
       supabase.from("liabilities").select("*").eq("user_id", userId),
       supabase.from("insurance").select("*").eq("user_id", userId),
       supabase.from("goals").select("*").eq("user_id", userId),
+      supabase.from("financial_snapshots").select("*").eq("user_id", userId)
+        .order("taken_at", { ascending: false }).limit(2),
     ]);
+    const snapshots = snapsRes.data ?? [];
+    const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
 
     const profile = profileRes.data;
     const fp = fpRes.data;
@@ -251,6 +255,27 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
     const recs = generateRecommendations(input);
 
     const firstName = profile?.full_name?.split(" ")[0] ?? "there";
+
+    // Progress-aware journey payload (only when a previous review exists).
+    const { computeJourney } = await import("@/lib/journey/compute-journey");
+    const journey = computeJourney(
+      {
+        nitiScore: score.value,
+        nitiScoreGrade: score.grade,
+        nitiAge: age.value,
+        actualAge: input.ageYears,
+        netWorth: netWorth.value,
+        totalLiabilities: input.totalLiabilities,
+        savingsRatePct: Number(savings.value),
+        emergencyMonths: Number(emergency.value),
+        debtRatioPct: Number(debt.value),
+        retirementStatus: retirement.status,
+        hasTermInsurance: input.hasTermInsurance,
+        hasHealthInsurance: input.hasHealthInsurance,
+      },
+      previousSnapshot as Parameters<typeof computeJourney>[1],
+    );
+
     const payload = {
       firstName,
       ageYears: input.ageYears,
@@ -278,7 +303,19 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       })),
       goalCount: goals.length,
       goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
+      journey: journey.hasHistory
+        ? {
+            previousReviewAt: journey.previousTakenAt,
+            deltas: journey.deltas.map((d) => ({
+              label: d.label, current: d.current, previous: d.previous,
+              deltaText: d.deltaText, positive: d.positive,
+            })),
+            milestones: journey.milestones.map((m) => m.label),
+            sinceLastReview: journey.sinceLastReview,
+          }
+        : null,
     };
+
 
     const { callAiChat, isAiConfigured } = await import("@/lib/ai-gateway");
     if (!isAiConfigured()) {
@@ -309,6 +346,8 @@ Structure — use these six sections in order, each 2–4 sentences:
 **What to do next.** Walk through the top NitiPath™ actions one by one — why each matters for THIS person and what improves (a pillar, a metric, a future outcome) if they act. Do NOT list; write as flowing prose.
 
 **Where this leads.** A short, hopeful projection of what following through looks like 3–5 years out. Encouraging, specific, and anchored to their pillars.
+
+If the JSON contains a "journey" object (previous review exists), open the briefing by acknowledging the measurable progress since their last review in plain language — for example, "Three months ago your emergency fund covered only two months of expenses; today it covers almost five." Reference specific deltas from journey.deltas. Do NOT congratulate excessively ("great job", "awesome"); sound like an experienced mentor noting real progress. When journey is null, do not invent any history.
 
 Length: 380–520 words total.`;
 
