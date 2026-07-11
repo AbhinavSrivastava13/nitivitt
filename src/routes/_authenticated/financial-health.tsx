@@ -109,6 +109,27 @@ function FinancialHealthReport() {
     ? new Date(fpUpdated).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
     : "Not yet refreshed";
 
+  const journey = computeJourney(
+    {
+      nitiScore: score.value,
+      nitiScoreGrade: score.grade,
+      nitiAge: age.value,
+      actualAge: input.ageYears,
+      netWorth: netWorth.value,
+      totalLiabilities: input.totalLiabilities,
+      savingsRatePct: Number(savings.value),
+      emergencyMonths: Number(emergency.value),
+      debtRatioPct: Number(debt.value),
+      retirementStatus: retirement.status,
+      hasTermInsurance: input.hasTermInsurance,
+      hasHealthInsurance: input.hasHealthInsurance,
+    },
+    data.previousSnapshot as Parameters<typeof computeJourney>[1],
+  );
+  const prevReviewLabel = journey.previousTakenAt
+    ? new Date(journey.previousTakenAt).toLocaleDateString("en-IN", { dateStyle: "medium" })
+    : null;
+
   return (
     <div className="min-h-screen bg-surface">
       <SiteHeader />
@@ -135,25 +156,76 @@ function FinancialHealthReport() {
           </Link>
         </div>
 
-
-        {/* Financial journey — will populate once multiple snapshots exist */}
-        {typeof data.snapshotCount === "number" && (
+        {/* Financial Journey */}
+        {!journey.hasHistory ? (
           <section className="mt-6 rounded-2xl border border-dashed border-border bg-card/60 p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Your financial journey</p>
-            {data.snapshotCount <= 1 ? (
-              <p className="mt-2 text-sm text-muted-foreground">
-                This is your first recorded review. Every time you Review Profile, NitiVitt will save a snapshot of your key
-                metrics — NitiScore™, NitiAge™, net worth, savings rate and more — so you can see how your finances evolve
-                over the months and years. Come back after your next review to start seeing your progress.
+            <p className="mt-2 text-sm text-muted-foreground">
+              This is your first recorded review. From your next Review Profile onwards, NitiVitt will track how your
+              NitiScore™, NitiAge™, net worth, emergency fund and debt evolve — so you can see meaningful progress over
+              months and years, not just today's snapshot.
+            </p>
+          </section>
+        ) : (
+          <section className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Your financial journey</p>
+              {prevReviewLabel && (
+                <p className="text-[11px] text-muted-foreground">Compared with your review on {prevReviewLabel}</p>
+              )}
+            </div>
+
+            {journey.deltas.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Not much has moved since your last review. Steady months are often the foundation of long-term progress —
+                keep the habits going.
               </p>
             ) : (
-              <p className="mt-2 text-sm text-muted-foreground">
-                You have {data.snapshotCount} recorded reviews. Progress charts comparing them will land in an upcoming
-                milestone — your history is already being captured in the background.
-              </p>
+              <>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {journey.deltas.map((d) => (
+                    <JourneyDeltaCard key={d.label} d={d} />
+                  ))}
+                </div>
+
+                {journey.sinceLastReview.length > 0 && (
+                  <div className="mt-6 rounded-xl bg-surface p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Since your last review</p>
+                    <ul className="mt-2 space-y-1 text-sm text-foreground/90">
+                      {journey.sinceLastReview.map((line) => (
+                        <li key={line} className="flex gap-2"><span className="text-secondary">•</span>{line}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="mt-5 space-y-2">
+                  {journey.deltas.map((d) => (
+                    <p key={`${d.label}-nar`} className="text-sm text-muted-foreground">{d.narrative}</p>
+                  ))}
+                </div>
+              </>
             )}
           </section>
         )}
+
+        {/* Milestones achieved */}
+        {journey.milestones.length > 0 && (
+          <section className="mt-6 rounded-2xl border border-border bg-card p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Milestones achieved</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {journey.milestones.map((m) => (
+                <span
+                  key={m.key}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-secondary-soft px-3 py-1.5 text-xs font-medium text-secondary"
+                >
+                  <Check className="h-3.5 w-3.5" /> {m.label}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
 
         <section className="mt-8 grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2 rounded-2xl border border-border bg-card p-6 shadow-soft">
