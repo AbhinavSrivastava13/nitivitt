@@ -375,3 +375,24 @@ function Assumption({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+function JourneyDeltaCard({ d }: { d: import("@/lib/journey/compute-journey").JourneyDelta }) {
+  const tone = d.positive
+    ? "bg-secondary-soft text-secondary"
+    : d.direction === "flat"
+      ? "bg-muted text-muted-foreground"
+      : "bg-warning-soft text-warning";
+  const Icon = d.direction === "up" ? ArrowUp : d.direction === "down" ? ArrowDown : ArrowUp;
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{d.label}</p>
+      <p className="mt-1.5 font-display text-2xl text-foreground">{d.current}</p>
+      <div className="mt-2 flex items-center gap-2">
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${tone}`}>
+          <Icon className="h-3 w-3" /> {d.deltaText}
+        </span>
+        <span className="text-[11px] text-muted-foreground">from {d.previous}</span>
+      </div>
+    </div>
+  );
+}
