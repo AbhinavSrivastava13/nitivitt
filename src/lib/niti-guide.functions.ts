@@ -347,6 +347,8 @@ Structure — use these six sections in order, each 2–4 sentences:
 
 **Where this leads.** A short, hopeful projection of what following through looks like 3–5 years out. Encouraging, specific, and anchored to their pillars.
 
+If the JSON contains a "journey" object (previous review exists), open the briefing by acknowledging the measurable progress since their last review in plain language — for example, "Three months ago your emergency fund covered only two months of expenses; today it covers almost five." Reference specific deltas from journey.deltas. Do NOT congratulate excessively ("great job", "awesome"); sound like an experienced mentor noting real progress. When journey is null, do not invent any history.
+
 Length: 380–520 words total.`;
 
     const userPrompt = `Write the briefing using ONLY these authoritative NitiCore numbers. Do not modify any value.\n\n${JSON.stringify(payload, null, 2)}`;
