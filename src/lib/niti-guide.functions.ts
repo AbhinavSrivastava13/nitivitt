@@ -202,14 +202,18 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes] = await Promise.all([
+    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, snapsRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("assets").select("*").eq("user_id", userId),
       supabase.from("liabilities").select("*").eq("user_id", userId),
       supabase.from("insurance").select("*").eq("user_id", userId),
       supabase.from("goals").select("*").eq("user_id", userId),
+      supabase.from("financial_snapshots").select("*").eq("user_id", userId)
+        .order("taken_at", { ascending: false }).limit(2),
     ]);
+    const snapshots = snapsRes.data ?? [];
+    const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
 
     const profile = profileRes.data;
     const fp = fpRes.data;
