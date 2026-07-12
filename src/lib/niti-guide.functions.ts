@@ -22,7 +22,8 @@ import {
   calculateRetirement,
   calculateInsuranceAdequacy,
   calculateNetWorth,
-  generateRecommendations,
+  generateRecommendationsWithContext,
+  describeContext,
   type NitiCoreInput,
 } from "@/lib/niti-core";
 
