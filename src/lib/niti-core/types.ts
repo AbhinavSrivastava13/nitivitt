@@ -58,6 +58,38 @@ export interface Recommendation {
    * prioritiser when a meaningful trade-off exists.
    */
   crossPillarNote?: string;
+
+  // ─── CFP-style deterministic reasoning framework (v2) ───
+  // These fields are populated by the recommendation engine and consumed by
+  // NitiGuide™ / NitiSim™ so every surface explains the SAME reasoning.
+  // All optional to preserve backward compatibility with older callers.
+
+  /** One-line financial objective this recommendation serves. */
+  financialObjective?: string;
+  /** Concrete short-term (0–12 months) consequences — cash-flow / liquidity. */
+  shortTermImpact?: string;
+  /** Concrete long-term (5+ years) consequences — wealth / resilience. */
+  longTermImpact?: string;
+  /** Explicit trade-offs a real planner would name out loud. */
+  tradeOffs?: string[];
+  /** Other recommendation IDs that should ideally be addressed first. */
+  dependencies?: string[];
+  /**
+   * Opportunity cost — what the user gives up (or unlocks) by acting.
+   * Phrased in the language of a planner, not a mathematician.
+   */
+  opportunityCost?: string;
+  /**
+   * All NitiCore recommendations are deterministic by construction. This flag
+   * is carried through so downstream layers (NitiGuide, NitiSim) never
+   * mislabel the reasoning as AI-generated.
+   */
+  confidenceLevel?: "deterministic";
+  /**
+   * The life-stage / context the engine used when ranking this action.
+   * Kept for transparency and for the NitiGuide payload.
+   */
+  contextTag?: string;
 }
 
 /** Canonical financial input the whole engine reads. */
