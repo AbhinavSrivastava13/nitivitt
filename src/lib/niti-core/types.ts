@@ -111,4 +111,6 @@ export interface NitiCoreInput {
   retirementAge: number;
   employmentType?: "salaried" | "self_employed";
   riskProfile?: "conservative" | "moderate" | "aggressive";
+  /** Optional — number of financial dependents (spouse, kids, parents). */
+  dependentsCount?: number;
 }
