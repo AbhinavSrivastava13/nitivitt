@@ -22,7 +22,8 @@ import {
   calculateRetirement,
   calculateInsuranceAdequacy,
   calculateNetWorth,
-  generateRecommendations,
+  generateRecommendationsWithContext,
+  describeContext,
   type NitiCoreInput,
 } from "@/lib/niti-core";
 
@@ -100,7 +101,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
     const retirement = calculateRetirement(input);
     const insAdequacy = calculateInsuranceAdequacy(input);
     const netWorth = calculateNetWorth(input);
-    const recs = generateRecommendations(input);
+    const { context: recContext, recommendations: recs } = generateRecommendationsWithContext(input);
 
     // 3) STRUCTURED payload for the LLM. No raw DB rows, no PII beyond first name.
     const firstName = profile?.full_name?.split(" ")[0] ?? "there";
@@ -117,10 +118,22 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
         retirement: { status: retirement.status, summary: retirement.calculationSummary },
         insurance: { adequacyPct: insAdequacy.value, hasTerm: input.hasTermInsurance, hasHealth: input.hasHealthInsurance },
       },
+      context: {
+        lifeStage: recContext.lifeStage,
+        wealthStage: recContext.wealthStage,
+        protectionPosture: recContext.protectionPosture,
+        liquidityHealth: recContext.liquidityHealth,
+        surplusPct: recContext.surplusPct,
+        flags: recContext.flags,
+        summary: describeContext(recContext),
+      },
       topActions: recs.slice(0, 3).map((r) => ({
         title: r.title,
         priority: r.priority,
         nextAction: r.nextAction,
+        financialObjective: r.financialObjective,
+        tradeOffs: r.tradeOffs,
+        opportunityCost: r.opportunityCost,
       })),
       goalCount: goals.length,
       goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
@@ -252,7 +265,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
     const retirement = calculateRetirement(input);
     const insAdequacy = calculateInsuranceAdequacy(input);
     const netWorth = calculateNetWorth(input);
-    const recs = generateRecommendations(input);
+    const { context: recContext, recommendations: recs } = generateRecommendationsWithContext(input);
 
     const firstName = profile?.full_name?.split(" ")[0] ?? "there";
 
@@ -292,6 +305,17 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
         retirement: { status: retirement.status, summary: retirement.calculationSummary },
         insurance: { adequacyPct: insAdequacy.value, hasTerm: input.hasTermInsurance, hasHealth: input.hasHealthInsurance, termCover },
       },
+      context: {
+        lifeStage: recContext.lifeStage,
+        wealthStage: recContext.wealthStage,
+        protectionPosture: recContext.protectionPosture,
+        liquidityHealth: recContext.liquidityHealth,
+        surplusPct: recContext.surplusPct,
+        monthlySurplus: recContext.monthlySurplus,
+        hasDependents: recContext.hasDependents,
+        flags: recContext.flags,
+        summary: describeContext(recContext),
+      },
       topActions: recs.slice(0, 3).map((r) => ({
         title: r.title,
         priority: r.priority,
@@ -300,6 +324,13 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
         expectedImpact: r.expectedImpact,
         crossPillarNote: r.crossPillarNote,
         nextAction: r.nextAction,
+        financialObjective: r.financialObjective,
+        shortTermImpact: r.shortTermImpact,
+        longTermImpact: r.longTermImpact,
+        tradeOffs: r.tradeOffs,
+        dependencies: r.dependencies,
+        opportunityCost: r.opportunityCost,
+        contextTag: r.contextTag,
       })),
       goalCount: goals.length,
       goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
