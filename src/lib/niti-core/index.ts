@@ -10,4 +10,16 @@
 export * from "./types";
 export * from "./config";
 export * from "./services";
-export { generateRecommendations } from "./recommendation-engine";
+export {
+  generateRecommendations,
+  generateRecommendationsWithContext,
+} from "./recommendation-engine";
+export { evaluateContext, describeContext } from "./financial-context";
+export type {
+  FinancialContext,
+  LifeStage,
+  ProtectionPosture,
+  LiquidityHealth,
+  WealthStage,
+  ContextFlag,
+} from "./financial-context";
