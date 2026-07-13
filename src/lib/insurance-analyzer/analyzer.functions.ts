@@ -231,7 +231,7 @@ export const analyzeInsurancePolicy = createServerFn({ method: "POST" })
       retirementAge: Number(fp?.retirement_age ?? 60),
       employmentType: (fp?.employment_type as "salaried" | "self_employed" | null) ?? undefined,
       riskProfile: (fp?.risk_profile as "conservative" | "moderate" | "aggressive" | null) ?? undefined,
-      dependentsCount: profile?.dependents_count ?? undefined,
+      dependentsCount: profile?.dependents ?? undefined,
     };
 
     const ctx = evaluateContext(nitiInput);
@@ -264,16 +264,25 @@ export const analyzeInsurancePolicy = createServerFn({ method: "POST" })
     }
 
     // Persist (best-effort — analysis is still returned even if save fails).
+    // Cast to any because the `insurance_analyses` table is created via a
+    // separate migration and is not yet in the generated Supabase types.
     let analysisId: string | null = null;
     try {
-      const { data: inserted, error } = await supabase
+      const client = supabase as unknown as {
+        from: (t: string) => {
+          insert: (row: Record<string, unknown>) => {
+            select: (c: string) => { single: () => Promise<{ data: { id: string } | null; error: unknown }> };
+          };
+        };
+      };
+      const { data: inserted, error } = await client
         .from("insurance_analyses")
         .insert({
           user_id: userId,
           policy_type: data.policyType,
           file_name: data.fileName ?? null,
-          extracted_policy: extractedFull as never,
-          report: report as never,
+          extracted_policy: extractedFull,
+          report,
           protection_score: report.protectionScore,
         })
         .select("id")
@@ -336,12 +345,23 @@ export const listInsuranceAnalyses = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const { data, error } = await supabase
+    const client = supabase as unknown as {
+      from: (t: string) => {
+        select: (c: string) => {
+          eq: (col: string, v: string) => {
+            order: (col: string, o: { ascending: boolean }) => {
+              limit: (n: number) => Promise<{ data: unknown[] | null; error: { message: string } | null }>;
+            };
+          };
+        };
+      };
+    };
+    const { data, error } = await client
       .from("insurance_analyses")
       .select("id, policy_type, file_name, protection_score, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(20);
     if (error) throw new Error(error.message);
-    return { analyses: data ?? [] };
+    return { analyses: (data ?? []) as Array<{ id: string; policy_type: string; file_name: string | null; protection_score: number; created_at: string }> };
   });
