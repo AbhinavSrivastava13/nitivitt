@@ -82,7 +82,7 @@ const SERVICES: Service[] = [
     slug: "insurance-analyzer",
     name: "Insurance Analyzer",
     tagline: "See what you're actually covered for - and where you're exposed.",
-    status: "Coming Soon",
+    status: "Beta",
     category: "Analysis",
     shortDescription:
       "Add your term, health, motor and property policies once. Get a plain-English map of what's covered, what isn't, and where you're over- or under-paying.",

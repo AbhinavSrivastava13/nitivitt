@@ -140,6 +140,14 @@ function ServiceDetail() {
               <p className="mt-3 text-[12px] text-muted-foreground">
                 You'll be notified inside NitiVitt as soon as this service opens for early access.
               </p>
+              {service.slug === "insurance-analyzer" && (
+                <Link
+                  to="/insurance-analyzer"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  Open Insurance Analyzer <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              )}
             </div>
           </aside>
         </article>
