@@ -30,6 +30,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedPeerBenchmarkRouteImport } from './routes/_authenticated/peer-benchmark'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNetWorthRouteImport } from './routes/_authenticated/net-worth'
+import { Route as AuthenticatedInsuranceAnalyzerRouteImport } from './routes/_authenticated/insurance-analyzer'
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFinancialHealthRouteImport } from './routes/_authenticated/financial-health'
@@ -143,6 +144,12 @@ const AuthenticatedNetWorthRoute = AuthenticatedNetWorthRouteImport.update({
   path: '/net-worth',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInsuranceAnalyzerRoute =
+  AuthenticatedInsuranceAnalyzerRouteImport.update({
+    id: '/insurance-analyzer',
+    path: '/insurance-analyzer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedInsuranceRoute = AuthenticatedInsuranceRouteImport.update({
   id: '/insurance',
   path: '/insurance',
@@ -190,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/financial-health': typeof AuthenticatedFinancialHealthRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
+  '/insurance-analyzer': typeof AuthenticatedInsuranceAnalyzerRoute
   '/net-worth': typeof AuthenticatedNetWorthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
@@ -218,6 +226,7 @@ export interface FileRoutesByTo {
   '/financial-health': typeof AuthenticatedFinancialHealthRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
+  '/insurance-analyzer': typeof AuthenticatedInsuranceAnalyzerRoute
   '/net-worth': typeof AuthenticatedNetWorthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
@@ -248,6 +257,7 @@ export interface FileRoutesById {
   '/_authenticated/financial-health': typeof AuthenticatedFinancialHealthRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
+  '/_authenticated/insurance-analyzer': typeof AuthenticatedInsuranceAnalyzerRoute
   '/_authenticated/net-worth': typeof AuthenticatedNetWorthRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/financial-health'
     | '/goals'
     | '/insurance'
+    | '/insurance-analyzer'
     | '/net-worth'
     | '/onboarding'
     | '/peer-benchmark'
@@ -306,6 +317,7 @@ export interface FileRouteTypes {
     | '/financial-health'
     | '/goals'
     | '/insurance'
+    | '/insurance-analyzer'
     | '/net-worth'
     | '/onboarding'
     | '/peer-benchmark'
@@ -335,6 +347,7 @@ export interface FileRouteTypes {
     | '/_authenticated/financial-health'
     | '/_authenticated/goals'
     | '/_authenticated/insurance'
+    | '/_authenticated/insurance-analyzer'
     | '/_authenticated/net-worth'
     | '/_authenticated/onboarding'
     | '/_authenticated/peer-benchmark'
@@ -512,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNetWorthRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/insurance-analyzer': {
+      id: '/_authenticated/insurance-analyzer'
+      path: '/insurance-analyzer'
+      fullPath: '/insurance-analyzer'
+      preLoaderRoute: typeof AuthenticatedInsuranceAnalyzerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/insurance': {
       id: '/_authenticated/insurance'
       path: '/insurance'
@@ -564,6 +584,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFinancialHealthRoute: typeof AuthenticatedFinancialHealthRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
+  AuthenticatedInsuranceAnalyzerRoute: typeof AuthenticatedInsuranceAnalyzerRoute
   AuthenticatedNetWorthRoute: typeof AuthenticatedNetWorthRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPeerBenchmarkRoute: typeof AuthenticatedPeerBenchmarkRoute
@@ -581,6 +602,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFinancialHealthRoute: AuthenticatedFinancialHealthRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
+  AuthenticatedInsuranceAnalyzerRoute: AuthenticatedInsuranceAnalyzerRoute,
   AuthenticatedNetWorthRoute: AuthenticatedNetWorthRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPeerBenchmarkRoute: AuthenticatedPeerBenchmarkRoute,
