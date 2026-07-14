@@ -548,27 +548,38 @@ function NitiGuideCard() {
       <p className="mt-3 font-display text-lg text-foreground">Your financial briefing.</p>
       <p className="mt-1 text-[11px] text-muted-foreground">A calm read on where you stand — from your NitiCore™ snapshot.</p>
 
-      <div className="mt-4 max-h-[360px] overflow-y-auto pr-1">
-        {isLoading && (
-          <div className="space-y-2">
-            <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-full animate-pulse rounded bg-muted" />
-            <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
-            <p className="pt-2 text-[11px] text-muted-foreground">NitiGuide is reading your numbers…</p>
-          </div>
-        )}
-        {error && (
-          <p className="text-xs text-warning">
-            {error instanceof Error ? error.message : "Briefing unavailable right now."}
-          </p>
-        )}
+      <div className="relative mt-4">
+        <div className="max-h-[220px] overflow-hidden pr-1">
+          {isLoading && (
+            <div className="space-y-2">
+              <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-full animate-pulse rounded bg-muted" />
+              <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
+              <p className="pt-2 text-[11px] text-muted-foreground">NitiGuide is reading your numbers…</p>
+            </div>
+          )}
+          {error && (
+            <p className="text-xs text-warning">
+              {error instanceof Error ? error.message : "Briefing unavailable right now."}
+            </p>
+          )}
+          {data && (
+            <div className="prose prose-sm max-w-none text-sm text-foreground/90 prose-p:my-2 prose-p:leading-relaxed prose-strong:text-foreground">
+              <ReactMarkdown>{data.markdown}</ReactMarkdown>
+            </div>
+          )}
+        </div>
         {data && (
-          <div className="prose prose-sm max-w-none text-sm text-foreground/90 prose-p:my-2 prose-p:leading-relaxed prose-strong:text-foreground">
-            <ReactMarkdown>{data.markdown}</ReactMarkdown>
-          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card to-transparent" />
         )}
       </div>
+      <Link
+        to="/ai-coach"
+        className="mt-4 inline-flex items-center gap-1.5 self-start text-xs font-semibold text-primary hover:underline"
+      >
+        Read Full Briefing <ArrowRight className="h-3 w-3" />
+      </Link>
     </div>
   );
 }
