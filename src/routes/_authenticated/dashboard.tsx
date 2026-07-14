@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import {
   Target, Shield, PiggyBank, Wallet, TrendingUp, FlaskConical, GraduationCap,
   Briefcase, Sparkles, ArrowRight, ArrowUpRight, ArrowDownRight, RefreshCw,
-  Gauge, Hourglass,
+  Gauge, Hourglass, ShieldCheck, BarChart3, Landmark, Receipt, Users,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
