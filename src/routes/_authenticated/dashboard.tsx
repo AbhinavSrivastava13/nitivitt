@@ -363,6 +363,66 @@ function Dashboard() {
           <NitiSimLauncher />
         </section>
 
+        {/* ── Services ─────────────────────────────────────────────── */}
+        <section className="mt-10">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Services</p>
+              <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">The NitiVitt ecosystem</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Deterministic, fee-only guidance — expanding one service at a time.</p>
+            </div>
+            <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {SERVICE_CARDS.map((s) => {
+              const Icon = s.icon;
+              const isActive = s.status === "active";
+              const badge = isActive
+                ? { label: "Beta", cls: "bg-secondary-soft text-secondary" }
+                : { label: "Coming Soon", cls: "bg-muted text-muted-foreground" };
+              const inner = (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge.cls}`}>{badge.label}</span>
+                  </div>
+                  <p className="mt-3 font-semibold text-foreground">{s.name}</p>
+                  <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
+                  {isActive ? (
+                    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                      Open <ArrowRight className="h-3 w-3" />
+                    </span>
+                  ) : (
+                    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                      Notify me on launch
+                    </span>
+                  )}
+                </>
+              );
+              return isActive ? (
+                <Link
+                  key={s.name}
+                  to="/insurance-analyzer"
+                  className="group flex flex-col rounded-2xl border border-primary/40 bg-gradient-to-br from-primary-soft/40 to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div
+                  key={s.name}
+                  aria-disabled="true"
+                  className="flex flex-col rounded-2xl border border-dashed border-border bg-card/60 p-5 opacity-80"
+                >
+                  {inner}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+
         {/* ── Modules ───────────────────────────────────────────────── */}
         <section className="mt-10">
           <div className="flex items-end justify-between gap-3">
