@@ -590,8 +590,6 @@ function NitiSimLauncher() {
   const prompts = [
     "Increase my SIP by ₹5,000",
     "Can I retire by 50?",
-    "Can I afford a ₹1 crore house?",
-    "Prepay my personal loan?",
   ];
   return (
     <div className="flex flex-col rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft lg:col-span-1 lg:h-full">
