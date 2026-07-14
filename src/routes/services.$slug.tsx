@@ -89,6 +89,14 @@ function ServiceDetail() {
               {service.name}
             </h1>
             <p className="mt-4 max-w-3xl text-lg leading-relaxed text-muted-foreground">{service.tagline}</p>
+            {service.slug === "insurance-analyzer" && (
+              <Link
+                to="/insurance-analyzer"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90"
+              >
+                Open Insurance Analyzer <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
           </div>
         </section>
 

@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import {
   Target, Shield, PiggyBank, Wallet, TrendingUp, FlaskConical, GraduationCap,
   Briefcase, Sparkles, ArrowRight, ArrowUpRight, ArrowDownRight, RefreshCw,
-  Gauge, Hourglass,
+  Gauge, Hourglass, ShieldCheck, BarChart3, Landmark, Receipt, Users,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -363,6 +363,66 @@ function Dashboard() {
           <NitiSimLauncher />
         </section>
 
+        {/* ── Services ─────────────────────────────────────────────── */}
+        <section className="mt-10">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Services</p>
+              <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">The NitiVitt ecosystem</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Deterministic, fee-only guidance — expanding one service at a time.</p>
+            </div>
+            <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {SERVICE_CARDS.map((s) => {
+              const Icon = s.icon;
+              const isActive = s.status === "active";
+              const badge = isActive
+                ? { label: "Beta", cls: "bg-secondary-soft text-secondary" }
+                : { label: "Coming Soon", cls: "bg-muted text-muted-foreground" };
+              const inner = (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge.cls}`}>{badge.label}</span>
+                  </div>
+                  <p className="mt-3 font-semibold text-foreground">{s.name}</p>
+                  <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
+                  {isActive ? (
+                    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+                      Open <ArrowRight className="h-3 w-3" />
+                    </span>
+                  ) : (
+                    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                      Notify me on launch
+                    </span>
+                  )}
+                </>
+              );
+              return isActive ? (
+                <Link
+                  key={s.name}
+                  to="/insurance-analyzer"
+                  className="group flex flex-col rounded-2xl border border-primary/40 bg-gradient-to-br from-primary-soft/40 to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div
+                  key={s.name}
+                  aria-disabled="true"
+                  className="flex flex-col rounded-2xl border border-dashed border-border bg-card/60 p-5 opacity-80"
+                >
+                  {inner}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+
         {/* ── Modules ───────────────────────────────────────────────── */}
         <section className="mt-10">
           <div className="flex items-end justify-between gap-3">
@@ -488,27 +548,38 @@ function NitiGuideCard() {
       <p className="mt-3 font-display text-lg text-foreground">Your financial briefing.</p>
       <p className="mt-1 text-[11px] text-muted-foreground">A calm read on where you stand — from your NitiCore™ snapshot.</p>
 
-      <div className="mt-4 max-h-[360px] overflow-y-auto pr-1">
-        {isLoading && (
-          <div className="space-y-2">
-            <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-full animate-pulse rounded bg-muted" />
-            <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
-            <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
-            <p className="pt-2 text-[11px] text-muted-foreground">NitiGuide is reading your numbers…</p>
-          </div>
-        )}
-        {error && (
-          <p className="text-xs text-warning">
-            {error instanceof Error ? error.message : "Briefing unavailable right now."}
-          </p>
-        )}
+      <div className="relative mt-4">
+        <div className="max-h-[220px] overflow-hidden pr-1">
+          {isLoading && (
+            <div className="space-y-2">
+              <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-full animate-pulse rounded bg-muted" />
+              <div className="h-3 w-11/12 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-3/4 animate-pulse rounded bg-muted" />
+              <p className="pt-2 text-[11px] text-muted-foreground">NitiGuide is reading your numbers…</p>
+            </div>
+          )}
+          {error && (
+            <p className="text-xs text-warning">
+              {error instanceof Error ? error.message : "Briefing unavailable right now."}
+            </p>
+          )}
+          {data && (
+            <div className="prose prose-sm max-w-none text-sm text-foreground/90 prose-p:my-2 prose-p:leading-relaxed prose-strong:text-foreground">
+              <ReactMarkdown>{data.markdown}</ReactMarkdown>
+            </div>
+          )}
+        </div>
         {data && (
-          <div className="prose prose-sm max-w-none text-sm text-foreground/90 prose-p:my-2 prose-p:leading-relaxed prose-strong:text-foreground">
-            <ReactMarkdown>{data.markdown}</ReactMarkdown>
-          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-card to-transparent" />
         )}
       </div>
+      <Link
+        to="/ai-coach"
+        className="mt-4 inline-flex items-center gap-1.5 self-start text-xs font-semibold text-primary hover:underline"
+      >
+        Read Full Briefing <ArrowRight className="h-3 w-3" />
+      </Link>
     </div>
   );
 }
@@ -519,8 +590,6 @@ function NitiSimLauncher() {
   const prompts = [
     "Increase my SIP by ₹5,000",
     "Can I retire by 50?",
-    "Can I afford a ₹1 crore house?",
-    "Prepay my personal loan?",
   ];
   return (
     <div className="flex flex-col rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft lg:col-span-1 lg:h-full">
@@ -776,3 +845,18 @@ const MODULES = [
   { to: "/simulator", icon: FlaskConical, name: "NitiSim", hint: "Ask any what-if" },
   { to: "/ai-coach", icon: GraduationCap, name: "NitiGuide", hint: "Your briefing" },
 ] as const;
+
+type ServiceCard = {
+  name: string;
+  desc: string;
+  icon: React.ComponentType<{ className?: string }>;
+  status: "active" | "coming";
+};
+
+const SERVICE_CARDS: ServiceCard[] = [
+  { name: "Insurance Analyzer", desc: "Upload a policy PDF. Get a fee-only, CFP-style review — coverage, gaps, next moves.", icon: ShieldCheck, status: "active" },
+  { name: "Portfolio Analyzer", desc: "Overlap, concentration, cost and tax-efficiency across everything you own.", icon: BarChart3, status: "coming" },
+  { name: "Loan Optimizer", desc: "Prepay, refinance or keep — decided by real math, not by the bank calling you.", icon: Landmark, status: "coming" },
+  { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — planned before March, not after.", icon: Receipt, status: "coming" },
+  { name: "Financial Advisor", desc: "1:1 sessions with SEBI-registered, fee-only advisors — no product pitches.", icon: Users, status: "coming" },
+];
