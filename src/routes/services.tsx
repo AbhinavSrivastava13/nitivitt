@@ -78,6 +78,15 @@ function ServicesPage() {
             <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
               Read the vision <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </span>
+            {s.slug === "insurance-analyzer" && (
+              <Link
+                to="/insurance-analyzer"
+                onClick={(e) => e.stopPropagation()}
+                className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              >
+                <ShieldCheck className="h-4 w-4" /> Open Insurance Analyzer
+              </Link>
+            )}
           </Link>
         ))}
       </div>
