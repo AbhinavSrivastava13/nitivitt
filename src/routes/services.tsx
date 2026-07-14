@@ -43,10 +43,8 @@ function ServicesPage() {
     >
       <div className="grid gap-5 md:grid-cols-2">
         {services.map((s: Service) => (
-          <Link
+          <div
             key={s.slug}
-            to="/services/$slug"
-            params={{ slug: s.slug }}
             className="group flex flex-col rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
           >
             <div className="flex items-center justify-between gap-3">
@@ -55,9 +53,13 @@ function ServicesPage() {
                 {s.status}
               </span>
             </div>
-            <h3 className="mt-3 text-xl font-semibold leading-snug text-foreground group-hover:text-primary">
+            <Link
+              to="/services/$slug"
+              params={{ slug: s.slug }}
+              className="mt-3 text-xl font-semibold leading-snug text-foreground hover:text-primary"
+            >
               {s.name}
-            </h3>
+            </Link>
             <p className="mt-1.5 text-sm text-muted-foreground">{s.tagline}</p>
             <p className="mt-4 line-clamp-3 text-sm text-foreground/85">{s.shortDescription}</p>
 
@@ -75,19 +77,24 @@ function ServicesPage() {
               ))}
             </ul>
 
-            <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-              Read the vision <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </span>
-            {s.slug === "insurance-analyzer" && (
+            <div className="mt-6 flex flex-wrap items-center gap-3">
               <Link
-                to="/insurance-analyzer"
-                onClick={(e) => e.stopPropagation()}
-                className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                to="/services/$slug"
+                params={{ slug: s.slug }}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
               >
-                <ShieldCheck className="h-4 w-4" /> Open Insurance Analyzer
+                Read the vision <ArrowRight className="h-4 w-4" />
               </Link>
-            )}
-          </Link>
+              {s.slug === "insurance-analyzer" && (
+                <Link
+                  to="/insurance-analyzer"
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  <ShieldCheck className="h-4 w-4" /> Open Analyzer
+                </Link>
+              )}
+            </div>
+          </div>
         ))}
       </div>
 
