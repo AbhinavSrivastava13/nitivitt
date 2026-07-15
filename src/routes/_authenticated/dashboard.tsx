@@ -851,6 +851,7 @@ type ServiceCard = {
   desc: string;
   icon: React.ComponentType<{ className?: string }>;
   status: "active" | "coming";
+  hasPolicies?: boolean;
 };
 
 const SERVICE_CARDS: ServiceCard[] = [
