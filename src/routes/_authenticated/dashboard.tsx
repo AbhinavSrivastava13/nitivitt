@@ -392,7 +392,7 @@ function Dashboard() {
                   <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
                   {isActive ? (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      Open <ArrowRight className="h-3 w-3" />
+                      {s.hasPolicies ? "Manage Policies" : "Analyze Policy"} <ArrowRight className="h-3 w-3" />
                     </span>
                   ) : (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
