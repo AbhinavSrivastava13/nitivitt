@@ -64,6 +64,9 @@ function Dashboard() {
   const { data, isLoading } = useDashboardData();
   const [openMetric, setOpenMetric] = useState<MetricKind | null>(null);
   const [openRec, setOpenRec] = useState<Recommendation | null>(null);
+  const listInsFn = useServerFn(listInsuranceAnalyses);
+  const insQ = useQuery({ queryKey: ["insurance-analyses"], queryFn: () => listInsFn() });
+  const insurancePolicyCount = insQ.data?.analyses.length ?? 0;
 
   if (isLoading || !data) {
     return (
