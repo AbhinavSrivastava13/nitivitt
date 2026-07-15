@@ -375,7 +375,8 @@ function Dashboard() {
             <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {SERVICE_CARDS.map((s) => {
+            {SERVICE_CARDS.map((raw) => {
+              const s: ServiceCard = raw.name === "Insurance Analyzer" ? { ...raw, hasPolicies: insurancePolicyCount > 0 } : raw;
               const Icon = s.icon;
               const isActive = s.status === "active";
               const badge = isActive
