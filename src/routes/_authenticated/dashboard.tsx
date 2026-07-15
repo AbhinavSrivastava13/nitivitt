@@ -369,7 +369,7 @@ function Dashboard() {
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Services</p>
               <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">The NitiVitt ecosystem</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Deterministic, fee-only guidance — expanding one service at a time.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Specialized financial tools built on top of NitiCore™.</p>
             </div>
             <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
           </div>
