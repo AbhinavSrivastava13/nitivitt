@@ -305,6 +305,54 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_analyses: {
+        Row: {
+          created_at: string
+          extracted_policy: Json
+          file_name: string | null
+          id: string
+          insurer: string | null
+          last_reviewed_at: string
+          policy_type: string
+          premium_annual: number | null
+          protection_score: number
+          report: Json
+          sum_insured: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          extracted_policy?: Json
+          file_name?: string | null
+          id?: string
+          insurer?: string | null
+          last_reviewed_at?: string
+          policy_type: string
+          premium_annual?: number | null
+          protection_score?: number
+          report?: Json
+          sum_insured?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          extracted_policy?: Json
+          file_name?: string | null
+          id?: string
+          insurer?: string | null
+          last_reviewed_at?: string
+          policy_type?: string
+          premium_annual?: number | null
+          protection_score?: number
+          report?: Json
+          sum_insured?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       investments: {
         Row: {
           created_at: string

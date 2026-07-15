@@ -24,6 +24,7 @@ import {
 import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
 import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
+import { listInsuranceAnalyses } from "@/lib/insurance-analyzer/analyzer.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -63,6 +64,9 @@ function Dashboard() {
   const { data, isLoading } = useDashboardData();
   const [openMetric, setOpenMetric] = useState<MetricKind | null>(null);
   const [openRec, setOpenRec] = useState<Recommendation | null>(null);
+  const listInsFn = useServerFn(listInsuranceAnalyses);
+  const insQ = useQuery({ queryKey: ["insurance-analyses"], queryFn: () => listInsFn() });
+  const insurancePolicyCount = insQ.data?.analyses.length ?? 0;
 
   if (isLoading || !data) {
     return (
@@ -369,12 +373,13 @@ function Dashboard() {
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Services</p>
               <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">The NitiVitt ecosystem</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Deterministic, fee-only guidance — expanding one service at a time.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Specialized financial tools built on top of NitiCore™.</p>
             </div>
             <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {SERVICE_CARDS.map((s) => {
+            {SERVICE_CARDS.map((raw) => {
+              const s: ServiceCard = raw.name === "Insurance Analyzer" ? { ...raw, hasPolicies: insurancePolicyCount > 0 } : raw;
               const Icon = s.icon;
               const isActive = s.status === "active";
               const badge = isActive
@@ -392,7 +397,7 @@ function Dashboard() {
                   <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
                   {isActive ? (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      Open <ArrowRight className="h-3 w-3" />
+                      {s.hasPolicies ? "Manage Policies" : "Analyze Policy"} <ArrowRight className="h-3 w-3" />
                     </span>
                   ) : (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
@@ -851,6 +856,7 @@ type ServiceCard = {
   desc: string;
   icon: React.ComponentType<{ className?: string }>;
   status: "active" | "coming";
+  hasPolicies?: boolean;
 };
 
 const SERVICE_CARDS: ServiceCard[] = [
