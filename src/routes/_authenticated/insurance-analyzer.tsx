@@ -359,7 +359,7 @@ function UploadFlow({
   const [extracted, setExtracted] = useState<ExtractedPolicy>(emptyExtractedPolicy());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ tone: "success" | "warning"; text: string } | null>(null);
   const qc = useQueryClient();
   const extractFn = useServerFn(extractInsurancePolicy);
   const analyzeFn = useServerFn(analyzeInsurancePolicy);
