@@ -456,42 +456,48 @@ export const analyzeInsurancePolicy = createServerFn({ method: "POST" })
     }
 
     let analysisId: string | null = null;
-    try {
-      const client = supabase as unknown as DbClient;
-      const row = {
-        user_id: userId,
-        policy_type: data.policyType,
-        file_name: data.fileName ?? extractedFull.policyNumber ?? null,
-        insurer: extractedFull.insurer,
-        sum_insured: extractedFull.sumInsured,
-        premium_annual: extractedFull.premiumAnnual,
-        extracted_policy: extractedFull,
-        report,
-        protection_score: report.protectionScore,
-        last_reviewed_at: new Date().toISOString(),
-      };
+    const client = supabase as unknown as DbClient;
+    const row = {
+      user_id: userId,
+      policy_type: data.policyType,
+      file_name: data.fileName ?? extractedFull.policyNumber ?? null,
+      insurer: extractedFull.insurer,
+      sum_insured: extractedFull.sumInsured,
+      premium_annual: extractedFull.premiumAnnual,
+      extracted_policy: extractedFull,
+      report,
+      protection_score: report.protectionScore,
+      last_reviewed_at: new Date().toISOString(),
+    };
 
-      if (data.replaceId) {
-        const { data: updated, error } = await client
-          .from("insurance_analyses")
-          .update(row)
-          .eq("id", data.replaceId)
-          .eq("user_id", userId)
-          .select("id")
-          .single();
-        if (error) console.error("insurance_analyses update failed", error);
-        analysisId = updated?.id ?? null;
-      } else {
-        const { data: inserted, error } = await client
-          .from("insurance_analyses")
-          .insert(row)
-          .select("id")
-          .single();
-        if (error) console.error("insurance_analyses insert failed", error);
-        analysisId = inserted?.id ?? null;
+    if (data.replaceId) {
+      const { data: updated, error } = await client
+        .from("insurance_analyses")
+        .update(row)
+        .eq("id", data.replaceId)
+        .eq("user_id", userId)
+        .select("id")
+        .single();
+      if (error) {
+        console.error("insurance_analyses update failed", error);
+        throw new Error(`Policy analysis could not be saved: ${String(error.message ?? "database update failed")}`);
       }
-    } catch (err) {
-      console.error("insurance_analyses persist threw", err);
+      analysisId = updated?.id ?? null;
+    } else {
+      const { data: inserted, error } = await client
+        .from("insurance_analyses")
+        .insert(row)
+        .select("id")
+        .single();
+      if (error) {
+        console.error("insurance_analyses insert failed", error);
+        throw new Error(`Policy analysis could not be saved: ${String(error.message ?? "database insert failed")}`);
+      }
+      analysisId = inserted?.id ?? null;
+    }
+
+    if (!analysisId) {
+      throw new Error("Policy analysis could not be saved: no saved analysis id was returned.");
     }
 
     return { report, analysisId };
