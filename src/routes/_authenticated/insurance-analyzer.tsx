@@ -202,7 +202,8 @@ function PortfolioSummaryCard({ summary }: { summary: PortfolioSummary }) {
     <section className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 to-card p-6 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Overall protection summary</p>
+          <p className="font-display text-2xl text-foreground">NitiSure™</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Protection Score</p>
           <div className="mt-2 flex items-baseline gap-3">
             <span className={`font-display text-5xl ${scoreTone}`}>{summary.protectionScore}</span>
             <span className="text-sm text-muted-foreground">/ 100</span>
@@ -358,7 +359,7 @@ function UploadFlow({
   const [extracted, setExtracted] = useState<ExtractedPolicy>(emptyExtractedPolicy());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ tone: "success" | "warning"; text: string } | null>(null);
   const qc = useQueryClient();
   const extractFn = useServerFn(extractInsurancePolicy);
   const analyzeFn = useServerFn(analyzeInsurancePolicy);
@@ -382,7 +383,11 @@ function UploadFlow({
       // ALWAYS hydrate the confirm form with whatever came back — never blank it.
       setExtracted({ ...res.policy, policyType });
       setFileName(file.name);
-      if (res.note) setNotice(res.note);
+      if (res.usedAi) {
+        setNotice({ tone: "success", text: "AI extracted the details below — please confirm or edit before running the analysis." });
+      } else if (res.note) {
+        setNotice({ tone: "warning", text: res.note });
+      }
       setStep("confirm");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to read the PDF.");
@@ -434,8 +439,12 @@ function UploadFlow({
         </div>
       )}
       {notice && step === "confirm" && (
-        <div className="rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-xs text-warning">
-          {notice}
+        <div className={`rounded-lg border p-3 text-xs ${
+          notice.tone === "success"
+            ? "border-success/30 bg-success-soft/50 text-success"
+            : "border-warning/30 bg-warning-soft/50 text-warning"
+        }`}>
+          {notice.text}
         </div>
       )}
 
@@ -780,7 +789,8 @@ function ReportView({ report }: { report: AnalysisReport }) {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Overall protection score</p>
+        <p className="font-display text-2xl text-foreground">NitiSure™</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Protection Score</p>
         <div className="mt-2 flex items-baseline gap-3">
           <span className={`font-display text-6xl ${scoreTone}`}>{report.protectionScore}</span>
           <span className="text-sm text-muted-foreground">/ 100</span>
