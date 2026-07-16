@@ -51,7 +51,8 @@ export const extractInsurancePolicy = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => ExtractInput.parse(input))
   .handler(async ({ data }): Promise<{ policy: ExtractedPolicy; usedAi: boolean; note?: string }> => {
     const lovableKey = getRuntimeEnv("LOVABLE_API_KEY");
-    if (!lovableKey) {
+    const geminiKey = getRuntimeEnv("GEMINI_API_KEY");
+    if (!lovableKey && !geminiKey) {
       return {
         policy: { ...emptyExtractedPolicy(), policyType: data.policyType },
         usedAi: false,
@@ -87,46 +88,37 @@ export const extractInsurancePolicy = createServerFn({ method: "POST" })
     const userText = `The user has classified this policy as: ${POLICY_TYPE_LABEL[data.policyType]}. Extract every visible field into JSON matching exactly this shape (all amounts in INR as plain numbers):\n${shape}\nReturn ONLY the JSON object.`;
 
     try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${lovableKey}`,
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          temperature: 0.1,
-          messages: [
-            { role: "system", content: system },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: userText },
-                {
-                  type: "file",
-                  file: {
-                    filename: data.fileName,
-                    file_data: `data:${data.fileMime};base64,${data.fileBase64}`,
-                  },
-                },
-              ],
-            },
-          ],
-        }),
-      });
+      let raw = "";
 
-      if (!res.ok) {
-        const errText = await res.text().catch(() => "");
-        console.error("Insurance extract gateway error", res.status, errText);
+      if (lovableKey) {
+        raw = await extractWithLovableGateway({
+          apiKey: lovableKey,
+          system,
+          userText,
+          fileName: data.fileName,
+          fileMime: data.fileMime,
+          fileBase64: data.fileBase64,
+        });
+      }
+
+      if (!raw && geminiKey) {
+        raw = await extractWithGeminiDirect({
+          apiKey: geminiKey,
+          system,
+          userText,
+          fileMime: data.fileMime,
+          fileBase64: data.fileBase64,
+        });
+      }
+
+      if (!raw) {
         return {
           policy: { ...emptyExtractedPolicy(), policyType: data.policyType },
           usedAi: false,
-          note: `Extraction service returned ${res.status}. Please enter details manually.`,
+          note: "Extraction service could not read this PDF. Please enter details manually.",
         };
       }
 
-      const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-      const raw = json.choices?.[0]?.message?.content?.trim() ?? "";
       console.log("[insurance-extract] raw response length:", raw.length);
       const parsed = safeParseJson(raw);
       if (!parsed) {
@@ -163,6 +155,104 @@ export const extractInsurancePolicy = createServerFn({ method: "POST" })
       };
     }
   });
+
+async function extractWithLovableGateway({
+  apiKey,
+  system,
+  userText,
+  fileName,
+  fileMime,
+  fileBase64,
+}: {
+  apiKey: string;
+  system: string;
+  userText: string;
+  fileName: string;
+  fileMime: string;
+  fileBase64: string;
+}): Promise<string> {
+      const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          temperature: 0.1,
+      response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: system },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: userText },
+                {
+                  type: "file",
+                  file: {
+                filename: fileName,
+                file_data: `data:${fileMime};base64,${fileBase64}`,
+                  },
+                },
+              ],
+            },
+          ],
+        }),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => "");
+        console.error("Insurance extract gateway error", res.status, errText);
+    return "";
+      }
+
+      const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+  return json.choices?.[0]?.message?.content?.trim() ?? "";
+}
+
+async function extractWithGeminiDirect({
+  apiKey,
+  system,
+  userText,
+  fileMime,
+  fileBase64,
+}: {
+  apiKey: string;
+  system: string;
+  userText: string;
+  fileMime: string;
+  fileBase64: string;
+}): Promise<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: userText },
+            { inlineData: { mimeType: fileMime, data: fileBase64 } },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: "application/json",
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    console.error("Insurance extract Gemini direct error", res.status, await res.text().catch(() => ""));
+    return "";
+  }
+
+  const json = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+  return json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
+}
 
 function safeParseJson(text: string): Partial<ExtractedPolicy> | null {
   if (!text) return null;
@@ -235,12 +325,12 @@ interface DbAnalysisRow {
 type DbClient = {
   from: (t: string) => {
     insert: (row: Record<string, unknown>) => {
-      select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: unknown }> };
+      select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: { message?: string } | null }> };
     };
     update: (row: Record<string, unknown>) => {
       eq: (col: string, v: string) => {
         eq: (col: string, v: string) => {
-          select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: unknown }> };
+          select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: { message?: string } | null }> };
         };
       };
     };
@@ -366,42 +456,48 @@ export const analyzeInsurancePolicy = createServerFn({ method: "POST" })
     }
 
     let analysisId: string | null = null;
-    try {
-      const client = supabase as unknown as DbClient;
-      const row = {
-        user_id: userId,
-        policy_type: data.policyType,
-        file_name: data.fileName ?? extractedFull.policyNumber ?? null,
-        insurer: extractedFull.insurer,
-        sum_insured: extractedFull.sumInsured,
-        premium_annual: extractedFull.premiumAnnual,
-        extracted_policy: extractedFull,
-        report,
-        protection_score: report.protectionScore,
-        last_reviewed_at: new Date().toISOString(),
-      };
+    const client = supabase as unknown as DbClient;
+    const row = {
+      user_id: userId,
+      policy_type: data.policyType,
+      file_name: data.fileName ?? extractedFull.policyNumber ?? null,
+      insurer: extractedFull.insurer,
+      sum_insured: extractedFull.sumInsured,
+      premium_annual: extractedFull.premiumAnnual,
+      extracted_policy: extractedFull,
+      report,
+      protection_score: report.protectionScore,
+      last_reviewed_at: new Date().toISOString(),
+    };
 
-      if (data.replaceId) {
-        const { data: updated, error } = await client
-          .from("insurance_analyses")
-          .update(row)
-          .eq("id", data.replaceId)
-          .eq("user_id", userId)
-          .select("id")
-          .single();
-        if (error) console.error("insurance_analyses update failed", error);
-        analysisId = updated?.id ?? null;
-      } else {
-        const { data: inserted, error } = await client
-          .from("insurance_analyses")
-          .insert(row)
-          .select("id")
-          .single();
-        if (error) console.error("insurance_analyses insert failed", error);
-        analysisId = inserted?.id ?? null;
+    if (data.replaceId) {
+      const { data: updated, error } = await client
+        .from("insurance_analyses")
+        .update(row)
+        .eq("id", data.replaceId)
+        .eq("user_id", userId)
+        .select("id")
+        .single();
+      if (error) {
+        console.error("insurance_analyses update failed", error);
+        throw new Error(`Policy analysis could not be saved: ${String(error.message ?? "database update failed")}`);
       }
-    } catch (err) {
-      console.error("insurance_analyses persist threw", err);
+      analysisId = updated?.id ?? null;
+    } else {
+      const { data: inserted, error } = await client
+        .from("insurance_analyses")
+        .insert(row)
+        .select("id")
+        .single();
+      if (error) {
+        console.error("insurance_analyses insert failed", error);
+        throw new Error(`Policy analysis could not be saved: ${String(error.message ?? "database insert failed")}`);
+      }
+      analysisId = inserted?.id ?? null;
+    }
+
+    if (!analysisId) {
+      throw new Error("Policy analysis could not be saved: no saved analysis id was returned.");
     }
 
     return { report, analysisId };
