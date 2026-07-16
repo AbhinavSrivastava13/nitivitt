@@ -202,7 +202,8 @@ function PortfolioSummaryCard({ summary }: { summary: PortfolioSummary }) {
     <section className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 to-card p-6 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Overall protection summary</p>
+          <p className="font-display text-2xl text-foreground">NitiSure™</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Protection Score</p>
           <div className="mt-2 flex items-baseline gap-3">
             <span className={`font-display text-5xl ${scoreTone}`}>{summary.protectionScore}</span>
             <span className="text-sm text-muted-foreground">/ 100</span>
