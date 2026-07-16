@@ -384,9 +384,9 @@ function UploadFlow({
       setExtracted({ ...res.policy, policyType });
       setFileName(file.name);
       if (res.usedAi) {
-        setNotice("AI extracted the details below — please confirm or edit before running the analysis.");
+        setNotice({ tone: "success", text: "AI extracted the details below — please confirm or edit before running the analysis." });
       } else if (res.note) {
-        setNotice(res.note);
+        setNotice({ tone: "warning", text: res.note });
       }
       setStep("confirm");
     } catch (err) {
