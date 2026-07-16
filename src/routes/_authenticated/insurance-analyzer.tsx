@@ -439,8 +439,12 @@ function UploadFlow({
         </div>
       )}
       {notice && step === "confirm" && (
-        <div className="rounded-lg border border-warning/30 bg-warning-soft/50 p-3 text-xs text-warning">
-          {notice}
+        <div className={`rounded-lg border p-3 text-xs ${
+          notice.tone === "success"
+            ? "border-success/30 bg-success-soft/50 text-success"
+            : "border-warning/30 bg-warning-soft/50 text-warning"
+        }`}>
+          {notice.text}
         </div>
       )}
 
