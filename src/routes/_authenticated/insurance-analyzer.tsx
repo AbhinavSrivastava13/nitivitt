@@ -781,7 +781,8 @@ function ReportView({ report }: { report: AnalysisReport }) {
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Overall protection score</p>
+        <p className="font-display text-2xl text-foreground">NitiSure™</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Protection Score</p>
         <div className="mt-2 flex items-baseline gap-3">
           <span className={`font-display text-6xl ${scoreTone}`}>{report.protectionScore}</span>
           <span className="text-sm text-muted-foreground">/ 100</span>
