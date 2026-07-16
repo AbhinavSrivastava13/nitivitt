@@ -325,12 +325,12 @@ interface DbAnalysisRow {
 type DbClient = {
   from: (t: string) => {
     insert: (row: Record<string, unknown>) => {
-      select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: unknown }> };
+      select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: { message?: string } | null }> };
     };
     update: (row: Record<string, unknown>) => {
       eq: (col: string, v: string) => {
         eq: (col: string, v: string) => {
-          select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: unknown }> };
+          select: (c: string) => { single: () => Promise<{ data: DbAnalysisRow | null; error: { message?: string } | null }> };
         };
       };
     };
