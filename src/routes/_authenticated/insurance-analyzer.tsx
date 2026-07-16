@@ -383,7 +383,11 @@ function UploadFlow({
       // ALWAYS hydrate the confirm form with whatever came back — never blank it.
       setExtracted({ ...res.policy, policyType });
       setFileName(file.name);
-      if (res.note) setNotice(res.note);
+      if (res.usedAi) {
+        setNotice("AI extracted the details below — please confirm or edit before running the analysis.");
+      } else if (res.note) {
+        setNotice(res.note);
+      }
       setStep("confirm");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to read the PDF.");
