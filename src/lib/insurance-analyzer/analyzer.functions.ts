@@ -253,8 +253,6 @@ async function extractWithGeminiDirect({
   const json = (await res.json()) as { candidates?: { content?: { parts?: { text?: string }[] } }[] };
   return json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim() ?? "";
 }
-    }
-  });
 
 function safeParseJson(text: string): Partial<ExtractedPolicy> | null {
   if (!text) return null;
