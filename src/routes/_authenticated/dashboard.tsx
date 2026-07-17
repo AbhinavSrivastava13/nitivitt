@@ -24,7 +24,7 @@ import {
 import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
 import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
-import { listInsuranceAnalyses } from "@/lib/insurance-analyzer/analyzer.functions";
+import { listInsuranceAnalyses, getPortfolioProtectionSummary } from "@/lib/insurance-analyzer/analyzer.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -66,14 +66,19 @@ function Dashboard() {
   const [openRec, setOpenRec] = useState<Recommendation | null>(null);
   const listInsFn = useServerFn(listInsuranceAnalyses);
   const insQ = useQuery({ queryKey: ["insurance-analyses"], queryFn: () => listInsFn() });
-  const insurancePolicyCount = insQ.data?.analyses.length ?? 0;
+  const insSummaryFn = useServerFn(getPortfolioProtectionSummary);
+  const insSummaryQ = useQuery({ queryKey: ["insurance-portfolio-summary"], queryFn: () => insSummaryFn() });
+  const insurancePolicies = insQ.data?.analyses ?? [];
+  const insurancePolicyCount = insurancePolicies.length;
+  const insuranceScore = insSummaryQ.data?.summary?.protectionScore ?? null;
+  const insuranceLastReviewed = insurancePolicies[0]?.lastReviewedAt ?? null;
 
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-surface">
         <SiteHeader />
-        <main className="container-page py-16">
-          <p className="text-sm text-muted-foreground">Loading your financial snapshot…</p>
+        <main className="container-page py-8 md:py-10">
+          <DashboardSkeleton />
         </main>
         <SiteFooter />
       </div>
@@ -382,9 +387,13 @@ function Dashboard() {
               const s: ServiceCard = raw.name === "Insurance Analyzer" ? { ...raw, hasPolicies: insurancePolicyCount > 0 } : raw;
               const Icon = s.icon;
               const isActive = s.status === "active";
+              const isInsurance = s.name === "Insurance Analyzer";
               const badge = isActive
                 ? { label: "Beta", cls: "bg-secondary-soft text-secondary" }
                 : { label: "Coming Soon", cls: "bg-muted text-muted-foreground" };
+              const lastReviewedText = insuranceLastReviewed
+                ? new Date(insuranceLastReviewed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                : null;
               const inner = (
                 <>
                   <div className="flex items-center justify-between">
@@ -395,6 +404,26 @@ function Dashboard() {
                   </div>
                   <p className="mt-3 font-semibold text-foreground">{s.name}</p>
                   <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
+
+                  {isInsurance && isActive && (
+                    <div className="mt-4 rounded-lg border border-border bg-surface/60 p-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiSure™ · Protection Score</p>
+                      {s.hasPolicies ? (
+                        <>
+                          <div className="mt-1 flex items-baseline gap-1.5">
+                            <span className="font-display text-2xl text-foreground">{insuranceScore ?? "—"}</span>
+                            <span className="text-[10px] text-muted-foreground">/ 100</span>
+                          </div>
+                          {lastReviewedText && (
+                            <p className="mt-1 text-[10px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="mt-1 text-[11px] text-muted-foreground">No policies analyzed yet</p>
+                      )}
+                    </div>
+                  )}
+
                   {isActive ? (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
                       {s.hasPolicies ? "Manage Policies" : "Analyze Policy"} <ArrowRight className="h-3 w-3" />
@@ -866,3 +895,44 @@ const SERVICE_CARDS: ServiceCard[] = [
   { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — planned before March, not after.", icon: Receipt, status: "coming" },
   { name: "Financial Advisor", desc: "1:1 sessions with SEBI-registered, fee-only advisors — no product pitches.", icon: Users, status: "coming" },
 ];
+
+/* ─────────────── Dashboard skeleton ─────────────── */
+
+function SkelBlock({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-xl bg-muted/70 ${className}`} />;
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <SkelBlock className="h-7 w-64" />
+          <SkelBlock className="h-4 w-48" />
+        </div>
+        <div className="flex gap-2">
+          <SkelBlock className="h-9 w-32" />
+          <SkelBlock className="h-9 w-36" />
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:col-span-2">
+          <SkelBlock className="h-52" />
+          <SkelBlock className="h-52" />
+          <SkelBlock className="h-52" />
+          <SkelBlock className="h-52" />
+        </div>
+        <SkelBlock className="h-[440px] lg:col-span-1" />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <SkelBlock className="h-64 lg:col-span-2" />
+        <SkelBlock className="h-64" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <SkelBlock className="h-44" />
+        <SkelBlock className="h-44" />
+        <SkelBlock className="h-44" />
+      </div>
+    </div>
+  );
+}

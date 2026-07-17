@@ -173,11 +173,14 @@
 }
 
 @utility container-page {
-  max-width: 76rem;
+  max-width: 84rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
   @media (min-width: 768px) {
     padding-inline: 2rem;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 2.75rem;
   }
 }
 
