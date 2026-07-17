@@ -895,3 +895,44 @@ const SERVICE_CARDS: ServiceCard[] = [
   { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — planned before March, not after.", icon: Receipt, status: "coming" },
   { name: "Financial Advisor", desc: "1:1 sessions with SEBI-registered, fee-only advisors — no product pitches.", icon: Users, status: "coming" },
 ];
+
+/* ─────────────── Dashboard skeleton ─────────────── */
+
+function SkelBlock({ className = "" }: { className?: string }) {
+  return <div className={`animate-pulse rounded-xl bg-muted/70 ${className}`} />;
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <SkelBlock className="h-7 w-64" />
+          <SkelBlock className="h-4 w-48" />
+        </div>
+        <div className="flex gap-2">
+          <SkelBlock className="h-9 w-32" />
+          <SkelBlock className="h-9 w-36" />
+        </div>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:col-span-2">
+          <SkelBlock className="h-52" />
+          <SkelBlock className="h-52" />
+          <SkelBlock className="h-52" />
+          <SkelBlock className="h-52" />
+        </div>
+        <SkelBlock className="h-[440px] lg:col-span-1" />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <SkelBlock className="h-64 lg:col-span-2" />
+        <SkelBlock className="h-64" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <SkelBlock className="h-44" />
+        <SkelBlock className="h-44" />
+        <SkelBlock className="h-44" />
+      </div>
+    </div>
+  );
+}
