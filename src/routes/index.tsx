@@ -73,7 +73,6 @@ function LandingPage() {
         <Comparison />
         <Testimonials />
         <FAQ />
-        <Pricing />
         <FinalCTA />
       </main>
       <SiteFooter />
