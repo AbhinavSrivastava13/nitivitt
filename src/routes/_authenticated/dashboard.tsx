@@ -66,14 +66,19 @@ function Dashboard() {
   const [openRec, setOpenRec] = useState<Recommendation | null>(null);
   const listInsFn = useServerFn(listInsuranceAnalyses);
   const insQ = useQuery({ queryKey: ["insurance-analyses"], queryFn: () => listInsFn() });
-  const insurancePolicyCount = insQ.data?.analyses.length ?? 0;
+  const insSummaryFn = useServerFn(getPortfolioProtectionSummary);
+  const insSummaryQ = useQuery({ queryKey: ["insurance-portfolio-summary"], queryFn: () => insSummaryFn() });
+  const insurancePolicies = insQ.data?.analyses ?? [];
+  const insurancePolicyCount = insurancePolicies.length;
+  const insuranceScore = insSummaryQ.data?.summary?.protectionScore ?? null;
+  const insuranceLastReviewed = insurancePolicies[0]?.lastReviewedAt ?? null;
 
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-surface">
         <SiteHeader />
-        <main className="container-page py-16">
-          <p className="text-sm text-muted-foreground">Loading your financial snapshot…</p>
+        <main className="container-page py-8 md:py-10">
+          <DashboardSkeleton />
         </main>
         <SiteFooter />
       </div>
