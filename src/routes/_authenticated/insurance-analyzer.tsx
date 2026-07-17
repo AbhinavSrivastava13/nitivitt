@@ -124,7 +124,7 @@ function Workspace({
   const summaryQ = useQuery({ queryKey: ["insurance-portfolio-summary"], queryFn: () => summaryFn() });
 
   async function onDelete(id: string) {
-    if (!confirm("Delete this saved analysis? This cannot be undone.")) return;
+    if (!confirm("Remove this policy from your library? This action cannot be undone.")) return;
     await deleteFn({ data: { id } });
     await Promise.all([
       qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
@@ -142,9 +142,11 @@ function Workspace({
         <div>
           <h2 className="font-display text-xl text-foreground">My insurance workspace</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {analyses.length === 0
-              ? "You haven't added any policies yet. Analyze your first one to begin."
-              : `${analyses.length} ${analyses.length === 1 ? "policy" : "policies"} in your library.`}
+            {isLoading
+              ? "Loading your protection snapshot…"
+              : analyses.length === 0
+                ? "You haven't added any policies yet. Analyze your first one to begin."
+                : `${analyses.length} ${analyses.length === 1 ? "policy" : "policies"} in your library.`}
           </p>
         </div>
         <button
@@ -156,8 +158,12 @@ function Workspace({
       </div>
 
       {isLoading && (
-        <div className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-card p-10 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading your insurance library…
+        <div className="space-y-4">
+          <div className="h-40 animate-pulse rounded-2xl bg-muted/70" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="h-28 animate-pulse rounded-2xl bg-muted/60" />
+            <div className="h-28 animate-pulse rounded-2xl bg-muted/60" />
+          </div>
         </div>
       )}
 
