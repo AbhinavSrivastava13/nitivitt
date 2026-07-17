@@ -387,9 +387,13 @@ function Dashboard() {
               const s: ServiceCard = raw.name === "Insurance Analyzer" ? { ...raw, hasPolicies: insurancePolicyCount > 0 } : raw;
               const Icon = s.icon;
               const isActive = s.status === "active";
+              const isInsurance = s.name === "Insurance Analyzer";
               const badge = isActive
                 ? { label: "Beta", cls: "bg-secondary-soft text-secondary" }
                 : { label: "Coming Soon", cls: "bg-muted text-muted-foreground" };
+              const lastReviewedText = insuranceLastReviewed
+                ? new Date(insuranceLastReviewed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                : null;
               const inner = (
                 <>
                   <div className="flex items-center justify-between">
@@ -400,6 +404,26 @@ function Dashboard() {
                   </div>
                   <p className="mt-3 font-semibold text-foreground">{s.name}</p>
                   <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
+
+                  {isInsurance && isActive && (
+                    <div className="mt-4 rounded-lg border border-border bg-surface/60 p-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiSure™ · Protection Score</p>
+                      {s.hasPolicies ? (
+                        <>
+                          <div className="mt-1 flex items-baseline gap-1.5">
+                            <span className="font-display text-2xl text-foreground">{insuranceScore ?? "—"}</span>
+                            <span className="text-[10px] text-muted-foreground">/ 100</span>
+                          </div>
+                          {lastReviewedText && (
+                            <p className="mt-1 text-[10px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
+                          )}
+                        </>
+                      ) : (
+                        <p className="mt-1 text-[11px] text-muted-foreground">No policies analyzed yet</p>
+                      )}
+                    </div>
+                  )}
+
                   {isActive ? (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
                       {s.hasPolicies ? "Manage Policies" : "Analyze Policy"} <ArrowRight className="h-3 w-3" />
