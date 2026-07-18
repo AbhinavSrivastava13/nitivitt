@@ -17,6 +17,8 @@ import {
   Upload,
 } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
+import { useConfirm } from "@/components/platform/confirm-dialog";
+import { toast } from "sonner";
 import {
   extractInsurancePolicy,
   analyzeInsurancePolicy,
@@ -119,17 +121,25 @@ function Workspace({
   const summaryFn = useServerFn(getPortfolioProtectionSummary);
   const deleteFn = useServerFn(deleteInsuranceAnalysis);
   const qc = useQueryClient();
+  const confirm = useConfirm();
 
   const listQ = useQuery({ queryKey: ["insurance-analyses"], queryFn: () => listFn() });
   const summaryQ = useQuery({ queryKey: ["insurance-portfolio-summary"], queryFn: () => summaryFn() });
 
   async function onDelete(id: string) {
-    if (!confirm("Remove this policy from your library? This action cannot be undone.")) return;
+    const ok = await confirm({
+      title: "Remove this policy?",
+      description: "This will delete the policy from your library and remove it from your NitiSure™ portfolio. This action cannot be undone.",
+      confirmLabel: "Remove policy",
+      tone: "destructive",
+    });
+    if (!ok) return;
     await deleteFn({ data: { id } });
     await Promise.all([
       qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
       qc.invalidateQueries({ queryKey: ["insurance-portfolio-summary"] }),
     ]);
+    toast.success("Policy removed from your library.");
   }
 
   const analyses = listQ.data?.analyses ?? [];
@@ -697,6 +707,7 @@ function SavedAnalysisView({
   const reFn = useServerFn(reanalyzeInsurancePolicy);
   const delFn = useServerFn(deleteInsuranceAnalysis);
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const q = useQuery({ queryKey: ["insurance-analysis", id], queryFn: () => getFn({ data: { id } }) });
@@ -722,7 +733,13 @@ function SavedAnalysisView({
   }
 
   async function onDelete() {
-    if (!confirm("Delete this policy from your library?")) return;
+    const ok = await confirm({
+      title: "Delete this policy?",
+      description: "This will remove the policy from your library and NitiSure™ portfolio.",
+      confirmLabel: "Delete policy",
+      tone: "destructive",
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await delFn({ data: { id } });
@@ -730,6 +747,7 @@ function SavedAnalysisView({
         qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
         qc.invalidateQueries({ queryKey: ["insurance-portfolio-summary"] }),
       ]);
+      toast.success("Policy deleted.");
       onBack();
     } finally { setBusy(false); }
   }
