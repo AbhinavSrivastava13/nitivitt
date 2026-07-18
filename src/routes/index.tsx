@@ -440,13 +440,10 @@ function IntelligenceSuite() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-4 md:grid-cols-6">
-        {/* Featured large card */}
-        <SuiteCard item={suite[0]} large />
-        <SuiteCard item={suite[1]} />
-        <SuiteCard item={suite[2]} />
-        <SuiteCard item={suite[3]} />
-        <SuiteCard item={suite[4]} large />
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {suite.map((item) => (
+          <SuiteCard key={item.name} item={item} />
+        ))}
       </div>
     </section>
   );
@@ -454,7 +451,6 @@ function IntelligenceSuite() {
 
 function SuiteCard({
   item,
-  large = false,
 }: {
   item: {
     name: string;
@@ -464,7 +460,6 @@ function SuiteCard({
     accent: string;
     to: string;
   };
-  large?: boolean;
 }) {
   const Icon = item.icon;
   return (
@@ -472,9 +467,7 @@ function SuiteCard({
       to="/auth"
       search={{ mode: "signin", redirect: item.to }}
       aria-label={`Explore ${item.name}`}
-      className={`group relative block overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated ${
-        large ? "md:col-span-3" : "md:col-span-2"
-      }`}
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-elevated"
     >
       <div
         className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-40"
