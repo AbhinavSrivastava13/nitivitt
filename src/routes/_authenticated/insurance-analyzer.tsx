@@ -707,6 +707,7 @@ function SavedAnalysisView({
   const reFn = useServerFn(reanalyzeInsurancePolicy);
   const delFn = useServerFn(deleteInsuranceAnalysis);
   const qc = useQueryClient();
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const q = useQuery({ queryKey: ["insurance-analysis", id], queryFn: () => getFn({ data: { id } }) });
@@ -732,7 +733,13 @@ function SavedAnalysisView({
   }
 
   async function onDelete() {
-    if (!confirm("Delete this policy from your library?")) return;
+    const ok = await confirm({
+      title: "Delete this policy?",
+      description: "This will remove the policy from your library and NitiSure™ portfolio.",
+      confirmLabel: "Delete policy",
+      tone: "destructive",
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await delFn({ data: { id } });
@@ -740,6 +747,7 @@ function SavedAnalysisView({
         qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
         qc.invalidateQueries({ queryKey: ["insurance-portfolio-summary"] }),
       ]);
+      toast.success("Policy deleted.");
       onBack();
     } finally { setBusy(false); }
   }
