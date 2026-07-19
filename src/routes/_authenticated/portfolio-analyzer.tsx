@@ -115,7 +115,8 @@ function Workspace({
     const ok = await confirm({
       title: "Delete this portfolio?",
       description: `${name} will be removed from your workspace. This cannot be undone.`,
-      confirmText: "Delete",
+      confirmLabel: "Delete",
+      tone: "destructive",
     });
     if (!ok) return;
     try {
