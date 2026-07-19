@@ -431,6 +431,51 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_analyses: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          holdings: Json
+          id: string
+          last_reviewed_at: string
+          name: string | null
+          portfolio_score: number
+          report: Json
+          source_platform: string | null
+          total_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          holdings?: Json
+          id?: string
+          last_reviewed_at?: string
+          name?: string | null
+          portfolio_score?: number
+          report?: Json
+          source_platform?: string | null
+          total_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          holdings?: Json
+          id?: string
+          last_reviewed_at?: string
+          name?: string | null
+          portfolio_score?: number
+          report?: Json
+          source_platform?: string | null
+          total_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           city: string | null
