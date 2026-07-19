@@ -312,9 +312,9 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
   const allocationScore = totalValue > 0 ? 100 - Math.min(50, Math.abs(equityPct - targetEquityClamped) * 2) : 50;
   const concentrationSubscore = 100 - Math.min(70, topPct * 2);
   const contextPenalty =
-    (!context.hasHealthyEmergencyFund ? 15 : 0) +
-    (!context.hasAdequateTermInsurance && context.hasDependents ? 10 : 0) +
-    (context.hasHighInterestDebt ? 8 : 0);
+    (!emergencyOk ? 15 : 0) +
+    (!protectionOk && context.hasDependents ? 10 : 0) +
+    (debtHeavy ? 8 : 0);
   const rawScore =
     diversificationScore * 0.30 +
     allocationScore * 0.30 +
