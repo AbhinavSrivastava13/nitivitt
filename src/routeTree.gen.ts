@@ -27,6 +27,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedRetirementRouteImport } from './routes/_authenticated/retirement'
 import { Route as AuthenticatedRecommendationsRouteImport } from './routes/_authenticated/recommendations'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedPortfolioAnalyzerRouteImport } from './routes/_authenticated/portfolio-analyzer'
 import { Route as AuthenticatedPeerBenchmarkRouteImport } from './routes/_authenticated/peer-benchmark'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedNetWorthRouteImport } from './routes/_authenticated/net-worth'
@@ -128,6 +129,12 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPortfolioAnalyzerRoute =
+  AuthenticatedPortfolioAnalyzerRouteImport.update({
+    id: '/portfolio-analyzer',
+    path: '/portfolio-analyzer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPeerBenchmarkRoute =
   AuthenticatedPeerBenchmarkRouteImport.update({
     id: '/peer-benchmark',
@@ -201,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/net-worth': typeof AuthenticatedNetWorthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
+  '/portfolio-analyzer': typeof AuthenticatedPortfolioAnalyzerRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/retirement': typeof AuthenticatedRetirementRoute
@@ -230,6 +238,7 @@ export interface FileRoutesByTo {
   '/net-worth': typeof AuthenticatedNetWorthRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
+  '/portfolio-analyzer': typeof AuthenticatedPortfolioAnalyzerRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/recommendations': typeof AuthenticatedRecommendationsRoute
   '/retirement': typeof AuthenticatedRetirementRoute
@@ -261,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated/net-worth': typeof AuthenticatedNetWorthRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/peer-benchmark': typeof AuthenticatedPeerBenchmarkRoute
+  '/_authenticated/portfolio-analyzer': typeof AuthenticatedPortfolioAnalyzerRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/recommendations': typeof AuthenticatedRecommendationsRoute
   '/_authenticated/retirement': typeof AuthenticatedRetirementRoute
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/net-worth'
     | '/onboarding'
     | '/peer-benchmark'
+    | '/portfolio-analyzer'
     | '/profile'
     | '/recommendations'
     | '/retirement'
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/net-worth'
     | '/onboarding'
     | '/peer-benchmark'
+    | '/portfolio-analyzer'
     | '/profile'
     | '/recommendations'
     | '/retirement'
@@ -351,6 +363,7 @@ export interface FileRouteTypes {
     | '/_authenticated/net-worth'
     | '/_authenticated/onboarding'
     | '/_authenticated/peer-benchmark'
+    | '/_authenticated/portfolio-analyzer'
     | '/_authenticated/profile'
     | '/_authenticated/recommendations'
     | '/_authenticated/retirement'
@@ -504,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/portfolio-analyzer': {
+      id: '/_authenticated/portfolio-analyzer'
+      path: '/portfolio-analyzer'
+      fullPath: '/portfolio-analyzer'
+      preLoaderRoute: typeof AuthenticatedPortfolioAnalyzerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/peer-benchmark': {
       id: '/_authenticated/peer-benchmark'
       path: '/peer-benchmark'
@@ -588,6 +608,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNetWorthRoute: typeof AuthenticatedNetWorthRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPeerBenchmarkRoute: typeof AuthenticatedPeerBenchmarkRoute
+  AuthenticatedPortfolioAnalyzerRoute: typeof AuthenticatedPortfolioAnalyzerRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRecommendationsRoute: typeof AuthenticatedRecommendationsRoute
   AuthenticatedRetirementRoute: typeof AuthenticatedRetirementRoute
@@ -606,6 +627,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNetWorthRoute: AuthenticatedNetWorthRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPeerBenchmarkRoute: AuthenticatedPeerBenchmarkRoute,
+  AuthenticatedPortfolioAnalyzerRoute: AuthenticatedPortfolioAnalyzerRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRecommendationsRoute: AuthenticatedRecommendationsRoute,
   AuthenticatedRetirementRoute: AuthenticatedRetirementRoute,

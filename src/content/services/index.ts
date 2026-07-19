@@ -51,30 +51,30 @@ const SERVICES: Service[] = [
   },
   {
     slug: "portfolio-analyzer",
-    name: "Portfolio Analyzer",
-    tagline: "Deep, honest analysis of what you actually own.",
-    status: "Coming Soon",
+    name: "NitiInvest™ — Portfolio Analyzer",
+    tagline: "Portfolio intelligence, grounded in your whole financial life.",
+    status: "Beta",
     category: "Analysis",
     shortDescription:
-      "Upload or link your holdings and see them scored against NitiVitt's asset-allocation model - with concentration, overlap, expense-ratio and tax-efficiency called out clearly.",
+      "Upload broker screenshots from Groww, Zerodha, INDmoney, Upstox, Angel One or Paytm Money. NitiInvest™ scores your portfolio deterministically, checks concentration, allocation and diversification, and grounds every observation in your NitiCore™ context.",
     whyItMatters:
-      "Most Indians own five mutual funds that look different but hold the same 50 stocks. A good analyser doesn't just show you the pie chart - it tells you where you're duplicating risk, paying too much, and missing what you should own.",
+      "Most Indians own five mutual funds that look different but hold the same 50 stocks. NitiInvest™ doesn't just show you the pie chart — it tells you where you're duplicating risk, over-concentrated, and where your portfolio is out of step with your emergency fund, protection, and life stage.",
     expectedBenefits: [
-      "Fund overlap and concentration risk quantified.",
-      "Expense ratios benchmarked against low-cost alternatives.",
-      "Tax-efficiency review of debt, equity and hybrid holdings.",
-      "A prioritised list of consolidation actions - no fund-of-the-month.",
+      "Deterministic NitiInvest™ score with concentration and diversification breakdowns.",
+      "Asset-allocation drift measured against NitiCore™'s age- and risk-adjusted target.",
+      "Sector, market-cap and asset-class allocation surfaced clearly.",
+      "Cross-pillar reasoning: portfolio advice honours the Emergency > Insurance > Debt > Investments hierarchy.",
     ],
     visionSections: [
       {
         heading: "The problem it solves",
         body:
-          "Indian investors accumulate holdings the way we accumulate WhatsApp groups - quickly, without pruning. Over a decade, portfolios drift into duplication, high costs and unmanaged concentration in a few large-caps. The Portfolio Analyzer will surface those patterns in a single view.",
+          "Indian investors accumulate holdings the way we accumulate WhatsApp groups — quickly, without pruning. Over a decade, portfolios drift into duplication, high costs and unmanaged concentration in a few large-caps. NitiInvest™ surfaces those patterns in a single view.",
       },
       {
         heading: "Grounded in NitiCore™",
         body:
-          "The analyser will use the same deterministic engine that powers your NitiScore. Recommendations will remain formula-driven - never ‘the advisor thinks tech will do well’. You'll always see the math behind every suggested action.",
+          "NitiInvest™ shares the same deterministic engine that powers your NitiScore. Every observation is formula-driven — never 'the model thinks tech will do well'. AI is used only to explain, never to decide.",
       },
     ],
   },
