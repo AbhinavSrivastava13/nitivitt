@@ -237,7 +237,11 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
   const concentrationScore = Math.round(hhi * 100);
 
   // 7. Cross-pillar context — respect the financial hierarchy
-  if (!context.hasHealthyEmergencyFund) {
+  const emergencyOk = context.liquidityHealth === "adequate" || context.liquidityHealth === "excess";
+  const protectionOk = context.protectionPosture === "protected";
+  const debtHeavy = context.flags.includes("debt_overload") || context.flags.includes("debt_elevated");
+
+  if (!emergencyOk) {
     gaps.push({
       id: "no-emergency-fund",
       severity: "risk",
@@ -254,29 +258,29 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
       crossPillarNote: "This is a Financial Health priority, not a portfolio one.",
     });
   }
-  if (!context.hasAdequateTermInsurance && context.hasDependents) {
+  if (!protectionOk && context.hasDependents) {
     gaps.push({
       id: "insurance-before-investing",
       severity: "risk",
-      title: "Term cover is inadequate for your dependents",
-      detail: "Without term insurance, a single event forces your family to liquidate this very portfolio at a loss.",
+      title: "Term / health cover is inadequate for your dependents",
+      detail: "Without adequate protection, a single event forces your family to liquidate this very portfolio at a loss.",
     });
     recommendations.push({
       id: "close-term-gap",
-      title: "Close the term-insurance gap before growing equity risk",
+      title: "Close the protection gap before growing equity risk",
       priority: "high",
       reason: "Protection sits above investment in NitiCore's hierarchy.",
       expectedBenefit: "Portfolio can compound without doubling as your family's safety net.",
-      tradeOffs: ["Additional annual premium (~0.1-0.2% of cover in your 30s)."],
+      tradeOffs: ["Additional annual premium."],
       crossPillarNote: "Insurance Analyzer will size the exact top-up.",
     });
   }
-  if (context.hasHighInterestDebt) {
+  if (debtHeavy) {
     observations.push({
       id: "debt-vs-invest",
       severity: "observation",
-      title: "High-interest debt outstanding",
-      detail: "Any post-tax loan rate above ~9% typically beats expected equity SIP returns. Consider a partial pre-payment before adding new investments.",
+      title: `EMI-to-income ratio is ${context.debtRatioPct}%`,
+      detail: "Post-tax loan rates above ~9% often beat expected equity SIP returns. Consider partial pre-payment before adding new investments.",
     });
   }
 
