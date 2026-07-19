@@ -164,6 +164,14 @@ function ServiceDetail() {
                   Open Insurance Analyzer <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               )}
+              {service.slug === "portfolio-analyzer" && (
+                <Link
+                  to="/portfolio-analyzer"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  Open NitiInvest™ <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              )}
             </div>
           </aside>
         </article>
