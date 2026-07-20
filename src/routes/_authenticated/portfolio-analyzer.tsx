@@ -361,6 +361,7 @@ function ConfirmFlow({
   onDone: (report: PortfolioReport, analysisId: string | null) => void;
 }) {
   const analyzeFn = useServerFn(analyzePortfolio);
+  const qc = useQueryClient();
   const [rows, setRows] = useState<Holding[]>(initialHoldings.length ? initialHoldings : [emptyHolding()]);
   const [busy, setBusy] = useState(false);
 
