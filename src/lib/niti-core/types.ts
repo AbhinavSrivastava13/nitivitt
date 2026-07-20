@@ -113,4 +113,20 @@ export interface NitiCoreInput {
   riskProfile?: "conservative" | "moderate" | "aggressive";
   /** Optional — number of financial dependents (spouse, kids, parents). */
   dependentsCount?: number;
+  /**
+   * Optional cross-service intelligence. Populated when the user has run
+   * NitiSure™ (insurance) or NitiInvest™ (portfolio) analyses. Feeds the
+   * FinancialContext so recommendations reflect the whole picture — an
+   * investment portfolio never outweighs a protection gap.
+   */
+  crossService?: {
+    insuranceAdequacyPct?: number;
+    insurancePolicyCount?: number;
+    insuranceProtectionScore?: number;
+    portfolioScore?: number;
+    portfolioConcentrationScore?: number;
+    portfolioDiversificationScore?: number;
+    portfolioTotalValue?: number;
+    portfolioHoldingCount?: number;
+  };
 }
