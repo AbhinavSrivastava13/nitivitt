@@ -67,7 +67,11 @@ export type ContextFlag =
   | "under_invested" // surplus healthy but investing < 10% of income
   | "over_liquid" // > 12 months buffer while investing < 10%
   | "retirement_late_start" // 45+ with weak retirement position
-  | "wealth_building_ready"; // protection + buffer done, surplus available
+  | "wealth_building_ready" // protection + buffer done, surplus available
+  | "portfolio_concentrated" // NitiInvest™ flagged high concentration
+  | "portfolio_weak" // NitiInvest™ score < 55
+  | "insurance_reviewed_gap" // NitiSure™ portfolio score < 60
+  | "cross_service_imbalance"; // strong investments but weak protection
 
 function lifeStageFromAge(age: number): LifeStage {
   if (age < 30) return "early_career";
