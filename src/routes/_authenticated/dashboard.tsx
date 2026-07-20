@@ -116,6 +116,13 @@ function Dashboard() {
     hasTermInsurance: hasTerm, hasHealthInsurance: hasHealth, termCover,
     retirementCorpus: 0, retirementAge: Number(fp?.retirement_age ?? 60),
     riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+    crossService: {
+      insurancePolicyCount,
+      insuranceProtectionScore: insuranceScore ?? undefined,
+      portfolioHoldingCount: portfolioCount,
+      portfolioScore: portfolioScore ?? undefined,
+      portfolioTotalValue,
+    },
   };
 
   const hasData = Number(fp?.monthly_income ?? 0) > 0;
