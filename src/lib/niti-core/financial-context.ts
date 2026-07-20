@@ -148,6 +148,23 @@ export function evaluateContext(input: NitiCoreInput): FinancialContext {
   )
     flags.push("wealth_building_ready");
 
+  // Cross-service intelligence — only when analyzers have run.
+  const cs = input.crossService;
+  if (cs) {
+    if (typeof cs.portfolioConcentrationScore === "number" && cs.portfolioConcentrationScore >= 60)
+      flags.push("portfolio_concentrated");
+    if (typeof cs.portfolioScore === "number" && cs.portfolioScore > 0 && cs.portfolioScore < 55)
+      flags.push("portfolio_weak");
+    if (typeof cs.insuranceProtectionScore === "number" && cs.insuranceProtectionScore > 0 && cs.insuranceProtectionScore < 60)
+      flags.push("insurance_reviewed_gap");
+    // Strong investments while insurance is missing — a common Indian pattern.
+    const strongInvest = typeof cs.portfolioScore === "number" && cs.portfolioScore >= 65;
+    const weakProtection =
+      protectionPosture !== "protected" ||
+      (typeof cs.insuranceProtectionScore === "number" && cs.insuranceProtectionScore < 60);
+    if (strongInvest && weakProtection && hasDependents) flags.push("cross_service_imbalance");
+  }
+
   return {
     lifeStage,
     wealthStage,
