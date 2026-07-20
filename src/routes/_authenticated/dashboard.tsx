@@ -82,11 +82,7 @@ function Dashboard() {
   const portfolioCount = portfolioAnalyses.length;
   const portfolioScore = portSummaryQ.data?.summary?.averageScore ?? null;
   const portfolioLastReviewed = portSummaryQ.data?.summary?.latestReviewedAt ?? null;
-  // Best (lowest concentration = safest; but concentrationScore higher = more concentrated).
-  const maxConcentration = portfolioAnalyses.reduce(
-    (m, a) => Math.max(m, (a as unknown as { portfolioScore: number }).portfolioScore ? 0 : 0),
-    0,
-  );
+  const portfolioTotalValue = portSummaryQ.data?.summary?.totalValue ?? 0;
 
   if (isLoading || !data) {
     return (
