@@ -25,6 +25,7 @@ import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
 import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
 import { listInsuranceAnalyses, getPortfolioProtectionSummary } from "@/lib/insurance-analyzer/analyzer.functions";
+import { listPortfolioAnalyses, getPortfolioIntelligenceSummary } from "@/lib/portfolio-analyzer/analyzer.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
