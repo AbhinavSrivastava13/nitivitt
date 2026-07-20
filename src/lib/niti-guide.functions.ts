@@ -292,6 +292,17 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       retirementCorpus: 0,
       retirementAge: Number(fp?.retirement_age ?? 60),
       riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+      crossService: {
+        insurancePolicyCount: insAnalyses.length,
+        insuranceProtectionScore: insAnalyses.length
+          ? Math.round(insAnalyses.reduce((a, b) => a + Number(b.protection_score ?? 0), 0) / insAnalyses.length)
+          : undefined,
+        portfolioHoldingCount: portAnalyses.length,
+        portfolioScore: portAnalyses.length
+          ? Math.round(portAnalyses.reduce((a, b) => a + Number(b.portfolio_score ?? 0), 0) / portAnalyses.length)
+          : undefined,
+        portfolioTotalValue: portAnalyses.reduce((a, b) => a + Number(b.total_value ?? 0), 0),
+      },
     };
 
     const score = calculateNitiScore(input);
