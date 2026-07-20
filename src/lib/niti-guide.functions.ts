@@ -428,6 +428,7 @@ Non-negotiable rules:
 5. Respect Indian context: joint families, dependents, salaried vs self-employed, EMI culture, FD/gold bias, PPF/EPF/ELSS/SIP behaviour, insurance under-coverage, retirement anxiety.
 6. Address them by first name once, near the start.
 7. Return Markdown paragraphs, no JSON, no code fences.
+8. If "analyzers.nitiSure" is present, weave in the NitiSure™ protection score and what it says about their insurance layer. If "analyzers.nitiInvest" is present, weave in the NitiInvest™ portfolio score and what it says about how their investments are actually built. When both are present, connect them — a strong portfolio with weak protection is a very different picture from balanced strength across both.
 
 Structure — use these six sections in order, each 2–4 sentences:
 
