@@ -395,6 +395,9 @@ function ConfirmFlow({
         },
       });
       toast.success("Portfolio saved and analyzed.");
+      qc.invalidateQueries({ queryKey: ["portfolio-analyses"] });
+      qc.invalidateQueries({ queryKey: ["portfolio-intel-summary"] });
+      qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] });
       onDone(res.report, res.analysisId);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Analysis failed.");
