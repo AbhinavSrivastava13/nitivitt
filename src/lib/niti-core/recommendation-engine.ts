@@ -331,7 +331,78 @@ const retirementRule: Rule = (input, ctx) => {
   };
 };
 
-const RULES: Rule[] = [emergencyFundRule, insuranceRule, debtRule, savingsRule, retirementRule];
+const portfolioConcentrationRule: Rule = (input, ctx) => {
+  const cs = input.crossService;
+  if (!cs || !ctx.flags.includes("portfolio_concentrated")) return null;
+  const priority: Priority = "medium";
+  const severity: Recommendation["severity"] = "warning";
+  const effort: Recommendation["effort"] = "medium";
+  const conc = cs.portfolioConcentrationScore ?? 0;
+  return {
+    id: "rec_portfolio_concentration",
+    title: "Reduce portfolio concentration",
+    category: "Investments",
+    priority,
+    severity,
+    explanation: "NitiInvest™ flagged that a few holdings dominate your portfolio.",
+    whyItMatters:
+      "When a small number of holdings drive most of your returns, one bad quarter can wipe out years of compounding. Diversification is the cheapest risk reduction available to an investor.",
+    expectedImpact:
+      "Improves diversification and lifts your NitiInvest™ score, without needing more capital.",
+    logic: "Concentration score >= 60 flags a portfolio that leans heavily on 1-3 holdings.",
+    assumptions: { concentrationScore: conc },
+    formulaSummary: `NitiInvest concentration score = ${conc}/100.`,
+    impact: "Medium - protects the portfolio without changing SIP amount.",
+    effort,
+    nextAction: "Open NitiInvest™ and rebalance the top holdings towards your target allocation.",
+    displayOrder: 60,
+    impactScore: computeImpactScore({ priority, severity, effort, pillarWeight: 0.15, contextBoost: 0.05 }),
+    financialObjective: "Lower single-holding risk while keeping expected returns intact.",
+    shortTermImpact: "May trigger some capital-gains tax on trims; requires one rebalance.",
+    longTermImpact: "Smoother compounding and less exposure to any single company or sector shock.",
+    tradeOffs: [
+      "Trimming winners can feel counter-intuitive but protects gains.",
+      "Small STCG/LTCG impact depending on holding period.",
+    ],
+    dependencies: [],
+    opportunityCost: "Slightly lower upside if the concentrated holding keeps outperforming — in exchange for materially lower downside.",
+    confidenceLevel: "deterministic",
+    contextTag: `concentration=${conc}/100`,
+  };
+};
+
+const crossServiceImbalanceRule: Rule = (input, ctx) => {
+  if (!ctx.flags.includes("cross_service_imbalance")) return null;
+  return {
+    id: "rec_cross_service_balance",
+    title: "Balance protection before scaling investments",
+    category: "Insurance",
+    priority: "high",
+    severity: "warning",
+    explanation: "Your investments look strong but your protection layer is thin.",
+    whyItMatters:
+      "A well-built portfolio can still be undone by a single uncovered medical event or income loss. Protection is the moat that keeps compounding intact.",
+    expectedImpact: "Restores the Emergency > Insurance > Investments hierarchy NitiCore is built on.",
+    logic: "Cross-service check: strong NitiInvest™ score paired with weak NitiSure™ / core cover.",
+    assumptions: {},
+    formulaSummary: "Cross-service imbalance detected between NitiInvest™ and NitiSure™.",
+    impact: "High - protects the portfolio you have already built.",
+    effort: "low",
+    nextAction: "Open Insurance Analyzer and close the term / health gap before adding new SIPs.",
+    displayOrder: 15,
+    impactScore: computeImpactScore({ priority: "high", severity: "warning", effort: "low", pillarWeight: 0.15, contextBoost: 0.15 }),
+    financialObjective: "Ensure protection matches the wealth you are actively building.",
+    shortTermImpact: "Redirects a small monthly amount to premiums.",
+    longTermImpact: "Prevents a single uncovered event from erasing years of investing.",
+    tradeOffs: ["Marginally lower monthly investable surplus."],
+    dependencies: [],
+    opportunityCost: "The cheapest possible insurance against portfolio drawdowns triggered by non-market events.",
+    confidenceLevel: "deterministic",
+    contextTag: "cross_service_imbalance",
+  };
+};
+
+const RULES: Rule[] = [emergencyFundRule, insuranceRule, debtRule, savingsRule, retirementRule, portfolioConcentrationRule, crossServiceImbalanceRule];
 
 /**
  * Cross-pillar prioritisation with context.
