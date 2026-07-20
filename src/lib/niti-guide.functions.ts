@@ -248,7 +248,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, snapsRes] = await Promise.all([
+    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, snapsRes, insAnalysesRes, portAnalysesRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("assets").select("*").eq("user_id", userId),
@@ -257,9 +257,13 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       supabase.from("goals").select("*").eq("user_id", userId),
       supabase.from("financial_snapshots").select("*").eq("user_id", userId)
         .order("taken_at", { ascending: false }).limit(2),
+      supabase.from("insurance_analyses").select("id, protection_score, last_reviewed_at").eq("user_id", userId),
+      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, last_reviewed_at").eq("user_id", userId),
     ]);
     const snapshots = snapsRes.data ?? [];
     const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
+    const insAnalyses = (insAnalysesRes.data ?? []) as { protection_score: number; last_reviewed_at: string }[];
+    const portAnalyses = (portAnalysesRes.data ?? []) as { portfolio_score: number; total_value: number | string | null; last_reviewed_at: string }[];
 
     const profile = profileRes.data;
     const fp = fpRes.data;
