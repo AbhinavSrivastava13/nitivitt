@@ -67,7 +67,11 @@ export type ContextFlag =
   | "under_invested" // surplus healthy but investing < 10% of income
   | "over_liquid" // > 12 months buffer while investing < 10%
   | "retirement_late_start" // 45+ with weak retirement position
-  | "wealth_building_ready"; // protection + buffer done, surplus available
+  | "wealth_building_ready" // protection + buffer done, surplus available
+  | "portfolio_concentrated" // NitiInvest™ flagged high concentration
+  | "portfolio_weak" // NitiInvest™ score < 55
+  | "insurance_reviewed_gap" // NitiSure™ portfolio score < 60
+  | "cross_service_imbalance"; // strong investments but weak protection
 
 function lifeStageFromAge(age: number): LifeStage {
   if (age < 30) return "early_career";
@@ -143,6 +147,23 @@ export function evaluateContext(input: NitiCoreInput): FinancialContext {
     surplusPct >= 15
   )
     flags.push("wealth_building_ready");
+
+  // Cross-service intelligence — only when analyzers have run.
+  const cs = input.crossService;
+  if (cs) {
+    if (typeof cs.portfolioConcentrationScore === "number" && cs.portfolioConcentrationScore >= 60)
+      flags.push("portfolio_concentrated");
+    if (typeof cs.portfolioScore === "number" && cs.portfolioScore > 0 && cs.portfolioScore < 55)
+      flags.push("portfolio_weak");
+    if (typeof cs.insuranceProtectionScore === "number" && cs.insuranceProtectionScore > 0 && cs.insuranceProtectionScore < 60)
+      flags.push("insurance_reviewed_gap");
+    // Strong investments while insurance is missing — a common Indian pattern.
+    const strongInvest = typeof cs.portfolioScore === "number" && cs.portfolioScore >= 65;
+    const weakProtection =
+      protectionPosture !== "protected" ||
+      (typeof cs.insuranceProtectionScore === "number" && cs.insuranceProtectionScore < 60);
+    if (strongInvest && weakProtection && hasDependents) flags.push("cross_service_imbalance");
+  }
 
   return {
     lifeStage,

@@ -123,6 +123,8 @@ function Workspace({
       await deleteFn({ data: { id } });
       toast.success("Portfolio removed.");
       qc.invalidateQueries({ queryKey: ["portfolio-analyses"] });
+      qc.invalidateQueries({ queryKey: ["portfolio-intel-summary"] });
+      qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed.");
     }
@@ -359,6 +361,7 @@ function ConfirmFlow({
   onDone: (report: PortfolioReport, analysisId: string | null) => void;
 }) {
   const analyzeFn = useServerFn(analyzePortfolio);
+  const qc = useQueryClient();
   const [rows, setRows] = useState<Holding[]>(initialHoldings.length ? initialHoldings : [emptyHolding()]);
   const [busy, setBusy] = useState(false);
 
@@ -392,6 +395,9 @@ function ConfirmFlow({
         },
       });
       toast.success("Portfolio saved and analyzed.");
+      qc.invalidateQueries({ queryKey: ["portfolio-analyses"] });
+      qc.invalidateQueries({ queryKey: ["portfolio-intel-summary"] });
+      qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] });
       onDone(res.report, res.analysisId);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Analysis failed.");

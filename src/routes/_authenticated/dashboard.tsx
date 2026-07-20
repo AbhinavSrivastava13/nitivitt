@@ -25,6 +25,7 @@ import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
 import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
 import { listInsuranceAnalyses, getPortfolioProtectionSummary } from "@/lib/insurance-analyzer/analyzer.functions";
+import { listPortfolioAnalyses, getPortfolioIntelligenceSummary } from "@/lib/portfolio-analyzer/analyzer.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -73,6 +74,16 @@ function Dashboard() {
   const insuranceScore = insSummaryQ.data?.summary?.protectionScore ?? null;
   const insuranceLastReviewed = insurancePolicies[0]?.lastReviewedAt ?? null;
 
+  const listPortFn = useServerFn(listPortfolioAnalyses);
+  const portQ = useQuery({ queryKey: ["portfolio-analyses"], queryFn: () => listPortFn() });
+  const portSummaryFn = useServerFn(getPortfolioIntelligenceSummary);
+  const portSummaryQ = useQuery({ queryKey: ["portfolio-intel-summary"], queryFn: () => portSummaryFn() });
+  const portfolioAnalyses = portQ.data?.analyses ?? [];
+  const portfolioCount = portfolioAnalyses.length;
+  const portfolioScore = portSummaryQ.data?.summary?.averageScore ?? null;
+  const portfolioLastReviewed = portSummaryQ.data?.summary?.latestReviewedAt ?? null;
+  const portfolioTotalValue = portSummaryQ.data?.summary?.totalValue ?? 0;
+
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-surface">
@@ -105,6 +116,13 @@ function Dashboard() {
     hasTermInsurance: hasTerm, hasHealthInsurance: hasHealth, termCover,
     retirementCorpus: 0, retirementAge: Number(fp?.retirement_age ?? 60),
     riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+    crossService: {
+      insurancePolicyCount,
+      insuranceProtectionScore: insuranceScore ?? undefined,
+      portfolioHoldingCount: portfolioCount,
+      portfolioScore: portfolioScore ?? undefined,
+      portfolioTotalValue,
+    },
   };
 
   const hasData = Number(fp?.monthly_income ?? 0) > 0;
@@ -384,15 +402,41 @@ function Dashboard() {
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {SERVICE_CARDS.map((raw) => {
-              const s: ServiceCard = raw.name === "Insurance Analyzer" ? { ...raw, hasPolicies: insurancePolicyCount > 0 } : raw;
+              const isInsurance = raw.name === "Insurance Analyzer";
+              const isPortfolio = raw.name === "Portfolio Analyzer";
+              const s: ServiceCard = isInsurance
+                ? { ...raw, hasPolicies: insurancePolicyCount > 0 }
+                : isPortfolio
+                  ? { ...raw, hasPolicies: portfolioCount > 0 }
+                  : raw;
               const Icon = s.icon;
               const isActive = s.status === "active";
-              const isInsurance = s.name === "Insurance Analyzer";
               const badge = isActive
                 ? { label: "Beta", cls: "bg-secondary-soft text-secondary" }
                 : { label: "Coming Soon", cls: "bg-muted text-muted-foreground" };
-              const lastReviewedText = insuranceLastReviewed
-                ? new Date(insuranceLastReviewed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+              const meta = isInsurance
+                ? {
+                    scoreLabel: "NitiSure™ · Protection Score",
+                    score: insuranceScore,
+                    lastReviewed: insuranceLastReviewed,
+                    emptyLabel: "No policies analyzed yet.",
+                    href: "/insurance-analyzer" as const,
+                    ctaOn: "Manage Policies",
+                    ctaOff: "Analyze Policy",
+                  }
+                : isPortfolio
+                  ? {
+                      scoreLabel: "NitiInvest™ · Portfolio Health Score",
+                      score: portfolioScore,
+                      lastReviewed: portfolioLastReviewed,
+                      emptyLabel: "No portfolio analyzed yet.",
+                      href: "/portfolio-analyzer" as const,
+                      ctaOn: "Manage Portfolio",
+                      ctaOff: "Analyze Portfolio",
+                    }
+                  : null;
+              const lastReviewedText = meta?.lastReviewed
+                ? new Date(meta.lastReviewed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
                 : null;
               const inner = (
                 <>
@@ -405,13 +449,13 @@ function Dashboard() {
                   <p className="mt-3 font-semibold text-foreground">{s.name}</p>
                   <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
 
-                  {isInsurance && isActive && (
+                  {isActive && meta && (
                     <div className="mt-4 rounded-lg border border-border bg-surface/60 p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary">NitiSure™ · Protection Score</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary">{meta.scoreLabel}</p>
                       {s.hasPolicies ? (
                         <>
                           <div className="mt-1 flex items-baseline gap-1.5">
-                            <span className="font-display text-2xl text-foreground">{insuranceScore ?? "—"}</span>
+                            <span className="font-display text-2xl text-foreground">{meta.score ?? "—"}</span>
                             <span className="text-[10px] text-muted-foreground">/ 100</span>
                           </div>
                           {lastReviewedText && (
@@ -419,14 +463,14 @@ function Dashboard() {
                           )}
                         </>
                       ) : (
-                        <p className="mt-1 text-[11px] text-muted-foreground">No policies analyzed yet</p>
+                        <p className="mt-1 text-[11px] text-muted-foreground">{meta.emptyLabel}</p>
                       )}
                     </div>
                   )}
 
-                  {isActive ? (
+                  {isActive && meta ? (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      {s.hasPolicies ? "Manage Policies" : "Analyze Policy"} <ArrowRight className="h-3 w-3" />
+                      {s.hasPolicies ? meta.ctaOn : meta.ctaOff} <ArrowRight className="h-3 w-3" />
                     </span>
                   ) : (
                     <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
@@ -435,10 +479,10 @@ function Dashboard() {
                   )}
                 </>
               );
-              return isActive ? (
+              return isActive && meta ? (
                 <Link
                   key={s.name}
-                  to="/insurance-analyzer"
+                  to={meta.href}
                   className="group flex flex-col rounded-2xl border border-primary/40 bg-gradient-to-br from-primary-soft/40 to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
                 >
                   {inner}
@@ -890,7 +934,7 @@ type ServiceCard = {
 
 const SERVICE_CARDS: ServiceCard[] = [
   { name: "Insurance Analyzer", desc: "Upload a policy PDF. Get a fee-only, CFP-style review — coverage, gaps, next moves.", icon: ShieldCheck, status: "active" },
-  { name: "Portfolio Analyzer", desc: "Overlap, concentration, cost and tax-efficiency across everything you own.", icon: BarChart3, status: "coming" },
+  { name: "Portfolio Analyzer", desc: "Overlap, concentration, cost and tax-efficiency across everything you own.", icon: BarChart3, status: "active" },
   { name: "Loan Optimizer", desc: "Prepay, refinance or keep — decided by real math, not by the bank calling you.", icon: Landmark, status: "coming" },
   { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — planned before March, not after.", icon: Receipt, status: "coming" },
   { name: "Financial Advisor", desc: "1:1 sessions with SEBI-registered, fee-only advisors — no product pitches.", icon: Users, status: "coming" },

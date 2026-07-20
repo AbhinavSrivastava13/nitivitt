@@ -47,13 +47,15 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
 
     // 1) Fetch minimal, user-scoped data via RLS.
-    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes] = await Promise.all([
+    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, insAnalysesRes, portAnalysesRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("assets").select("*").eq("user_id", userId),
       supabase.from("liabilities").select("*").eq("user_id", userId),
       supabase.from("insurance").select("*").eq("user_id", userId),
       supabase.from("goals").select("*").eq("user_id", userId),
+      supabase.from("insurance_analyses").select("id, protection_score, last_reviewed_at").eq("user_id", userId),
+      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, last_reviewed_at").eq("user_id", userId),
     ]);
 
     const profile = profileRes.data;
@@ -62,6 +64,8 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
     const liabs = liabsRes.data ?? [];
     const insurance = insRes.data ?? [];
     const goals = goalsRes.data ?? [];
+    const insAnalyses = (insAnalysesRes.data ?? []) as { protection_score: number; last_reviewed_at: string }[];
+    const portAnalyses = (portAnalysesRes.data ?? []) as { portfolio_score: number; total_value: number | string | null; last_reviewed_at: string }[];
 
     // 2) Compute deterministic outputs — the single source of truth.
     const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
@@ -91,6 +95,17 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
       retirementCorpus: 0,
       retirementAge: Number(fp?.retirement_age ?? 60),
       riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+      crossService: {
+        insurancePolicyCount: insAnalyses.length,
+        insuranceProtectionScore: insAnalyses.length
+          ? Math.round(insAnalyses.reduce((a, b) => a + Number(b.protection_score ?? 0), 0) / insAnalyses.length)
+          : undefined,
+        portfolioHoldingCount: portAnalyses.length,
+        portfolioScore: portAnalyses.length
+          ? Math.round(portAnalyses.reduce((a, b) => a + Number(b.portfolio_score ?? 0), 0) / portAnalyses.length)
+          : undefined,
+        portfolioTotalValue: portAnalyses.reduce((a, b) => a + Number(b.total_value ?? 0), 0),
+      },
     };
 
     const score = calculateNitiScore(input);
@@ -117,6 +132,23 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
         debtRatioPct: debt.value,
         retirement: { status: retirement.status, summary: retirement.calculationSummary },
         insurance: { adequacyPct: insAdequacy.value, hasTerm: input.hasTermInsurance, hasHealth: input.hasHealthInsurance },
+      },
+      analyzers: {
+        nitiSure: insAnalyses.length
+          ? {
+              policyCount: insAnalyses.length,
+              averageProtectionScore: input.crossService?.insuranceProtectionScore ?? 0,
+              lastReviewedAt: insAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
+            }
+          : null,
+        nitiInvest: portAnalyses.length
+          ? {
+              portfolioCount: portAnalyses.length,
+              averageScore: input.crossService?.portfolioScore ?? 0,
+              totalValue: input.crossService?.portfolioTotalValue ?? 0,
+              lastReviewedAt: portAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
+            }
+          : null,
       },
       context: {
         lifeStage: recContext.lifeStage,
@@ -158,7 +190,8 @@ Rules — non-negotiable:
 5. Explain WHY each number matters, not just what it is. Reference Indian financial context (SIP, EPF, ELSS, term cover multiples).
 6. Address the user by first name once, naturally.
 7. Do not use headings, markdown tables, or emojis. Do use short paragraphs.
-8. Aim for 120-180 words unless the focus is "overview" — then 180-240.`;
+8. Aim for 120-180 words unless the focus is "overview" — then 180-240.
+9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference those scores by name (NitiSure™, NitiInvest™) at least once and connect them to the wider picture — e.g. how a strong NitiInvest™ score contrasts with any protection gap, or how a healthy NitiSure™ score frees the user to focus on investing.`;
 
     const userPrompt = data.question
       ? `The user asks: "${data.question}"\n\nAnswer using ONLY the authoritative NitiCore JSON below. If the answer requires numbers not present, say so honestly and suggest opening NitiSim.\n\n${JSON.stringify(structured, null, 2)}`
@@ -215,7 +248,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, snapsRes] = await Promise.all([
+    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, snapsRes, insAnalysesRes, portAnalysesRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("assets").select("*").eq("user_id", userId),
@@ -224,9 +257,13 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       supabase.from("goals").select("*").eq("user_id", userId),
       supabase.from("financial_snapshots").select("*").eq("user_id", userId)
         .order("taken_at", { ascending: false }).limit(2),
+      supabase.from("insurance_analyses").select("id, protection_score, last_reviewed_at").eq("user_id", userId),
+      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, last_reviewed_at").eq("user_id", userId),
     ]);
     const snapshots = snapsRes.data ?? [];
     const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
+    const insAnalyses = (insAnalysesRes.data ?? []) as { protection_score: number; last_reviewed_at: string }[];
+    const portAnalyses = (portAnalysesRes.data ?? []) as { portfolio_score: number; total_value: number | string | null; last_reviewed_at: string }[];
 
     const profile = profileRes.data;
     const fp = fpRes.data;
@@ -255,6 +292,17 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       retirementCorpus: 0,
       retirementAge: Number(fp?.retirement_age ?? 60),
       riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+      crossService: {
+        insurancePolicyCount: insAnalyses.length,
+        insuranceProtectionScore: insAnalyses.length
+          ? Math.round(insAnalyses.reduce((a, b) => a + Number(b.protection_score ?? 0), 0) / insAnalyses.length)
+          : undefined,
+        portfolioHoldingCount: portAnalyses.length,
+        portfolioScore: portAnalyses.length
+          ? Math.round(portAnalyses.reduce((a, b) => a + Number(b.portfolio_score ?? 0), 0) / portAnalyses.length)
+          : undefined,
+        portfolioTotalValue: portAnalyses.reduce((a, b) => a + Number(b.total_value ?? 0), 0),
+      },
     };
 
     const score = calculateNitiScore(input);
@@ -304,6 +352,23 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
         debtRatioPct: Number(debt.value),
         retirement: { status: retirement.status, summary: retirement.calculationSummary },
         insurance: { adequacyPct: insAdequacy.value, hasTerm: input.hasTermInsurance, hasHealth: input.hasHealthInsurance, termCover },
+      },
+      analyzers: {
+        nitiSure: insAnalyses.length
+          ? {
+              policyCount: insAnalyses.length,
+              averageProtectionScore: input.crossService?.insuranceProtectionScore ?? 0,
+              lastReviewedAt: insAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
+            }
+          : null,
+        nitiInvest: portAnalyses.length
+          ? {
+              portfolioCount: portAnalyses.length,
+              averageScore: input.crossService?.portfolioScore ?? 0,
+              totalValue: input.crossService?.portfolioTotalValue ?? 0,
+              lastReviewedAt: portAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
+            }
+          : null,
       },
       context: {
         lifeStage: recContext.lifeStage,
@@ -363,6 +428,7 @@ Non-negotiable rules:
 5. Respect Indian context: joint families, dependents, salaried vs self-employed, EMI culture, FD/gold bias, PPF/EPF/ELSS/SIP behaviour, insurance under-coverage, retirement anxiety.
 6. Address them by first name once, near the start.
 7. Return Markdown paragraphs, no JSON, no code fences.
+8. If "analyzers.nitiSure" is present, weave in the NitiSure™ protection score and what it says about their insurance layer. If "analyzers.nitiInvest" is present, weave in the NitiInvest™ portfolio score and what it says about how their investments are actually built. When both are present, connect them — a strong portfolio with weak protection is a very different picture from balanced strength across both.
 
 Structure — use these six sections in order, each 2–4 sentences:
 
