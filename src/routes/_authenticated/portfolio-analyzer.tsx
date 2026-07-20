@@ -123,6 +123,8 @@ function Workspace({
       await deleteFn({ data: { id } });
       toast.success("Portfolio removed.");
       qc.invalidateQueries({ queryKey: ["portfolio-analyses"] });
+      qc.invalidateQueries({ queryKey: ["portfolio-intel-summary"] });
+      qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed.");
     }
