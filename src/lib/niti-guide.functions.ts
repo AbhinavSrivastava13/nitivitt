@@ -47,13 +47,15 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
 
     // 1) Fetch minimal, user-scoped data via RLS.
-    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes] = await Promise.all([
+    const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes, insAnalysesRes, portAnalysesRes] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
       supabase.from("assets").select("*").eq("user_id", userId),
       supabase.from("liabilities").select("*").eq("user_id", userId),
       supabase.from("insurance").select("*").eq("user_id", userId),
       supabase.from("goals").select("*").eq("user_id", userId),
+      supabase.from("insurance_analyses").select("id, protection_score, last_reviewed_at").eq("user_id", userId),
+      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, last_reviewed_at").eq("user_id", userId),
     ]);
 
     const profile = profileRes.data;
@@ -62,6 +64,8 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
     const liabs = liabsRes.data ?? [];
     const insurance = insRes.data ?? [];
     const goals = goalsRes.data ?? [];
+    const insAnalyses = (insAnalysesRes.data ?? []) as { protection_score: number; last_reviewed_at: string }[];
+    const portAnalyses = (portAnalysesRes.data ?? []) as { portfolio_score: number; total_value: number | string | null; last_reviewed_at: string }[];
 
     // 2) Compute deterministic outputs — the single source of truth.
     const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
