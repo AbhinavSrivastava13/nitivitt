@@ -138,6 +138,7 @@ function Workspace({
     await Promise.all([
       qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
       qc.invalidateQueries({ queryKey: ["insurance-portfolio-summary"] }),
+        qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] }),
     ]);
     toast.success("Policy removed from your library.");
   }
@@ -429,6 +430,7 @@ function UploadFlow({
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
         qc.invalidateQueries({ queryKey: ["insurance-portfolio-summary"] }),
+        qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] }),
         qc.invalidateQueries({ queryKey: ["insurance-analysis", res.analysisId] }),
       ]);
       onDone(res.report, res.analysisId);
@@ -723,6 +725,7 @@ function SavedAnalysisView({
         qc.invalidateQueries({ queryKey: ["insurance-analysis", id] }),
         qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
         qc.invalidateQueries({ queryKey: ["insurance-portfolio-summary"] }),
+        qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] }),
       ]);
       if (res.report) onReanalyzed(res.report);
     } catch (e) {
@@ -746,6 +749,7 @@ function SavedAnalysisView({
       await Promise.all([
         qc.invalidateQueries({ queryKey: ["insurance-analyses"] }),
         qc.invalidateQueries({ queryKey: ["insurance-portfolio-summary"] }),
+        qc.invalidateQueries({ queryKey: ["niti-guide-briefing"] }),
       ]);
       toast.success("Policy deleted.");
       onBack();
