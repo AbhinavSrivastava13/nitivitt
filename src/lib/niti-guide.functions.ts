@@ -369,6 +369,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
               lastReviewedAt: portAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
             }
           : null,
+      },
       context: {
         lifeStage: recContext.lifeStage,
         wealthStage: recContext.wealthStage,
