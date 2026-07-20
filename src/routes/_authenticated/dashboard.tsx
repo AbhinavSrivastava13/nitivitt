@@ -934,7 +934,7 @@ type ServiceCard = {
 
 const SERVICE_CARDS: ServiceCard[] = [
   { name: "Insurance Analyzer", desc: "Upload a policy PDF. Get a fee-only, CFP-style review — coverage, gaps, next moves.", icon: ShieldCheck, status: "active" },
-  { name: "Portfolio Analyzer", desc: "Overlap, concentration, cost and tax-efficiency across everything you own.", icon: BarChart3, status: "coming" },
+  { name: "Portfolio Analyzer", desc: "Overlap, concentration, cost and tax-efficiency across everything you own.", icon: BarChart3, status: "active" },
   { name: "Loan Optimizer", desc: "Prepay, refinance or keep — decided by real math, not by the bank calling you.", icon: Landmark, status: "coming" },
   { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — planned before March, not after.", icon: Receipt, status: "coming" },
   { name: "Financial Advisor", desc: "1:1 sessions with SEBI-registered, fee-only advisors — no product pitches.", icon: Users, status: "coming" },
