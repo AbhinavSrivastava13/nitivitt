@@ -190,7 +190,8 @@ Rules — non-negotiable:
 5. Explain WHY each number matters, not just what it is. Reference Indian financial context (SIP, EPF, ELSS, term cover multiples).
 6. Address the user by first name once, naturally.
 7. Do not use headings, markdown tables, or emojis. Do use short paragraphs.
-8. Aim for 120-180 words unless the focus is "overview" — then 180-240.`;
+8. Aim for 120-180 words unless the focus is "overview" — then 180-240.
+9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference those scores by name (NitiSure™, NitiInvest™) at least once and connect them to the wider picture — e.g. how a strong NitiInvest™ score contrasts with any protection gap, or how a healthy NitiSure™ score frees the user to focus on investing.`;
 
     const userPrompt = data.question
       ? `The user asks: "${data.question}"\n\nAnswer using ONLY the authoritative NitiCore JSON below. If the answer requires numbers not present, say so honestly and suggest opening NitiSim.\n\n${JSON.stringify(structured, null, 2)}`
