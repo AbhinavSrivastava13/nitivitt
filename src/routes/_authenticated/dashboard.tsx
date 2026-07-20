@@ -74,6 +74,20 @@ function Dashboard() {
   const insuranceScore = insSummaryQ.data?.summary?.protectionScore ?? null;
   const insuranceLastReviewed = insurancePolicies[0]?.lastReviewedAt ?? null;
 
+  const listPortFn = useServerFn(listPortfolioAnalyses);
+  const portQ = useQuery({ queryKey: ["portfolio-analyses"], queryFn: () => listPortFn() });
+  const portSummaryFn = useServerFn(getPortfolioIntelligenceSummary);
+  const portSummaryQ = useQuery({ queryKey: ["portfolio-intel-summary"], queryFn: () => portSummaryFn() });
+  const portfolioAnalyses = portQ.data?.analyses ?? [];
+  const portfolioCount = portfolioAnalyses.length;
+  const portfolioScore = portSummaryQ.data?.summary?.averageScore ?? null;
+  const portfolioLastReviewed = portSummaryQ.data?.summary?.latestReviewedAt ?? null;
+  // Best (lowest concentration = safest; but concentrationScore higher = more concentrated).
+  const maxConcentration = portfolioAnalyses.reduce(
+    (m, a) => Math.max(m, (a as unknown as { portfolioScore: number }).portfolioScore ? 0 : 0),
+    0,
+  );
+
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-surface">
