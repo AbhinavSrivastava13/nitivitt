@@ -133,6 +133,23 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
         retirement: { status: retirement.status, summary: retirement.calculationSummary },
         insurance: { adequacyPct: insAdequacy.value, hasTerm: input.hasTermInsurance, hasHealth: input.hasHealthInsurance },
       },
+      analyzers: {
+        nitiSure: insAnalyses.length
+          ? {
+              policyCount: insAnalyses.length,
+              averageProtectionScore: input.crossService?.insuranceProtectionScore ?? 0,
+              lastReviewedAt: insAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
+            }
+          : null,
+        nitiInvest: portAnalyses.length
+          ? {
+              portfolioCount: portAnalyses.length,
+              averageScore: input.crossService?.portfolioScore ?? 0,
+              totalValue: input.crossService?.portfolioTotalValue ?? 0,
+              lastReviewedAt: portAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
+            }
+          : null,
+      },
       context: {
         lifeStage: recContext.lifeStage,
         wealthStage: recContext.wealthStage,
