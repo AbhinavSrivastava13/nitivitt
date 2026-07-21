@@ -410,6 +410,26 @@ function ConfirmFlow({
   }
 
   return (
+    <>
+      {busy && (
+        <AnalysisSequence
+          onComplete={() => { /* deterministic sequence — final state controlled by RPC */ }}
+          stepDurationMs={520}
+          title="Building your portfolio report"
+          subtitle="NitiInvest™ is analyzing your holdings and grounding every finding in your NitiCore™ context."
+          steps={[
+            { id: "upload", label: "Uploading portfolio" },
+            { id: "extract", label: "Extracting holdings" },
+            { id: "match", label: "Matching securities" },
+            { id: "market", label: "Fetching market intelligence" },
+            { id: "core", label: "Running NitiCore™ analysis" },
+            { id: "context", label: "Applying financial context" },
+            { id: "guide", label: "Preparing NitiGuide™ briefing" },
+            { id: "report", label: "Composing your portfolio report" },
+          ]}
+        />
+      )}
+
     <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-soft">
       <div className="flex items-center gap-3">
         <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
