@@ -5,10 +5,13 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, Info, Loader2, Plus,
   RefreshCw, Sparkles, Trash2, TrendingUp, Upload, AlertTriangle,
+  ShieldCheck, Target, Layers, PieChart, Gauge,
 } from "lucide-react";
+import { AnalysisSequence } from "@/components/analysis-sequence";
 import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
+
 import {
   extractPortfolioFromScreenshots,
   analyzePortfolio,
