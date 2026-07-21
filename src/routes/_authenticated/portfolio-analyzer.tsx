@@ -979,5 +979,3 @@ function FindingsBlock({
   );
 }
 
-  );
-}
