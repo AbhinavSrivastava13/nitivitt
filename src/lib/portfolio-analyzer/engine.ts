@@ -322,6 +322,172 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     (equityHoldings.length > 0 ? 100 - Math.min(80, smallCapSlice) : 100) * 0.15;
   const portfolioScore = Math.max(0, Math.min(100, Math.round(rawScore - contextPenalty)));
 
+  // ─────────────── V2: Snapshot, risk meter, goal alignment, intelligence, executive summary ───────────────
+  const mfShare = pct(
+    cleaned.filter((h) => ["equity_mf", "index_fund", "debt_mf", "hybrid_mf"].includes(h.assetClass)).reduce((a, h) => a + valueOf(h), 0),
+    totalValue,
+  );
+  const indexShare = pct(
+    cleaned.filter((h) => h.assetClass === "index_fund" || h.assetClass === "etf").reduce((a, h) => a + valueOf(h), 0),
+    totalValue,
+  );
+
+  let styleParts: string[] = [];
+  if (mfShare >= 60) styleParts.push("Mutual-fund led");
+  else if (stockPct >= 50) styleParts.push("Direct-equity led");
+  else if (equityHoldings.length > 0) styleParts.push("Mixed equity");
+  else styleParts.push("Non-equity portfolio");
+  if (indexShare >= 40) styleParts.push("Index / passive tilt");
+  const midCapSlice = capBuckets.find((c) => c.label === "mid")?.pct ?? 0;
+  const largeCapSlice = capBuckets.find((c) => c.label === "large")?.pct ?? 0;
+  const multiCapSlice = capBuckets.find((c) => c.label === "multi")?.pct ?? 0;
+  if (multiCapSlice >= 40) styleParts.push("Multi-cap tilt");
+  else if (largeCapSlice >= 55) styleParts.push("Large-cap heavy");
+  else if (midCapSlice + smallCapSlice >= 55) styleParts.push("Growth-cap tilt");
+
+  const diversificationBand =
+    diversificationScore >= 75 ? "Well diversified"
+      : diversificationScore >= 55 ? "Reasonably diversified"
+        : diversificationScore >= 35 ? "Moderately concentrated"
+          : "Concentrated";
+
+  const riskLevel: import("./types").RiskLevel =
+    equityPct >= 85 ? "aggressive"
+      : equityPct >= 65 ? "growth"
+        : equityPct >= 40 ? "balanced"
+          : "conservative";
+  const riskLevelLabel =
+    riskLevel === "aggressive" ? "Aggressive"
+      : riskLevel === "growth" ? "Growth-oriented"
+        : riskLevel === "balanced" ? "Balanced"
+          : "Conservative";
+
+  const behaviourBits: string[] = [];
+  if (input.monthlyInvestments > 0 && input.monthlyIncome > 0) {
+    const sipPct = Math.round((input.monthlyInvestments * 100) / Math.max(1, input.monthlyIncome));
+    if (sipPct >= 25) behaviourBits.push("Aggressive SIP investor");
+    else if (sipPct >= 15) behaviourBits.push("Disciplined SIP investor");
+    else if (sipPct > 0) behaviourBits.push("Emerging SIP habit");
+  }
+  if (indexShare >= 30) behaviourBits.push("Prefers low-cost passive vehicles");
+  if (stockPct >= 40) behaviourBits.push("Comfortable with direct-stock risk");
+  if (goldPct >= 5) behaviourBits.push("Uses gold as a hedge");
+  const investmentBehaviour = behaviourBits.length ? behaviourBits.join(" · ") : "Portfolio building in progress";
+
+  const snapshot: import("./types").PortfolioSnapshot = {
+    valueLabel: inr(totalValue),
+    holdingsLabel: `${cleaned.length} holding${cleaned.length === 1 ? "" : "s"}`,
+    style: styleParts.join(" · "),
+    diversificationBand,
+    riskLevel,
+    riskLevelLabel,
+    largestHolding: topHolding?.name ?? "—",
+    largestHoldingPct: topPct,
+    investmentBehaviour,
+  };
+
+  const drift = Math.round(equityPct - targetEquityClamped);
+  const riskMeter: import("./types").RiskMeter = {
+    level: riskLevel,
+    label: riskLevelLabel,
+    equityPct,
+    targetEquityPct: targetEquityClamped,
+    drift,
+  };
+
+  let goalAlignment: import("./types").GoalAlignment;
+  if (totalValue === 0) {
+    goalAlignment = { status: "insufficient_data", label: "Not enough data", note: "Add holdings to assess alignment with your long-term goals." };
+  } else if (Math.abs(drift) <= 8) {
+    goalAlignment = { status: "aligned", label: "Aligned with your horizon", note: "Your equity mix sits close to what fits your age, risk profile, and life stage." };
+  } else if (drift < 0) {
+    goalAlignment = { status: "under_allocated", label: "Under-allocated to growth", note: "You are under-invested in equity for your horizon. Compounding is being left on the table." };
+  } else {
+    goalAlignment = { status: "over_allocated", label: "Above your growth target", note: "Equity exposure sits above the level typically appropriate for your horizon. Volatility could hurt near-term goals." };
+  }
+
+  // Positive intelligence — celebrate genuine strengths.
+  const positives: PortfolioFinding[] = [...strengths];
+  if (mfShare >= 60 && cleaned.length >= 4) {
+    positives.push({
+      id: "quality-vehicles",
+      severity: "strength",
+      title: "Portfolio built through structured vehicles",
+      detail: "Most of your money is deployed through mutual funds rather than ad-hoc stock picks — a durable base to build on.",
+    });
+  }
+  if (indexShare >= 25) {
+    positives.push({
+      id: "low-cost-tilt",
+      severity: "strength",
+      title: "Meaningful low-cost / passive allocation",
+      detail: "Index and ETF exposure reduces long-term drag from fund expenses and manager risk.",
+    });
+  }
+  if (diversificationScore >= 70) {
+    positives.push({
+      id: "healthy-diversification",
+      severity: "strength",
+      title: "Diversification is doing its job",
+      detail: "Value is spread across asset classes such that no single bucket dominates the outcome.",
+    });
+  }
+  if (goldPct >= 5 && goldPct <= 15) {
+    positives.push({
+      id: "gold-hedge",
+      severity: "strength",
+      title: "Sensible gold allocation",
+      detail: "A 5-15% gold slice historically cushions equity drawdowns during macro stress.",
+    });
+  }
+  if (emergencyOk) {
+    positives.push({
+      id: "liquidity-foundation",
+      severity: "strength",
+      title: "Emergency fund is in place",
+      detail: "Your investments can compound without doubling as a rainy-day safety net.",
+    });
+  }
+
+  // Educational insights — neither strength nor a hard risk, but worth understanding.
+  const insights: PortfolioFinding[] = [...observations];
+  insights.push({
+    id: "asset-class-hierarchy",
+    severity: "observation",
+    title: `${styleParts.join(" · ")}`,
+    detail: `Your current mix reads as ${equityPct}% equity, ${debtPct}% debt and ${goldPct}% gold — the shape of the portfolio your risk and horizon are being built on.`,
+  });
+  if (cleaned.length >= 12 && mfShare >= 40) {
+    insights.push({
+      id: "fund-overlap-note",
+      severity: "observation",
+      title: `${cleaned.length} holdings across the portfolio`,
+      detail: "Beyond about 6-8 well-chosen funds, extra schemes usually add tracking effort without meaningfully improving diversification.",
+    });
+  }
+
+  const intelligence: import("./types").PortfolioIntelligence = { positives, insights };
+
+  // Executive summary — deterministic, personalised, CFP-style opener.
+  let executiveSummary: string;
+  if (totalValue === 0) {
+    executiveSummary = "There is not enough portfolio data yet to draw meaningful conclusions. Add your holdings so NitiInvest™ can evaluate structure, risk and alignment.";
+  } else if (!emergencyOk) {
+    executiveSummary = "Your portfolio has real building blocks, but the bigger lever right now sits outside investments — a fuller emergency cushion would let this money compound without being pulled prematurely.";
+  } else if (!protectionOk && context.hasDependents) {
+    executiveSummary = "Your investments are moving in a healthy direction. The biggest risk to this portfolio today is not the market — it is the protection gap for your dependents, which could force premature liquidation.";
+  } else if (topPct >= 25) {
+    executiveSummary = `The portfolio is fundamentally sound, but a single holding accounts for a disproportionate share of it — the biggest opportunity is reducing concentration rather than changing fund selection.`;
+  } else if (drift <= -12) {
+    executiveSummary = "Your investments are diversified, but the equity allocation is meaningfully below what fits your life stage. The biggest lever here is asset allocation, not which fund you pick next.";
+  } else if (drift >= 12) {
+    executiveSummary = "Your portfolio leans aggressive for the goal horizon. Fund selection looks reasonable — the priority is measured rebalancing so market swings do not derail near-term goals.";
+  } else if (diversificationScore >= 70 && Math.abs(drift) <= 8) {
+    executiveSummary = "This is a well-built portfolio for your stage of life. The priority now is discipline and periodic review — not restructuring.";
+  } else {
+    executiveSummary = "The foundations of your portfolio are in place. A few structural refinements, rather than wholesale changes, will compound meaningfully over time.";
+  }
+
   return {
     portfolioScore,
     scoreLabel: scoreLabel(portfolioScore),
@@ -340,8 +506,14 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     observations,
     recommendations,
     contextSummary: `${context.lifeStage} · ${context.protectionPosture} · ${context.liquidityHealth} · equity target ${targetEquityClamped}% (age ${input.ageYears}, risk ${input.riskProfile ?? "moderate"})`,
+    executiveSummary,
+    snapshot,
+    riskMeter,
+    goalAlignment,
+    intelligence,
   };
 }
+
 
 export { inr as formatInr };
 export const NITI_CORE_CONFIG_REF = NITI_CORE_CONFIG; // keep import used in case of future tuning
