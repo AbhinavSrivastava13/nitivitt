@@ -547,99 +547,212 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
 
 // ─────────────────────────── REPORT ───────────────────────────
 
+const SECTION_STEPS: { id: string; label: string }[] = [
+  { id: "score", label: "Portfolio Health Score" },
+  { id: "summary", label: "Executive Summary" },
+  { id: "snapshot", label: "Portfolio Snapshot" },
+  { id: "visuals", label: "Portfolio Visualisations" },
+  { id: "strengths", label: "Strengths" },
+  { id: "risks", label: "Risks & Gaps" },
+  { id: "intel", label: "Portfolio Intelligence" },
+  { id: "actions", label: "Recommended Actions" },
+  { id: "guide", label: "NitiGuide™" },
+];
+
 function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack: () => void; title?: string }) {
+  const snapshot = report.snapshot;
+  const risk = report.riskMeter;
+  const goal = report.goalAlignment;
+  const positives = report.intelligence?.positives ?? report.strengths;
+  const insights = report.intelligence?.insights ?? report.observations;
+  const execSummary = report.executiveSummary ?? report.scoreLabel;
+
   return (
     <div className="space-y-6">
       <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
       </button>
 
-      <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      {/* Table of contents / roadmap */}
+      <nav className="rounded-2xl border border-border bg-card p-4 shadow-soft">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Portfolio review · sections</p>
+        <ol className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted-foreground">
+          {SECTION_STEPS.map((s, i) => (
+            <li key={s.id}>
+              <a href={`#pr-${s.id}`} className="hover:text-primary">
+                <span className="text-foreground/80">{String(i + 1).padStart(2, "0")}.</span> {s.label}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      {/* 1. Portfolio Health Score */}
+      <section id="pr-score" className="rounded-2xl border border-border bg-gradient-to-br from-card via-card to-primary-soft/30 p-6 shadow-soft">
+        <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">NitiInvest™ score</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Portfolio Health Score</p>
             <h2 className="mt-1 font-display text-3xl text-foreground">{title ?? "Portfolio report"}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{report.scoreLabel}</p>
           </div>
-          <ScorePill score={report.portfolioScore} large />
+          <ScoreDial score={report.portfolioScore} />
         </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-4">
-          <Metric label="Total value" value={formatInr(report.totalValue)} />
-          <Metric label="Holdings" value={String(report.holdingCount)} />
-          <Metric label="Diversification" value={`${report.diversificationScore}/100`} />
-          <Metric label="Concentration" value={`${report.concentrationScore}/100`} />
+      </section>
+
+      {/* 2. Executive Summary */}
+      <section id="pr-summary" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" />
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Executive summary</p>
         </div>
-        <p className="mt-4 rounded-lg bg-surface p-3 text-xs text-muted-foreground">{report.contextSummary}</p>
-      </div>
+        <p className="mt-3 text-base leading-relaxed text-foreground/90">{execSummary}</p>
+        <p className="mt-4 rounded-lg bg-surface p-3 text-[11px] text-muted-foreground">{report.contextSummary}</p>
+      </section>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <AllocationCard title="By asset class" slices={report.allocation.byAssetClass} />
-        <AllocationCard title="By market cap (equity)" slices={report.allocation.byMarketCap} />
-        <AllocationCard title="By sector" slices={report.allocation.bySector} empty="Sector data will appear once holdings are enriched." />
-      </div>
+      {/* 3. Portfolio Snapshot */}
+      <section id="pr-snapshot" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="Portfolio snapshot" subtitle="A quick read of what this portfolio looks like today." />
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SnapCard label="Portfolio value" value={snapshot?.valueLabel ?? formatInr(report.totalValue)} />
+          <SnapCard label="Holdings" value={snapshot?.holdingsLabel ?? String(report.holdingCount)} />
+          <SnapCard label="Portfolio style" value={snapshot?.style ?? "—"} />
+          <SnapCard label="Diversification" value={snapshot?.diversificationBand ?? `${report.diversificationScore}/100`} />
+          <SnapCard label="Risk level" value={snapshot?.riskLevelLabel ?? "—"} />
+          <SnapCard
+            label="Largest holding"
+            value={snapshot?.largestHolding ?? (report.topHoldings[0]?.name ?? "—")}
+            sub={snapshot ? `${snapshot.largestHoldingPct}% of portfolio` : undefined}
+          />
+          <SnapCard label="Investment behaviour" value={snapshot?.investmentBehaviour ?? "—"} className="sm:col-span-2" />
+        </div>
+      </section>
 
-      {report.topHoldings.length > 0 && (
-        <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <h3 className="font-display text-lg text-foreground">Top holdings</h3>
-          <ul className="mt-3 space-y-2 text-sm">
-            {report.topHoldings.map((h) => (
-              <li key={h.name} className="flex items-center justify-between border-b border-border/60 pb-2 last:border-0 last:pb-0">
-                <span className="text-foreground">{h.name} <span className="text-[11px] text-muted-foreground">· {ASSET_CLASS_LABEL[h.assetClass]}</span></span>
-                <span className="font-mono text-foreground">{h.pct}%</span>
+      {/* 4. Portfolio Visualisations */}
+      <section id="pr-visuals" className="space-y-4">
+        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Portfolio visualisations" subtitle="Understand the structure of the portfolio at a glance." />
+        <div className="grid gap-4 md:grid-cols-3">
+          <DonutCard title="Asset allocation" slices={report.allocation.byAssetClass} />
+          <DonutCard title="Market cap (equity)" slices={report.allocation.byMarketCap} />
+          <DonutCard title="Sector mix" slices={report.allocation.bySector} empty="Sector data will appear once holdings are enriched." />
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <MeterCard
+            title="Risk meter"
+            icon={<Gauge className="h-4 w-4 text-primary" />}
+            label={risk?.label ?? "—"}
+            value={risk?.equityPct ?? 0}
+            target={risk?.targetEquityPct ?? 0}
+            valueLabel={`${risk?.equityPct ?? 0}% equity`}
+            targetLabel={`Target ~${risk?.targetEquityPct ?? 0}%`}
+          />
+          <ConcentrationCard topHoldings={report.topHoldings} />
+          <GoalAlignmentCard goal={goal} />
+        </div>
+        {report.topHoldings.length > 0 && (
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+            <h4 className="text-sm font-semibold text-foreground">Top holdings</h4>
+            <ul className="mt-3 space-y-2">
+              {report.topHoldings.map((h) => (
+                <li key={h.name}>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-foreground">{h.name}<span className="ml-2 text-[11px] text-muted-foreground">{ASSET_CLASS_LABEL[h.assetClass]}</span></span>
+                    <span className="font-mono text-muted-foreground">{h.pct}%</span>
+                  </div>
+                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full bg-primary" style={{ width: `${Math.min(100, h.pct)}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      {/* 5. Strengths */}
+      <section id="pr-strengths">
+        <FindingsBlock title="Strengths" tone="success" findings={positives} />
+      </section>
+
+      {/* 6. Risks & Gaps */}
+      <section id="pr-risks">
+        <FindingsBlock title="Risks & gaps" tone="danger" findings={report.gaps} emptyLabel="No material risks were flagged — keep monitoring quarterly." />
+      </section>
+
+      {/* 7. Portfolio Intelligence */}
+      <section id="pr-intel" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Portfolio intelligence" subtitle="What is worth understanding beyond the raw numbers." />
+        {insights.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">No additional insights right now.</p>
+        ) : (
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {insights.map((f) => (
+              <li key={f.id} className="rounded-xl border border-border/60 bg-surface p-4">
+                <p className="text-sm font-semibold text-foreground">{f.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{f.detail}</p>
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
-      <FindingsBlock title="Strengths" tone="success" findings={report.strengths} />
-      <FindingsBlock title="Gaps & risks" tone="danger" findings={report.gaps} />
-      <FindingsBlock title="Observations" tone="muted" findings={report.observations} />
-
-      {report.recommendations.length > 0 && (
-        <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <h3 className="font-display text-lg text-foreground">Recommended next moves</h3>
-          <ul className="mt-3 space-y-3">
-            {report.recommendations.map((r) => (
-              <li key={r.id} className="rounded-xl border border-border bg-surface p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-foreground">{r.title}</p>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                    r.priority === "high" ? "bg-destructive/10 text-destructive" :
-                    r.priority === "medium" ? "bg-accent/15 text-accent-foreground" :
-                    "bg-muted text-muted-foreground"
-                  }`}>{r.priority}</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">{r.reason}</p>
-                <p className="mt-2 text-sm text-foreground/90"><strong>Expected benefit:</strong> {r.expectedBenefit}</p>
-                {r.tradeOffs.length > 0 && (
-                  <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-muted-foreground">
-                    {r.tradeOffs.map((t, i) => <li key={i}>{t}</li>)}
-                  </ul>
-                )}
-                {r.crossPillarNote && (
-                  <p className="mt-2 rounded-md bg-accent/10 px-2 py-1 text-[11px] text-accent-foreground">{r.crossPillarNote}</p>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {report.mentorSummary && (
-        <section className="rounded-2xl border border-primary/30 bg-primary-soft/30 p-6">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">NitiGuide briefing</p>
+      {/* 8. Recommended Actions */}
+      <section id="pr-actions">
+        {report.recommendations.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
+            No priority actions right now. Revisit this portfolio after any material change (income, goals, life event).
           </div>
-          <div className="mt-3 space-y-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-            {report.mentorSummary}
+        ) : (
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Recommended actions" subtitle="Ordered by what matters most, given your whole financial context." />
+            <ul className="mt-4 space-y-3">
+              {report.recommendations.map((r) => (
+                <li key={r.id} className="rounded-xl border border-border bg-surface p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-semibold text-foreground">{r.title}</p>
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                      r.priority === "high" ? "bg-destructive/10 text-destructive" :
+                      r.priority === "medium" ? "bg-accent/15 text-accent-foreground" :
+                      "bg-muted text-muted-foreground"
+                    }`}>{r.priority}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{r.reason}</p>
+                  <p className="mt-2 text-sm text-foreground/90"><strong>Expected benefit:</strong> {r.expectedBenefit}</p>
+                  {r.tradeOffs.length > 0 && (
+                    <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-muted-foreground">
+                      {r.tradeOffs.map((t, i) => <li key={i}>{t}</li>)}
+                    </ul>
+                  )}
+                  {r.crossPillarNote && (
+                    <p className="mt-2 rounded-md bg-accent/10 px-2 py-1 text-[11px] text-accent-foreground">{r.crossPillarNote}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
           </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">
-            NitiGuide explains the deterministic findings. It never recommends specific funds or predicts returns.
-          </p>
-        </section>
-      )}
+        )}
+      </section>
+
+      {/* 9. NitiGuide */}
+      <section id="pr-guide">
+        {report.mentorSummary ? (
+          <div className="rounded-2xl border border-primary/30 bg-primary-soft/30 p-6">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">NitiGuide™ · portfolio review</p>
+            </div>
+            <div className="mt-3 space-y-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+              {report.mentorSummary}
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground">
+              NitiGuide explains the deterministic findings above. It never recommends specific funds or predicts returns.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
+            NitiGuide briefing not available for this analysis.
+          </div>
+        )}
+      </section>
 
       <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm">
         <p className="text-muted-foreground">
@@ -655,11 +768,33 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
 
 // ─────────────────────────── ATOMS ───────────────────────────
 
+function SectionHeading({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        {icon}
+        <h3 className="font-display text-lg text-foreground">{title}</h3>
+      </div>
+      {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
+    </div>
+  );
+}
+
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-3">
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
       <p className="mt-1 font-display text-lg text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function SnapCard({ label, value, sub, className }: { label: string; value: string; sub?: string; className?: string }) {
+  return (
+    <div className={`rounded-xl border border-border bg-surface p-4 ${className ?? ""}`}>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-base leading-snug text-foreground">{value}</p>
+      {sub && <p className="mt-0.5 text-[11px] text-muted-foreground">{sub}</p>}
     </div>
   );
 }
@@ -676,47 +811,173 @@ function ScorePill({ score, large }: { score: number; large?: boolean }) {
   );
 }
 
-function AllocationCard({ title, slices, empty }: { title: string; slices: { label: string; pct: number; value: number }[]; empty?: string }) {
+function ScoreDial({ score }: { score: number }) {
+  const s = Math.max(0, Math.min(100, score));
+  const color =
+    s >= 75 ? "var(--color-success, #16a34a)" :
+    s >= 55 ? "var(--color-secondary, #6366f1)" :
+    "var(--color-destructive, #dc2626)";
+  const bg = `conic-gradient(${color} ${s * 3.6}deg, hsl(var(--muted)) 0deg)`;
   return (
-    <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      {slices.length === 0 ? (
-        <p className="mt-3 text-xs text-muted-foreground">{empty ?? "No data."}</p>
-      ) : (
-        <ul className="mt-3 space-y-2">
-          {slices.slice(0, 6).map((s) => (
-            <li key={s.label}>
-              <div className="flex justify-between text-xs">
-                <span className="text-foreground">{s.label}</span>
-                <span className="font-mono text-muted-foreground">{s.pct}%</span>
-              </div>
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                <div className="h-full bg-primary" style={{ width: `${Math.min(100, s.pct)}%` }} />
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+    <div className="relative flex h-32 w-32 shrink-0 items-center justify-center rounded-full" style={{ background: bg }}>
+      <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-card">
+        <span className="font-display text-3xl leading-none text-foreground">{s}</span>
+        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">/ 100</span>
+      </div>
+    </div>
   );
 }
 
-function FindingsBlock({ title, tone, findings }: { title: string; tone: "success" | "danger" | "muted"; findings: { id: string; title: string; detail: string }[] }) {
-  if (findings.length === 0) return null;
+const SLICE_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--secondary))",
+  "hsl(var(--accent))",
+  "#f59e0b",
+  "#0ea5e9",
+  "#a855f7",
+  "#ef4444",
+];
+
+function DonutCard({ title, slices, empty }: { title: string; slices: { label: string; pct: number; value: number }[]; empty?: string }) {
+  const top = slices.slice(0, 6);
+  let acc = 0;
+  const stops = top.map((s, i) => {
+    const start = acc;
+    acc += s.pct;
+    return `${SLICE_COLORS[i % SLICE_COLORS.length]} ${start * 3.6}deg ${acc * 3.6}deg`;
+  }).join(", ");
+  const remainder = Math.max(0, 100 - acc);
+  const bg =
+    top.length === 0
+      ? `conic-gradient(hsl(var(--muted)) 0deg 360deg)`
+      : `conic-gradient(${stops}${remainder > 0 ? `, hsl(var(--muted)) ${acc * 3.6}deg 360deg` : ""})`;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+      <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+      {top.length === 0 ? (
+        <p className="mt-3 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
+      ) : (
+        <div className="mt-3 flex gap-4">
+          <div className="relative h-24 w-24 shrink-0 rounded-full" style={{ background: bg }}>
+            <div className="absolute inset-3 rounded-full bg-card" />
+          </div>
+          <ul className="flex-1 space-y-1 text-[11px]">
+            {top.map((s, i) => (
+              <li key={s.label} className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 truncate text-foreground">
+                  <span className="h-2 w-2 shrink-0 rounded-sm" style={{ background: SLICE_COLORS[i % SLICE_COLORS.length] }} />
+                  <span className="truncate">{s.label}</span>
+                </span>
+                <span className="font-mono text-muted-foreground">{s.pct}%</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MeterCard({
+  title, icon, label, value, target, valueLabel, targetLabel,
+}: {
+  title: string; icon: React.ReactNode; label: string;
+  value: number; target: number; valueLabel: string; targetLabel: string;
+}) {
+  const v = Math.max(0, Math.min(100, value));
+  const t = Math.max(0, Math.min(100, target));
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+      </div>
+      <p className="mt-3 font-display text-lg text-foreground">{label}</p>
+      <div className="relative mt-3 h-2 rounded-full bg-muted">
+        <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${v}%` }} />
+        <div className="absolute -top-1 h-4 w-0.5 bg-foreground/70" style={{ left: `${t}%` }} title={targetLabel} />
+      </div>
+      <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
+        <span>{valueLabel}</span>
+        <span>{targetLabel}</span>
+      </div>
+    </div>
+  );
+}
+
+function ConcentrationCard({ topHoldings }: { topHoldings: { name: string; pct: number }[] }) {
+  const top = topHoldings[0];
+  const topPct = top?.pct ?? 0;
+  const band =
+    topPct >= 25 ? { label: "High concentration", tone: "text-destructive" } :
+    topPct >= 15 ? { label: "Moderate concentration", tone: "text-accent-foreground" } :
+    topPct === 0 ? { label: "No holdings yet", tone: "text-muted-foreground" } :
+    { label: "Well spread", tone: "text-success" };
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+      <div className="flex items-center gap-2">
+        <Layers className="h-4 w-4 text-primary" />
+        <h4 className="text-sm font-semibold text-foreground">Concentration</h4>
+      </div>
+      <p className={`mt-3 font-display text-lg ${band.tone}`}>{band.label}</p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Largest holding {top ? `(${top.name})` : ""} is <span className="font-mono">{topPct}%</span> of the portfolio.
+      </p>
+      <div className="mt-3 h-2 rounded-full bg-muted">
+        <div
+          className={`h-full rounded-full ${topPct >= 25 ? "bg-destructive" : topPct >= 15 ? "bg-accent" : "bg-success"}`}
+          style={{ width: `${Math.min(100, topPct * 2)}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function GoalAlignmentCard({ goal }: { goal: PortfolioReport["goalAlignment"] }) {
+  const tone =
+    goal?.status === "aligned" ? "text-success" :
+    goal?.status === "under_allocated" || goal?.status === "over_allocated" ? "text-accent-foreground" :
+    "text-muted-foreground";
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+      <div className="flex items-center gap-2">
+        <Target className="h-4 w-4 text-primary" />
+        <h4 className="text-sm font-semibold text-foreground">Goal alignment</h4>
+      </div>
+      <p className={`mt-3 font-display text-lg ${tone}`}>{goal?.label ?? "—"}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{goal?.note ?? "Add profile data to assess alignment."}</p>
+    </div>
+  );
+}
+
+function FindingsBlock({
+  title, tone, findings, emptyLabel,
+}: {
+  title: string; tone: "success" | "danger" | "muted";
+  findings: { id: string; title: string; detail: string }[];
+  emptyLabel?: string;
+}) {
   const badge = tone === "success" ? <CheckCircle2 className="h-4 w-4 text-success" /> :
     tone === "danger" ? <AlertTriangle className="h-4 w-4 text-destructive" /> :
     <Info className="h-4 w-4 text-muted-foreground" />;
   return (
-    <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
       <div className="flex items-center gap-2">{badge}<h3 className="font-display text-lg text-foreground">{title}</h3></div>
-      <ul className="mt-3 space-y-3">
-        {findings.map((f) => (
-          <li key={f.id} className="rounded-xl border border-border/60 bg-surface p-3">
-            <p className="text-sm font-semibold text-foreground">{f.title}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{f.detail}</p>
-          </li>
-        ))}
-      </ul>
-    </section>
+      {findings.length === 0 ? (
+        <p className="mt-3 text-sm text-muted-foreground">{emptyLabel ?? "Nothing to report here."}</p>
+      ) : (
+        <ul className="mt-3 grid gap-3 md:grid-cols-2">
+          {findings.map((f) => (
+            <li key={f.id} className="rounded-xl border border-border/60 bg-surface p-3">
+              <p className="text-sm font-semibold text-foreground">{f.title}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{f.detail}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
   );
 }
