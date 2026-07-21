@@ -65,12 +65,18 @@ export interface HoldingEnrichment {
   industry?: string | null;
   marketCap?: MarketCap;
   fundCategory?: string | null;
+  fundHouse?: string | null;
+  investmentStyle?: string | null;
+  benchmark?: string | null;
+  riskCategory?: string | null;
   expenseRatio?: number | null;
   oneYearReturnPct?: number | null;
   threeYearReturnPct?: number | null;
   fiveYearReturnPct?: number | null;
+  peerContext?: string | null;
   source?: string; // "mfapi" | "yahoo" | "gemini" | …
 }
+
 
 export function emptyHolding(): Holding {
   return {
@@ -114,6 +120,39 @@ export interface AllocationSlice {
   pct: number;
 }
 
+export type RiskLevel = "conservative" | "balanced" | "growth" | "aggressive";
+
+export interface PortfolioSnapshot {
+  valueLabel: string;
+  holdingsLabel: string;
+  style: string;               // e.g. "Mutual-fund led · Multi-cap tilt"
+  diversificationBand: string; // e.g. "Well diversified"
+  riskLevel: RiskLevel;
+  riskLevelLabel: string;
+  largestHolding: string;
+  largestHoldingPct: number;
+  investmentBehaviour: string; // e.g. "Disciplined SIP investor"
+}
+
+export interface RiskMeter {
+  level: RiskLevel;
+  label: string;
+  equityPct: number;
+  targetEquityPct: number;
+  drift: number; // + over, - under
+}
+
+export interface GoalAlignment {
+  status: "aligned" | "under_allocated" | "over_allocated" | "insufficient_data";
+  label: string;
+  note: string;
+}
+
+export interface PortfolioIntelligence {
+  positives: PortfolioFinding[];
+  insights: PortfolioFinding[];
+}
+
 export interface PortfolioReport {
   portfolioScore: number; // 0-100 deterministic
   scoreLabel: string;
@@ -133,4 +172,11 @@ export interface PortfolioReport {
   recommendations: PortfolioRecommendation[];
   contextSummary: string;
   mentorSummary?: string;
+  // V2 additions — all optional so older saved reports still render.
+  executiveSummary?: string;
+  snapshot?: PortfolioSnapshot;
+  riskMeter?: RiskMeter;
+  goalAlignment?: GoalAlignment;
+  intelligence?: PortfolioIntelligence;
 }
+
