@@ -95,3 +95,20 @@ function guessRisk(text: string, ac: AssetClass): string | null {
   if (ac === "debt_mf" || t.includes("liquid")) return "Low to Moderate";
   return null;
 }
+
+function guessPhilosophy(text: string, ac: AssetClass): string | null {
+  const t = text.toLowerCase();
+  if (t.includes("index") || t.includes("nifty") || t.includes("sensex")) return "Tracks a broad index at low cost. Returns mirror the benchmark rather than beat it.";
+  if (t.includes("etf")) return "Exchange-traded, passively managed vehicle designed for low-cost market exposure.";
+  if (t.includes("elss")) return "Equity fund with a 3-year lock-in that also offers tax deduction under 80C.";
+  if (t.includes("flexi") || t.includes("multi")) return "Invests across large, mid and small caps — the fund manager decides the mix.";
+  if (t.includes("focused")) return "A concentrated equity fund holding a small number of high-conviction names.";
+  if (t.includes("value")) return "Buys companies trading below intrinsic worth — patience-driven strategy.";
+  if (t.includes("contra")) return "Takes deliberate contrarian bets against prevailing market sentiment.";
+  if (t.includes("hybrid") || t.includes("balanced")) return "Blends equity and debt in a single fund to smoothen the return path.";
+  if (t.includes("liquid")) return "Parks money in very short-term instruments — used as a cash alternative.";
+  if (t.includes("gilt")) return "Invests only in government securities — carries interest-rate risk, not credit risk.";
+  if (ac === "debt_mf" || t.includes("debt") || t.includes("bond")) return "Fixed-income fund focused on interest accrual rather than capital appreciation.";
+  if (ac === "equity_mf") return "Actively managed equity fund aiming to outperform its benchmark over full market cycles.";
+  return null;
+}
