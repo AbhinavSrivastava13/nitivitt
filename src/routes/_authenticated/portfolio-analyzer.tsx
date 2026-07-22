@@ -548,10 +548,12 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
 // ─────────────────────────── REPORT ───────────────────────────
 
 const SECTION_STEPS: { id: string; label: string }[] = [
-  { id: "score", label: "Portfolio Health Score" },
+  { id: "hero", label: "Overall Portfolio Health" },
   { id: "summary", label: "Executive Summary" },
   { id: "snapshot", label: "Portfolio Snapshot" },
-  { id: "visuals", label: "Portfolio Visualisations" },
+  { id: "visuals", label: "Visualisations" },
+  { id: "compare", label: "Allocation vs Recommended" },
+  { id: "peers", label: "Similar Investor" },
   { id: "strengths", label: "Strengths" },
   { id: "risks", label: "Risks & Gaps" },
   { id: "intel", label: "Portfolio Intelligence" },
@@ -566,14 +568,17 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
   const positives = report.intelligence?.positives ?? report.strengths;
   const insights = report.intelligence?.insights ?? report.observations;
   const execSummary = report.executiveSummary ?? report.scoreLabel;
+  const hero = report.hero;
+  const alloc = report.allocationComparison ?? [];
+  const peer = report.similarInvestor;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
       </button>
 
-      {/* Table of contents / roadmap */}
+      {/* Section jump nav */}
       <nav className="rounded-2xl border border-border bg-card p-4 shadow-soft">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Portfolio review · sections</p>
         <ol className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted-foreground">
@@ -587,15 +592,28 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
         </ol>
       </nav>
 
-      {/* 1. Portfolio Health Score */}
-      <section id="pr-score" className="rounded-2xl border border-border bg-gradient-to-br from-card via-card to-primary-soft/30 p-6 shadow-soft">
-        <div className="flex flex-wrap items-start justify-between gap-6">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Portfolio Health Score</p>
-            <h2 className="mt-1 font-display text-3xl text-foreground">{title ?? "Portfolio report"}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{report.scoreLabel}</p>
+      {/* 1. Hero — Overall Portfolio Health */}
+      <section id="pr-hero" className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-primary-soft/40 p-6 shadow-elevated md:p-8">
+        <div className="grid gap-8 md:grid-cols-[auto,1fr] md:items-center">
+          <div className="flex flex-col items-center gap-3">
+            <ScoreDial score={report.portfolioScore} />
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">NitiInvest™ Score</p>
           </div>
-          <ScoreDial score={report.portfolioScore} />
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Overall Portfolio Health</p>
+            <h2 className="mt-1 font-display text-3xl leading-tight text-foreground md:text-4xl">{title ?? "Your portfolio review"}</h2>
+            <p className="mt-2 text-base font-medium text-foreground/90">{hero?.verdict ?? report.scoreLabel}</p>
+            {hero?.keyInsights && hero.keyInsights.length > 0 && (
+              <ul className="mt-4 space-y-2">
+                {hero.keyInsights.map((k, i) => (
+                  <li key={i} className="flex gap-2.5 text-sm text-foreground/90">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    <span>{k}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </section>
 
@@ -615,19 +633,19 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <SnapCard label="Portfolio value" value={snapshot?.valueLabel ?? formatInr(report.totalValue)} />
           <SnapCard label="Holdings" value={snapshot?.holdingsLabel ?? String(report.holdingCount)} />
-          <SnapCard label="Portfolio style" value={snapshot?.style ?? "—"} />
+          <SnapCard label="Portfolio style" value={snapshot?.style ?? "Portfolio building in progress"} />
           <SnapCard label="Diversification" value={snapshot?.diversificationBand ?? `${report.diversificationScore}/100`} />
-          <SnapCard label="Risk level" value={snapshot?.riskLevelLabel ?? "—"} />
+          <SnapCard label="Risk level" value={snapshot?.riskLevelLabel ?? "Being established"} />
           <SnapCard
             label="Largest holding"
             value={snapshot?.largestHolding ?? (report.topHoldings[0]?.name ?? "—")}
             sub={snapshot ? `${snapshot.largestHoldingPct}% of portfolio` : undefined}
           />
-          <SnapCard label="Investment behaviour" value={snapshot?.investmentBehaviour ?? "—"} className="sm:col-span-2" />
+          <SnapCard label="Investment behaviour" value={snapshot?.investmentBehaviour ?? "Portfolio building in progress"} className="sm:col-span-2" />
         </div>
       </section>
 
-      {/* 4. Portfolio Visualisations */}
+      {/* 4. Visualisations */}
       <section id="pr-visuals" className="space-y-4">
         <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Portfolio visualisations" subtitle="Understand the structure of the portfolio at a glance." />
         <div className="grid gap-4 md:grid-cols-3">
@@ -668,12 +686,68 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
         )}
       </section>
 
-      {/* 5. Strengths */}
+      {/* 5. Allocation vs Recommended */}
+      {alloc.length > 0 && (
+        <section id="pr-compare" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+          <SectionHeading icon={<Gauge className="h-4 w-4 text-primary" />} title="Allocation vs recommended" subtitle="How your mix compares with what NitiCore™ suggests for your age, risk profile and life stage." />
+          <ul className="mt-4 space-y-4">
+            {alloc.map((r) => {
+              const diff = Math.round(r.you - r.recommended);
+              const tone = Math.abs(diff) <= 5 ? "text-success" : Math.abs(diff) <= 12 ? "text-accent-foreground" : "text-destructive";
+              return (
+                <li key={r.label}>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-semibold text-foreground">{r.label}</span>
+                    <span className={`text-xs font-semibold ${tone}`}>{diff > 0 ? `+${diff}%` : `${diff}%`} vs recommended</span>
+                  </div>
+                  <div className="relative mt-2 h-3 rounded-full bg-muted">
+                    <div className="absolute inset-y-0 left-0 rounded-full bg-primary/80" style={{ width: `${Math.min(100, r.you)}%` }} />
+                    <div className="absolute -top-1 h-5 w-0.5 bg-foreground/70" style={{ left: `${Math.min(100, r.recommended)}%` }} />
+                  </div>
+                  <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
+                    <span>You: {r.you}%</span>
+                    <span>Recommended: {r.recommended}%</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {/* 6. Similar Investor */}
+      {peer && (
+        <section id="pr-peers" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Similar investor comparison" subtitle={`How your portfolio compares to a typical ${peer.lifeStage.toLowerCase()} investor with a ${peer.riskProfile.toLowerCase()} risk profile. Educational — not a ranking.`} />
+          <div className="mt-4 overflow-hidden rounded-xl border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-surface text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-left">Metric</th>
+                  <th className="px-4 py-2 text-right">Your portfolio</th>
+                  <th className="px-4 py-2 text-right">Typical investor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {peer.metrics.map((m) => (
+                  <tr key={m.label} className="border-t border-border">
+                    <td className="px-4 py-2 text-foreground">{m.label}</td>
+                    <td className="px-4 py-2 text-right font-mono text-foreground">{m.you}</td>
+                    <td className="px-4 py-2 text-right font-mono text-muted-foreground">{m.typical}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* 7. Strengths */}
       <section id="pr-strengths">
-        <FindingsBlock title="Strengths" tone="success" findings={positives} />
+        <FindingsBlock title="What is working" tone="success" findings={positives} emptyLabel="Strengths will appear once your portfolio has enough data." />
       </section>
 
-      {/* 6. Risks & Gaps */}
+      {/* 8. Risks & Gaps */}
       <section id="pr-risks">
         <FindingsBlock title="Risks & gaps" tone="danger" findings={report.gaps} emptyLabel="No material risks were flagged — keep monitoring quarterly." />
       </section>

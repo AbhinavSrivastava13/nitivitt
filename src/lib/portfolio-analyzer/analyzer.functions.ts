@@ -336,9 +336,9 @@ async function narrate(
   ctx: ReturnType<typeof evaluateContext>,
 ): Promise<string | null> {
   const payload = {
-    executiveSummary: report.executiveSummary,
+    verdict: report.hero?.verdict,
+    keyInsights: report.hero?.keyInsights,
     portfolioScore: report.portfolioScore,
-    scoreLabel: report.scoreLabel,
     snapshot: report.snapshot,
     riskMeter: report.riskMeter,
     goalAlignment: report.goalAlignment,
@@ -347,19 +347,21 @@ async function narrate(
     positives: report.intelligence?.positives.map((f) => f.title) ?? report.strengths.map((f) => f.title),
     gaps: report.gaps.map((f) => f.title),
     insights: report.intelligence?.insights.map((f) => f.title) ?? report.observations.map((f) => f.title),
-    recommendations: report.recommendations.map((r) => ({ title: r.title, priority: r.priority, reason: r.reason })),
+    similarInvestor: report.similarInvestor,
     context: { lifeStage: ctx.lifeStage, protectionPosture: ctx.protectionPosture, liquidityHealth: ctx.liquidityHealth, hasDependents: ctx.hasDependents },
   };
-  const system = `You are NitiGuide — a calm, seasoned Indian financial planner writing a portfolio review for a real client. Write as an experienced advisor, not an AI summariser. Do NOT restate raw scores or repeat the numbers already visible on the report. Do NOT recommend specific funds, stocks or insurers. Do NOT predict returns. Do NOT use fear-based language, em dashes or bullet lists.
+  const system = `You are NitiGuide — an experienced Indian Certified Financial Planner sitting across the table from a real client, walking them through their portfolio.
 
-Write 4 short paragraphs, each 2-3 sentences, separated by a blank line, in this order:
+Write as a warm, seasoned advisor. Do NOT sound like an AI summariser. Do NOT recommend specific funds, stocks or insurers. Do NOT predict returns. Do NOT restate raw scores or repeat percentages that are already on the report. Avoid em dashes, bullet lists, and fear-based language.
 
-1. Why the portfolio looks the way it does today — the story of the choices behind it, said kindly.
-2. What is genuinely working and worth protecting — name it specifically.
-3. The single most important thing this investor should understand about their portfolio — opportunity cost, long-term implication, or a structural blind spot.
-4. Logical next priorities, in the order they matter — clearly separating what is urgent from what can wait a quarter or two.
+Write 4 short paragraphs, each 2-3 sentences, separated by a blank line, in exactly this order:
 
-Keep it warm, precise, and grounded in the findings supplied. Never invent numbers.`;
+1. What stands out first when you look at this portfolio — and why that matters for this specific investor.
+2. What is genuinely working and worth protecting — name it plainly, without flattery.
+3. The one thing this investor should really understand — opportunity cost, a structural blind spot, or a long-term implication. Educational, not alarmist.
+4. The logical next priorities, in the order they matter. Separate what is urgent from what can wait a quarter or two.
+
+Sound conversational, educational, reassuring. This should read like a premium wealth review, not AI commentary.`;
   const res = await callAiChat({
     temperature: 0.45,
     messages: [

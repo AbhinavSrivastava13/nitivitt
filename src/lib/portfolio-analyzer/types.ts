@@ -69,6 +69,8 @@ export interface HoldingEnrichment {
   investmentStyle?: string | null;
   benchmark?: string | null;
   riskCategory?: string | null;
+  investmentPhilosophy?: string | null;
+  description?: string | null;
   expenseRatio?: number | null;
   oneYearReturnPct?: number | null;
   threeYearReturnPct?: number | null;
@@ -153,6 +155,30 @@ export interface PortfolioIntelligence {
   insights: PortfolioFinding[];
 }
 
+export interface PortfolioHero {
+  verdict: string;
+  keyInsights: string[];
+}
+
+export interface AllocationComparisonRow {
+  label: string;      // "Equity", "Debt", "Gold"
+  you: number;        // %
+  recommended: number; // %
+}
+
+export interface SimilarInvestorMetric {
+  label: string;
+  you: string;
+  typical: string;
+  note?: string;
+}
+export interface SimilarInvestor {
+  ageBand: string;
+  riskProfile: string;
+  lifeStage: string;
+  metrics: SimilarInvestorMetric[];
+}
+
 export interface PortfolioReport {
   portfolioScore: number; // 0-100 deterministic
   scoreLabel: string;
@@ -178,5 +204,9 @@ export interface PortfolioReport {
   riskMeter?: RiskMeter;
   goalAlignment?: GoalAlignment;
   intelligence?: PortfolioIntelligence;
+  // V3 additions.
+  hero?: PortfolioHero;
+  allocationComparison?: AllocationComparisonRow[];
+  similarInvestor?: SimilarInvestor;
 }
 

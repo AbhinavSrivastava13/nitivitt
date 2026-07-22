@@ -82,10 +82,13 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
   const byAssetClass = groupBy<string>(
     cleaned.map((h) => [ASSET_CLASS_LABEL[h.assetClass], valueOf(h)]),
   );
+  const equityForCap = cleaned.filter((h) => bucketOf(h.assetClass) === "equity");
   const byMarketCap = groupBy<string>(
-    cleaned.map((h) => {
+    equityForCap.map((h) => {
       const c: MarketCap = h.enrichment?.marketCap ?? "unknown";
-      return [c === "unknown" ? "Unknown / N/A" : `${c[0].toUpperCase()}${c.slice(1)} cap`, valueOf(h)];
+      if (c === "unknown") return ["Diversified equity", valueOf(h)];
+      if (c === "multi") return ["Flexi / Multi cap", valueOf(h)];
+      return [`${c[0].toUpperCase()}${c.slice(1)} cap`, valueOf(h)];
     }),
   );
   const bySector = groupBy<string>(
@@ -488,6 +491,67 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     executiveSummary = "The foundations of your portfolio are in place. A few structural refinements, rather than wholesale changes, will compound meaningfully over time.";
   }
 
+  // ─────────────── V3: Hero, allocation comparison, similar-investor comparison ───────────────
+  const targetDebt = Math.max(5, Math.min(70, 100 - targetEquityClamped - 10));
+  const targetGold = 10;
+  const allocationComparison: import("./types").AllocationComparisonRow[] = totalValue > 0 ? [
+    { label: "Equity", you: equityPct, recommended: targetEquityClamped },
+    { label: "Debt", you: debtPct, recommended: targetDebt },
+    { label: "Gold", you: goldPct, recommended: targetGold },
+  ] : [];
+
+  const lifeStageLabel = {
+    early_career: "Early career (18-29)",
+    family_building: "Family building (30-44)",
+    peak_earning: "Peak earning (45-54)",
+    pre_retirement: "Pre-retirement (55-64)",
+    retirement: "Retirement (65+)",
+  }[context.lifeStage];
+  const riskProfileLabel = (input.riskProfile ?? "moderate").replace(/^./, (c) => c.toUpperCase());
+  const ageBandStart = Math.max(18, Math.floor(input.ageYears / 5) * 5);
+  const ageBand = `${ageBandStart}-${ageBandStart + 4}`;
+  const typicalEquity = targetEquityClamped;
+  const typicalDebt = targetDebt;
+  const typicalDiversification = 70;
+  const typicalConcentration = 12;
+  const similarInvestor: import("./types").SimilarInvestor = {
+    ageBand,
+    riskProfile: riskProfileLabel,
+    lifeStage: lifeStageLabel,
+    metrics: [
+      { label: "Equity allocation", you: `${equityPct}%`, typical: `${typicalEquity}%` },
+      { label: "Debt allocation", you: `${debtPct}%`, typical: `${typicalDebt}%` },
+      { label: "Diversification score", you: `${diversificationScore}/100`, typical: `${typicalDiversification}/100` },
+      { label: "Largest holding share", you: `${topPct}%`, typical: `≤ ${typicalConcentration}%` },
+    ],
+  };
+
+  // Hero — verdict + three CFP-style headline insights.
+  const heroInsights: string[] = [];
+  if (mfShare >= 60 && cleaned.length >= 3) heroInsights.push("Your fund selection looks reasonable — the story here is structure, not picks.");
+  else if (stockPct >= 40) heroInsights.push("You are comfortable running a direct-equity book, which increases the importance of position sizing.");
+  if (topPct >= 25) heroInsights.push(`A single holding (${topHolding?.name}) drives a large share of the outcome.`);
+  else if (topPct >= 15) heroInsights.push("Concentration is moderate — the largest position still moves the portfolio meaningfully.");
+  else if (topPct > 0) heroInsights.push("No single holding dominates the portfolio.");
+  if (Math.abs(drift) <= 8 && totalValue > 0) heroInsights.push("Equity mix is well-aligned with your life stage and risk profile.");
+  else if (drift < -8) heroInsights.push("Equity share is below what typically fits your horizon — compounding is being left on the table.");
+  else if (drift > 8) heroInsights.push("Equity share sits above your horizon-appropriate target — market swings will hurt more.");
+  if (!emergencyOk) heroInsights.push("The biggest lever is outside investments today — the emergency cushion needs to catch up.");
+  else if (!protectionOk && context.hasDependents) heroInsights.push("Protection gaps could force you to liquidate this portfolio at the worst time.");
+  else if (diversificationScore >= 70) heroInsights.push("Diversification is doing its job across asset classes.");
+  const keyInsights = heroInsights.slice(0, 3);
+
+  let verdict: string;
+  if (totalValue === 0) verdict = "Not enough portfolio data yet.";
+  else if (portfolioScore >= 80) verdict = "You have built a well-structured portfolio.";
+  else if (portfolioScore >= 65 && mfShare >= 60) verdict = "Your fund selection is good — the next step is improving portfolio construction.";
+  else if (portfolioScore >= 65) verdict = "Solid foundation — a few structural refinements will compound over time.";
+  else if (topPct >= 25) verdict = "The portfolio is working, but concentration is the single biggest lever to fix.";
+  else if (Math.abs(drift) >= 12) verdict = "Fund choices look reasonable — the priority is asset allocation, not what to buy next.";
+  else verdict = "The building blocks are here — the biggest lever is structure, not more holdings.";
+
+  const hero: import("./types").PortfolioHero = { verdict, keyInsights };
+
   return {
     portfolioScore,
     scoreLabel: scoreLabel(portfolioScore),
@@ -511,6 +575,9 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     riskMeter,
     goalAlignment,
     intelligence,
+    hero,
+    allocationComparison,
+    similarInvestor,
   };
 }
 
