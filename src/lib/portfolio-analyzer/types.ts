@@ -69,6 +69,8 @@ export interface HoldingEnrichment {
   investmentStyle?: string | null;
   benchmark?: string | null;
   riskCategory?: string | null;
+  investmentPhilosophy?: string | null;
+  description?: string | null;
   expenseRatio?: number | null;
   oneYearReturnPct?: number | null;
   threeYearReturnPct?: number | null;
