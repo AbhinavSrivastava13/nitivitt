@@ -40,6 +40,7 @@ export const mfapiProvider: MarketDataProvider = {
         investmentStyle: guessStyle(category ?? schemeName, assetClass),
         benchmark: guessBenchmark(category ?? schemeName, assetClass),
         riskCategory: guessRisk(category ?? schemeName, assetClass),
+        investmentPhilosophy: guessPhilosophy(category ?? schemeName, assetClass),
       };
     } catch {
       return null;
