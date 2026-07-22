@@ -752,49 +752,6 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
         <FindingsBlock title="Risks & gaps" tone="danger" findings={report.gaps} emptyLabel="No material risks were flagged — keep monitoring quarterly." />
       </section>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <MeterCard
-            title="Risk meter"
-            icon={<Gauge className="h-4 w-4 text-primary" />}
-            label={risk?.label ?? "—"}
-            value={risk?.equityPct ?? 0}
-            target={risk?.targetEquityPct ?? 0}
-            valueLabel={`${risk?.equityPct ?? 0}% equity`}
-            targetLabel={`Target ~${risk?.targetEquityPct ?? 0}%`}
-          />
-          <ConcentrationCard topHoldings={report.topHoldings} />
-          <GoalAlignmentCard goal={goal} />
-        </div>
-        {report.topHoldings.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-            <h4 className="text-sm font-semibold text-foreground">Top holdings</h4>
-            <ul className="mt-3 space-y-2">
-              {report.topHoldings.map((h) => (
-                <li key={h.name}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-foreground">{h.name}<span className="ml-2 text-[11px] text-muted-foreground">{ASSET_CLASS_LABEL[h.assetClass]}</span></span>
-                    <span className="font-mono text-muted-foreground">{h.pct}%</span>
-                  </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-primary" style={{ width: `${Math.min(100, h.pct)}%` }} />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      {/* 5. Strengths */}
-      <section id="pr-strengths">
-        <FindingsBlock title="Strengths" tone="success" findings={positives} />
-      </section>
-
-      {/* 6. Risks & Gaps */}
-      <section id="pr-risks">
-        <FindingsBlock title="Risks & gaps" tone="danger" findings={report.gaps} emptyLabel="No material risks were flagged — keep monitoring quarterly." />
-      </section>
-
       {/* 7. Portfolio Intelligence */}
       <section id="pr-intel" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
         <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Portfolio intelligence" subtitle="What is worth understanding beyond the raw numbers." />
