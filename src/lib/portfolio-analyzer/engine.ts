@@ -82,10 +82,13 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
   const byAssetClass = groupBy<string>(
     cleaned.map((h) => [ASSET_CLASS_LABEL[h.assetClass], valueOf(h)]),
   );
+  const equityForCap = cleaned.filter((h) => bucketOf(h.assetClass) === "equity");
   const byMarketCap = groupBy<string>(
-    cleaned.map((h) => {
+    equityForCap.map((h) => {
       const c: MarketCap = h.enrichment?.marketCap ?? "unknown";
-      return [c === "unknown" ? "Unknown / N/A" : `${c[0].toUpperCase()}${c.slice(1)} cap`, valueOf(h)];
+      if (c === "unknown") return ["Diversified equity", valueOf(h)];
+      if (c === "multi") return ["Flexi / Multi cap", valueOf(h)];
+      return [`${c[0].toUpperCase()}${c.slice(1)} cap`, valueOf(h)];
     }),
   );
   const bySector = groupBy<string>(
