@@ -66,10 +66,13 @@ export interface HoldingEnrichment {
   marketCap?: MarketCap;
   fundCategory?: string | null;
   fundHouse?: string | null;
+  amc?: string | null;
   investmentStyle?: string | null;
   benchmark?: string | null;
   riskCategory?: string | null;
   investmentPhilosophy?: string | null;
+  fundObjective?: string | null;
+  marketCapBias?: string | null;
   description?: string | null;
   expenseRatio?: number | null;
   oneYearReturnPct?: number | null;
@@ -78,6 +81,15 @@ export interface HoldingEnrichment {
   peerContext?: string | null;
   source?: string; // "mfapi" | "yahoo" | "gemini" | …
 }
+
+export type PortfolioQualityTone = "positive" | "neutral" | "watch";
+export interface PortfolioQualityFinding {
+  id: string;
+  tone: PortfolioQualityTone;
+  title: string;
+  detail: string;
+}
+
 
 
 export function emptyHolding(): Holding {
@@ -208,5 +220,7 @@ export interface PortfolioReport {
   hero?: PortfolioHero;
   allocationComparison?: AllocationComparisonRow[];
   similarInvestor?: SimilarInvestor;
+  portfolioQuality?: PortfolioQualityFinding[];
 }
+
 

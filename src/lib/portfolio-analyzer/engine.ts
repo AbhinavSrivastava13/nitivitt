@@ -552,6 +552,82 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
 
   const hero: import("./types").PortfolioHero = { verdict, keyInsights };
 
+  // ─────────────── Portfolio Quality — holistic quality read ───────────────
+  const portfolioQuality: import("./types").PortfolioQualityFinding[] = [];
+  if (totalValue > 0) {
+    // Fund selection quality
+    if (mfShare >= 60 && cleaned.length >= 3) {
+      portfolioQuality.push({
+        id: "pq-structured",
+        tone: "positive",
+        title: "Good quality fund selection",
+        detail: "Most of your capital is deployed through structured vehicles rather than opportunistic bets — a durable foundation.",
+      });
+    }
+    if (indexShare >= 25) {
+      portfolioQuality.push({
+        id: "pq-low-cost",
+        tone: "positive",
+        title: "Low-cost investing approach",
+        detail: `~${indexShare}% of the portfolio sits in index or ETF vehicles, keeping long-term expense drag low.`,
+      });
+    }
+    if (diversificationScore >= 70 && Math.abs(drift) <= 10) {
+      portfolioQuality.push({
+        id: "pq-diversified",
+        tone: "positive",
+        title: "Appropriate diversification",
+        detail: "Capital is spread across asset classes in a way that fits your horizon — no single bucket dominates the outcome.",
+      });
+    }
+    // Watch signals
+    const thematicClasses: AssetClass[] = ["equity_stock"];
+    const thematicShare = pct(
+      cleaned.filter((h) => thematicClasses.includes(h.assetClass)).reduce((a, h) => a + valueOf(h), 0),
+      totalValue,
+    );
+    if (stockPct >= 40 && cleaned.filter((h) => h.assetClass === "equity_stock").length <= 5) {
+      portfolioQuality.push({
+        id: "pq-thematic",
+        tone: "watch",
+        title: "Concentrated thematic exposure",
+        detail: `Direct stocks are ${thematicShare}% of the portfolio across a small number of names — outcomes swing on a handful of decisions.`,
+      });
+    }
+    if (cash > 0 && pct(cash, totalValue) >= 20) {
+      portfolioQuality.push({
+        id: "pq-cash",
+        tone: "watch",
+        title: "Excess cash drag",
+        detail: `${pct(cash, totalValue)}% sits in cash / liquid. Beyond a 3-6 month buffer, idle cash loses to inflation.`,
+      });
+    }
+    const mfCount = cleaned.filter((h) => ["equity_mf","index_fund","hybrid_mf","debt_mf"].includes(h.assetClass)).length;
+    if (mfCount >= 10) {
+      portfolioQuality.push({
+        id: "pq-overlap",
+        tone: "watch",
+        title: "Too many overlapping funds",
+        detail: `${mfCount} funds usually overlap heavily. 5-8 well-chosen schemes typically cover the same ground with less tracking effort.`,
+      });
+    }
+    if (cleaned.length >= 15) {
+      portfolioQuality.push({
+        id: "pq-complexity",
+        tone: "watch",
+        title: "Portfolio complexity",
+        detail: `${cleaned.length} holdings is more than most investors can meaningfully monitor. Consolidation would reduce noise without reducing diversification.`,
+      });
+    }
+    // Neutral — always add a structural read
+    portfolioQuality.push({
+      id: "pq-shape",
+      tone: "neutral",
+      title: `${equityPct}% equity · ${debtPct}% debt · ${goldPct}% gold`,
+      detail: `The overall asset shape suits a ${riskLevelLabel.toLowerCase()} investor at your life stage.`,
+    });
+  }
+
   return {
     portfolioScore,
     scoreLabel: scoreLabel(portfolioScore),
@@ -578,8 +654,10 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     hero,
     allocationComparison,
     similarInvestor,
+    portfolioQuality,
   };
 }
+
 
 
 export { inr as formatInr };
