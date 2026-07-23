@@ -33,14 +33,18 @@ export const mfapiProvider: MarketDataProvider = {
       const category = detail.meta?.scheme_category ?? null;
       const fundHouse = detail.meta?.fund_house ?? null;
       const schemeName = detail.meta?.scheme_name ?? matchedName ?? name;
+      const basis = `${category ?? ""} ${schemeName}`;
       return {
         fundCategory: category,
         fundHouse,
-        marketCap: guessMarketCap(category ?? schemeName),
-        investmentStyle: guessStyle(category ?? schemeName, assetClass),
-        benchmark: guessBenchmark(category ?? schemeName, assetClass),
-        riskCategory: guessRisk(category ?? schemeName, assetClass),
-        investmentPhilosophy: guessPhilosophy(category ?? schemeName, assetClass),
+        amc: fundHouse,
+        marketCap: guessMarketCap(basis),
+        marketCapBias: guessMarketCapBias(basis),
+        investmentStyle: guessStyle(basis, assetClass),
+        benchmark: guessBenchmark(basis, assetClass),
+        riskCategory: guessRisk(basis, assetClass),
+        investmentPhilosophy: guessPhilosophy(basis, assetClass),
+        fundObjective: guessObjective(basis, assetClass),
       };
     } catch {
       return null;
@@ -55,6 +59,18 @@ function guessMarketCap(text: string): HoldingEnrichment["marketCap"] {
   if (t.includes("large")) return "large";
   if (t.includes("flexi") || t.includes("multi") || t.includes("focused")) return "multi";
   return "unknown";
+}
+
+function guessMarketCapBias(text: string): string | null {
+  const t = text.toLowerCase();
+  if (t.includes("small")) return "Small-cap tilt";
+  if (t.includes("mid")) return "Mid-cap tilt";
+  if (t.includes("large & mid") || t.includes("large and mid")) return "Large & mid blend";
+  if (t.includes("large")) return "Large-cap tilt";
+  if (t.includes("flexi") || t.includes("multi")) return "Across market caps";
+  if (t.includes("focused")) return "High-conviction, cap-agnostic";
+  if (t.includes("hybrid") || t.includes("balanced")) return "Equity + debt blend";
+  return null;
 }
 
 function guessStyle(text: string, ac: AssetClass): string | null {
@@ -110,5 +126,21 @@ function guessPhilosophy(text: string, ac: AssetClass): string | null {
   if (t.includes("gilt")) return "Invests only in government securities — carries interest-rate risk, not credit risk.";
   if (ac === "debt_mf" || t.includes("debt") || t.includes("bond")) return "Fixed-income fund focused on interest accrual rather than capital appreciation.";
   if (ac === "equity_mf") return "Actively managed equity fund aiming to outperform its benchmark over full market cycles.";
+  return null;
+}
+
+function guessObjective(text: string, ac: AssetClass): string | null {
+  const t = text.toLowerCase();
+  if (t.includes("index") || t.includes("nifty") || t.includes("sensex")) return "Long-term wealth creation by mirroring a broad market index at minimal cost.";
+  if (t.includes("small")) return "High long-term growth from small emerging companies — high volatility, 7+ year horizon.";
+  if (t.includes("mid")) return "Growth from mid-sized companies moving toward large-cap status — 5-7 year horizon.";
+  if (t.includes("large")) return "Steady long-term compounding through India's largest, most established businesses.";
+  if (t.includes("flexi") || t.includes("multi")) return "Long-term capital growth by dynamically shifting across market caps as opportunities change.";
+  if (t.includes("elss")) return "Long-term equity growth with a 3-year lock-in and tax benefits under Section 80C.";
+  if (t.includes("hybrid") || t.includes("balanced")) return "Balanced growth and stability by holding equity and debt within a single fund.";
+  if (t.includes("liquid")) return "Preserve capital and offer better-than-savings returns for money needed within weeks.";
+  if (t.includes("gilt")) return "Preserve capital and earn income from government securities.";
+  if (ac === "debt_mf") return "Regular income and capital preservation through fixed-income instruments.";
+  if (ac === "equity_mf") return "Long-term wealth creation through active equity investing.";
   return null;
 }
