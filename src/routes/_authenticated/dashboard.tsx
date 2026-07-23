@@ -440,40 +440,47 @@ function Dashboard() {
                 : null;
               const inner = (
                 <>
-                  <div className="flex items-center justify-between">
-                    <span className={`flex h-10 w-10 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge.cls}`}>{badge.label}</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                        <Icon className="h-4.5 w-4.5" />
+                      </span>
+                      <p className="truncate font-semibold text-foreground">{s.name}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge.cls}`}>{badge.label}</span>
                   </div>
-                  <p className="mt-3 font-semibold text-foreground">{s.name}</p>
-                  <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
 
-                  {isActive && meta && (
-                    <div className="mt-4 rounded-lg border border-border bg-surface/60 p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary">{meta.scoreLabel}</p>
-                      {s.hasPolicies ? (
-                        <>
+                  {isActive && meta ? (
+                    s.hasPolicies ? (
+                      <div className="mt-5 flex items-end justify-between gap-3">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{meta.scoreLabel.split(" · ")[0]}</p>
                           <div className="mt-1 flex items-baseline gap-1.5">
-                            <span className="font-display text-2xl text-foreground">{meta.score ?? "—"}</span>
-                            <span className="text-[10px] text-muted-foreground">/ 100</span>
+                            <span className="font-display text-5xl leading-none text-foreground">{meta.score ?? "—"}</span>
+                            <span className="text-xs text-muted-foreground">/ 100</span>
                           </div>
                           {lastReviewedText && (
-                            <p className="mt-1 text-[10px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
+                            <p className="mt-2 text-[11px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
                           )}
-                        </>
-                      ) : (
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-5">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{meta.scoreLabel.split(" · ")[0]}</p>
+                        <p className="mt-1 font-display text-3xl text-muted-foreground">—</p>
                         <p className="mt-1 text-[11px] text-muted-foreground">{meta.emptyLabel}</p>
-                      )}
-                    </div>
+                      </div>
+                    )
+                  ) : (
+                    <p className="mt-5 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
                   )}
 
                   {isActive && meta ? (
-                    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
-                      {s.hasPolicies ? meta.ctaOn : meta.ctaOff} <ArrowRight className="h-3 w-3" />
+                    <span className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground w-fit">
+                      {s.hasPolicies ? meta.ctaOn : meta.ctaOff} <ArrowRight className="h-3.5 w-3.5" />
                     </span>
                   ) : (
-                    <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                    <span className="mt-5 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
                       Notify me on launch
                     </span>
                   )}
@@ -483,7 +490,7 @@ function Dashboard() {
                 <Link
                   key={s.name}
                   to={meta.href}
-                  className="group flex flex-col rounded-2xl border border-primary/40 bg-gradient-to-br from-primary-soft/40 to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated"
+                  className="group flex flex-col rounded-2xl border border-primary/30 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-elevated"
                 >
                   {inner}
                 </Link>
@@ -497,6 +504,7 @@ function Dashboard() {
                 </div>
               );
             })}
+
           </div>
         </section>
 

@@ -5,12 +5,13 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, Info, Loader2, Plus,
   RefreshCw, Sparkles, Trash2, TrendingUp, Upload, AlertTriangle,
-  ShieldCheck, Target, Layers, PieChart, Gauge,
+  ShieldCheck, Target, Layers, PieChart, Gauge as GaugeIcon, Award,
 } from "lucide-react";
 import { AnalysisSequence } from "@/components/analysis-sequence";
 import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
+import { Donut, Gauge, AllocationBars, HeroScore } from "@/components/portfolio/charts";
 
 import {
   extractPortfolioFromScreenshots,
@@ -28,6 +29,7 @@ import {
   type PortfolioReport,
 } from "@/lib/portfolio-analyzer/types";
 import { formatInr } from "@/lib/portfolio-analyzer/engine";
+
 
 export const Route = createFileRoute("/_authenticated/portfolio-analyzer")({
   head: () => ({
@@ -548,18 +550,21 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
 // ─────────────────────────── REPORT ───────────────────────────
 
 const SECTION_STEPS: { id: string; label: string }[] = [
-  { id: "hero", label: "Overall Portfolio Health" },
+  { id: "hero", label: "Portfolio Health" },
   { id: "summary", label: "Executive Summary" },
-  { id: "snapshot", label: "Portfolio Snapshot" },
-  { id: "visuals", label: "Visualisations" },
+  { id: "snapshot", label: "Snapshot" },
+  { id: "visuals", label: "Allocation Charts" },
+  { id: "meters", label: "Risk & Concentration" },
   { id: "compare", label: "Allocation vs Recommended" },
+  { id: "quality", label: "Portfolio Quality" },
   { id: "peers", label: "Similar Investor" },
-  { id: "strengths", label: "Strengths" },
+  { id: "strengths", label: "What's Working" },
   { id: "risks", label: "Risks & Gaps" },
   { id: "intel", label: "Portfolio Intelligence" },
   { id: "actions", label: "Recommended Actions" },
   { id: "guide", label: "NitiGuide™" },
 ];
+
 
 function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack: () => void; title?: string }) {
   const snapshot = report.snapshot;
@@ -592,27 +597,31 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
         </ol>
       </nav>
 
-      {/* 1. Hero — Overall Portfolio Health */}
-      <section id="pr-hero" className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-primary-soft/40 p-6 shadow-elevated md:p-8">
+      {/* 1. HERO — Portfolio Health Score */}
+      <section id="pr-hero" className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-6 shadow-elevated md:p-10">
         <div className="grid gap-8 md:grid-cols-[auto,1fr] md:items-center">
-          <div className="flex flex-col items-center gap-3">
-            <ScoreDial score={report.portfolioScore} />
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">NitiInvest™ Score</p>
-          </div>
+          <HeroScore score={report.portfolioScore} label={report.scoreLabel} />
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Overall Portfolio Health</p>
-            <h2 className="mt-1 font-display text-3xl leading-tight text-foreground md:text-4xl">{title ?? "Your portfolio review"}</h2>
-            <p className="mt-2 text-base font-medium text-foreground/90">{hero?.verdict ?? report.scoreLabel}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Overall Portfolio Health</p>
+            <h2 className="mt-2 font-display text-3xl leading-tight text-foreground md:text-5xl">
+              {hero?.verdict ?? report.scoreLabel}
+            </h2>
+            {title && <p className="mt-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">{title}</p>}
             {hero?.keyInsights && hero.keyInsights.length > 0 && (
-              <ul className="mt-4 space-y-2">
+              <ul className="mt-6 space-y-3">
                 {hero.keyInsights.map((k, i) => (
-                  <li key={i} className="flex gap-2.5 text-sm text-foreground/90">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-foreground/90">
+                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
                     <span>{k}</span>
                   </li>
                 ))}
               </ul>
             )}
+            <div className="mt-6 flex flex-wrap gap-4 text-xs text-muted-foreground">
+              <span><span className="font-semibold text-foreground">{formatInr(report.totalValue)}</span> · total value</span>
+              <span><span className="font-semibold text-foreground">{report.holdingCount}</span> holdings</span>
+              {snapshot && <span><span className="font-semibold text-foreground">{snapshot.riskLevelLabel}</span> risk</span>}
+            </div>
           </div>
         </div>
       </section>
@@ -623,7 +632,7 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
           <Sparkles className="h-4 w-4 text-primary" />
           <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Executive summary</p>
         </div>
-        <p className="mt-3 text-base leading-relaxed text-foreground/90">{execSummary}</p>
+        <p className="mt-3 text-lg leading-relaxed text-foreground/90">{execSummary}</p>
         <p className="mt-4 rounded-lg bg-surface p-3 text-[11px] text-muted-foreground">{report.contextSummary}</p>
       </section>
 
@@ -645,38 +654,71 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
         </div>
       </section>
 
-      {/* 4. Visualisations */}
+      {/* 4. Visualisations — proper charts */}
       <section id="pr-visuals" className="space-y-4">
-        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Portfolio visualisations" subtitle="Understand the structure of the portfolio at a glance." />
-        <div className="grid gap-4 md:grid-cols-3">
-          <DonutCard title="Asset allocation" slices={report.allocation.byAssetClass} />
-          <DonutCard title="Market cap (equity)" slices={report.allocation.byMarketCap} />
-          <DonutCard title="Sector mix" slices={report.allocation.bySector} empty="Sector data will appear once holdings are enriched." />
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <MeterCard
-            title="Risk meter"
-            icon={<Gauge className="h-4 w-4 text-primary" />}
-            label={risk?.label ?? "—"}
-            value={risk?.equityPct ?? 0}
-            target={risk?.targetEquityPct ?? 0}
-            valueLabel={`${risk?.equityPct ?? 0}% equity`}
-            targetLabel={`Target ~${risk?.targetEquityPct ?? 0}%`}
+        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Portfolio allocation" subtitle="Understand the structure of the portfolio at a glance." />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Donut
+            title="Asset allocation"
+            subtitle="Where your money sits by asset class."
+            slices={report.allocation.byAssetClass}
+            centerValue={formatInr(report.totalValue)}
+            centerLabel="Total"
           />
-          <ConcentrationCard topHoldings={report.topHoldings} />
-          <GoalAlignmentCard goal={goal} />
+          <Donut
+            title="Market cap mix"
+            subtitle="Large / mid / small distribution across equity."
+            slices={report.allocation.byMarketCap}
+            empty="Market-cap data appears once equity holdings are enriched."
+          />
+          <Donut
+            title="Sector mix"
+            subtitle="Sector spread across identified holdings."
+            slices={report.allocation.bySector}
+            empty="Sector data appears once holdings are enriched."
+          />
+        </div>
+      </section>
+
+      {/* 4b. Risk / Diversification / Concentration meters */}
+      <section id="pr-meters" className="space-y-4">
+        <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Risk & diversification" subtitle="How the portfolio behaves — beyond just what it holds." />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Gauge
+            title="Portfolio risk"
+            subtitle={`Target ~${risk?.targetEquityPct ?? 0}% equity for your age & profile`}
+            value={risk?.equityPct ?? 0}
+            label={risk?.label ?? "—"}
+            tone={risk && Math.abs((risk.equityPct ?? 0) - (risk.targetEquityPct ?? 0)) <= 8 ? "success" : "warning"}
+            footer={risk ? `${risk.equityPct}% equity now` : undefined}
+          />
+          <Gauge
+            title="Diversification"
+            subtitle="Higher = spread across more asset classes."
+            value={report.diversificationScore}
+            label={snapshot?.diversificationBand ?? "—"}
+            tone={report.diversificationScore >= 70 ? "success" : report.diversificationScore >= 45 ? "primary" : "warning"}
+          />
+          <Gauge
+            title="Concentration"
+            subtitle="Lower = single holdings do not dominate."
+            value={Math.max(0, 100 - report.concentrationScore)}
+            label={report.concentrationScore <= 30 ? "Well spread" : report.concentrationScore <= 50 ? "Moderate" : "Concentrated"}
+            tone={report.concentrationScore <= 30 ? "success" : report.concentrationScore <= 50 ? "warning" : "danger"}
+            footer={report.topHoldings[0] ? `Largest: ${report.topHoldings[0].pct}%` : undefined}
+          />
         </div>
         {report.topHoldings.length > 0 && (
           <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
             <h4 className="text-sm font-semibold text-foreground">Top holdings</h4>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-3 space-y-2.5">
               {report.topHoldings.map((h) => (
                 <li key={h.name}>
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground">{h.name}<span className="ml-2 text-[11px] text-muted-foreground">{ASSET_CLASS_LABEL[h.assetClass]}</span></span>
                     <span className="font-mono text-muted-foreground">{h.pct}%</span>
                   </div>
-                  <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div className="h-full bg-primary" style={{ width: `${Math.min(100, h.pct)}%` }} />
                   </div>
                 </li>
@@ -684,29 +726,45 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
             </ul>
           </div>
         )}
+        <div className="grid gap-4 md:grid-cols-2">
+          <GoalAlignmentCard goal={goal} />
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-primary" />
+              <h4 className="text-sm font-semibold text-foreground">Portfolio shape</h4>
+            </div>
+            <p className="mt-3 font-display text-lg text-foreground">{snapshot?.style ?? "Building"}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{snapshot?.investmentBehaviour ?? "Add holdings to profile investment behaviour."}</p>
+          </div>
+        </div>
       </section>
 
-      {/* 5. Allocation vs Recommended */}
+      {/* 5. Allocation vs Recommended — proper grouped bar chart */}
       {alloc.length > 0 && (
         <section id="pr-compare" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <SectionHeading icon={<Gauge className="h-4 w-4 text-primary" />} title="Allocation vs recommended" subtitle="How your mix compares with what NitiCore™ suggests for your age, risk profile and life stage." />
-          <ul className="mt-4 space-y-4">
-            {alloc.map((r) => {
-              const diff = Math.round(r.you - r.recommended);
-              const tone = Math.abs(diff) <= 5 ? "text-success" : Math.abs(diff) <= 12 ? "text-accent-foreground" : "text-destructive";
+          <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Allocation vs recommended" subtitle="How your mix compares with what NitiCore™ suggests for your age, risk profile and life stage." />
+          <div className="mt-4">
+            <AllocationBars rows={alloc} />
+          </div>
+        </section>
+      )}
+
+      {/* 5b. Portfolio Quality */}
+      {report.portfolioQuality && report.portfolioQuality.length > 0 && (
+        <section id="pr-quality" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+          <SectionHeading icon={<Award className="h-4 w-4 text-primary" />} title="Portfolio quality" subtitle="A holistic read on how well this portfolio is put together — beyond individual metrics." />
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {report.portfolioQuality.map((q) => {
+              const tone =
+                q.tone === "positive" ? { icon: <CheckCircle2 className="h-4 w-4 text-success" />, border: "border-success/30 bg-success-soft/30" } :
+                q.tone === "watch" ? { icon: <AlertTriangle className="h-4 w-4 text-warning" />, border: "border-warning/30 bg-warning-soft/30" } :
+                { icon: <Info className="h-4 w-4 text-muted-foreground" />, border: "border-border/60 bg-surface" };
               return (
-                <li key={r.label}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-foreground">{r.label}</span>
-                    <span className={`text-xs font-semibold ${tone}`}>{diff > 0 ? `+${diff}%` : `${diff}%`} vs recommended</span>
-                  </div>
-                  <div className="relative mt-2 h-3 rounded-full bg-muted">
-                    <div className="absolute inset-y-0 left-0 rounded-full bg-primary/80" style={{ width: `${Math.min(100, r.you)}%` }} />
-                    <div className="absolute -top-1 h-5 w-0.5 bg-foreground/70" style={{ left: `${Math.min(100, r.recommended)}%` }} />
-                  </div>
-                  <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
-                    <span>You: {r.you}%</span>
-                    <span>Recommended: {r.recommended}%</span>
+                <li key={q.id} className={`flex gap-3 rounded-xl border p-4 ${tone.border}`}>
+                  <span className="mt-0.5 shrink-0">{tone.icon}</span>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{q.title}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{q.detail}</p>
                   </div>
                 </li>
               );
@@ -714,6 +772,7 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
           </ul>
         </section>
       )}
+
 
       {/* 6. Similar Investor */}
       {peer && (
