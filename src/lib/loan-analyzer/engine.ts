@@ -282,7 +282,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
   const interestBurden = Math.max(0, 100 - Math.max(0, effectiveCost - 8) * 6);
   const flexibility = context.liquidityHealth === "excess" ? 100
     : context.liquidityHealth === "adequate" ? 85
-      : context.liquidityHealth === "partial" ? 55
+      : context.liquidityHealth === "thin" ? 55
         : 25;
   const debtQualityScore =
     DEBT_QUALITY_BY_CATEGORY[loan.category] === "healthy" ? 90
@@ -355,7 +355,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
     });
   }
 
-  if (context.liquidityHealth === "insufficient" || context.liquidityHealth === "partial") {
+  if (context.liquidityHealth === "critical" || context.liquidityHealth === "thin") {
     risks.push({
       id: "prepay-vs-buffer",
       tone: "warning",
@@ -383,7 +383,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
   }
 
   // Prepay vs invest recommendation (only when there's room to do either)
-  if (context.liquidityHealth !== "insufficient") {
+  if (context.liquidityHealth !== "critical") {
     if (verdict === "prepay") {
       recommendations.push({
         id: "adopt-optimized",
