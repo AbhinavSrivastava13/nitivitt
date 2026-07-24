@@ -431,6 +431,69 @@ export type Database = {
         }
         Relationships: []
       }
+      loan_analyses: {
+        Row: {
+          annual_prepayment: number | null
+          category: string
+          created_at: string
+          id: string
+          interest_rate: number | null
+          last_reviewed_at: string
+          lender: string | null
+          loan_health_score: number
+          monthly_emi: number | null
+          name: string
+          outstanding: number | null
+          principal: number | null
+          remaining_months: number | null
+          report: Json
+          tax_deductible: boolean | null
+          tenure_months: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          annual_prepayment?: number | null
+          category: string
+          created_at?: string
+          id?: string
+          interest_rate?: number | null
+          last_reviewed_at?: string
+          lender?: string | null
+          loan_health_score?: number
+          monthly_emi?: number | null
+          name: string
+          outstanding?: number | null
+          principal?: number | null
+          remaining_months?: number | null
+          report?: Json
+          tax_deductible?: boolean | null
+          tenure_months?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          annual_prepayment?: number | null
+          category?: string
+          created_at?: string
+          id?: string
+          interest_rate?: number | null
+          last_reviewed_at?: string
+          lender?: string | null
+          loan_health_score?: number
+          monthly_emi?: number | null
+          name?: string
+          outstanding?: number | null
+          principal?: number | null
+          remaining_months?: number | null
+          report?: Json
+          tax_deductible?: boolean | null
+          tenure_months?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_analyses: {
         Row: {
           created_at: string
