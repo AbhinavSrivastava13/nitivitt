@@ -85,6 +85,14 @@ function Dashboard() {
   const portfolioLastReviewed = portSummaryQ.data?.summary?.latestReviewedAt ?? null;
   const portfolioTotalValue = portSummaryQ.data?.summary?.totalValue ?? 0;
 
+  const listLoanFn = useServerFn(listLoanAnalyses);
+  const loanQ = useQuery({ queryKey: ["loan-analyses"], queryFn: () => listLoanFn() });
+  const loanSummaryFn = useServerFn(getLoanPortfolioSummary);
+  const loanSummaryQ = useQuery({ queryKey: ["loan-portfolio-summary"], queryFn: () => loanSummaryFn() });
+  const loanCount = loanQ.data?.analyses.length ?? 0;
+  const loanHealthScore = loanSummaryQ.data?.summary?.averageHealthScore ?? null;
+  const loanLastReviewed = loanSummaryQ.data?.summary?.latestReviewedAt ?? null;
+
   if (isLoading || !data) {
     return (
       <div className="min-h-screen bg-surface">
