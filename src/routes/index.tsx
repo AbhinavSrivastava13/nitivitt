@@ -440,9 +440,11 @@ function IntelligenceSuite() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        {suite.map((item) => (
-          <SuiteCard key={item.name} item={item} />
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        {suite.map((item, idx) => (
+          <div key={item.name} className={idx < 3 ? "lg:col-span-2" : "lg:col-span-3"}>
+            <SuiteCard item={item} />
+          </div>
         ))}
       </div>
     </section>
