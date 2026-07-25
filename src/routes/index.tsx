@@ -67,6 +67,7 @@ function LandingPage() {
         <Hero />
         <TrustBar />
         <IntelligenceSuite />
+        <FinancialServices />
         <HowItWorks />
         <WhyNitiVitt />
         <FinancialJourney />
@@ -504,7 +505,111 @@ function SuiteCard({
 }
 
 
-/* ---------------- HOW IT WORKS ---------------- */
+/* ---------------- FINANCIAL SERVICES ---------------- */
+
+function FinancialServices() {
+  const grid = [
+    { name: "Insurance Analyzer", desc: "Score every policy — term, health, motor — against real cover gaps.", icon: ShieldCheck, status: "Beta" as const, to: "/insurance-analyzer" as const },
+    { name: "Portfolio Analyzer", desc: "Overlap, concentration and drift across your mutual funds and stocks.", icon: LineChart, status: "Beta" as const, to: "/portfolio-analyzer" as const },
+    { name: "Loan Analyzer", desc: "Loan Health, Debt Freedom Age and a prepay-vs-invest verdict.", icon: Wallet, status: "Beta" as const, to: "/loan-analyzer" as const },
+    { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — decided cleanly.", icon: Calculator, status: "Coming Soon" as const, to: null },
+  ];
+
+  return (
+    <section className="container-page py-16 md:py-24">
+      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Financial services</p>
+          <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+            One flagship advisor. <span className="font-editorial italic font-normal text-primary">Four</span> analyzers behind it.
+          </h2>
+        </div>
+        <p className="max-w-md text-sm text-muted-foreground">
+          Every analyzer feeds the Financial Advisor with deeper intelligence. Every recommendation ends with a human conversation — never a product pitch.
+        </p>
+      </div>
+
+      <div className="mt-10 grid gap-4 lg:grid-cols-2">
+        {/* Featured — Financial Advisor */}
+        <Link
+          to="/services/$slug"
+          params={{ slug: "financial-advisor" }}
+          className="group relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary via-primary to-primary/85 p-8 text-primary-foreground shadow-elevated transition-all hover:-translate-y-0.5 md:p-10"
+        >
+          <div
+            className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/25 blur-3xl"
+            aria-hidden
+          />
+          <div className="pointer-events-none absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" aria-hidden />
+          <div className="relative flex items-center justify-between gap-3">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/15 backdrop-blur">
+              <Sparkles className="h-6 w-6" />
+            </span>
+            <span className="rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider">Coming Soon</span>
+          </div>
+          <div className="relative mt-auto pt-10">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Flagship service</p>
+            <h3 className="mt-2 font-display text-4xl font-semibold leading-tight md:text-5xl">Financial Advisor</h3>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-primary-foreground/85">
+              1:1 sessions with SEBI-registered, fee-only advisors — powered by your full NitiVitt snapshot. No commissions, no product pitches, no cold calls.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary">
+                Join the waitlist <ArrowRight className="h-4 w-4" />
+              </span>
+              <span className="text-xs text-primary-foreground/75">Learn more →</span>
+            </div>
+          </div>
+        </Link>
+
+        {/* Right — 2×2 grid */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          {grid.map((s) => {
+            const Icon = s.icon;
+            const isActive = s.status === "Beta";
+            const badge = isActive ? "bg-secondary-soft text-secondary" : "bg-muted text-muted-foreground";
+            const body = (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                      <Icon className="h-4.5 w-4.5" />
+                    </span>
+                    <p className="truncate font-semibold text-foreground">{s.name}</p>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge}`}>{s.status}</span>
+                </div>
+                <p className="mt-4 flex-1 text-sm leading-snug text-muted-foreground">{s.desc}</p>
+                <span className={`mt-4 inline-flex items-center gap-1.5 text-xs font-semibold ${isActive ? "text-primary" : "text-muted-foreground"}`}>
+                  {isActive ? "Open analyzer" : "Notify me on launch"} {isActive && <ArrowRight className="h-3.5 w-3.5" />}
+                </span>
+              </>
+            );
+            return isActive && s.to ? (
+              <Link
+                key={s.name}
+                to="/auth"
+                search={{ mode: "signin", redirect: s.to }}
+                className="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-elevated"
+              >
+                {body}
+              </Link>
+            ) : (
+              <div
+                key={s.name}
+                aria-disabled="true"
+                className="flex flex-col rounded-2xl border border-dashed border-border bg-card/60 p-5 opacity-85"
+              >
+                {body}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 function HowItWorks() {
   const steps = [
