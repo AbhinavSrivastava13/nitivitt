@@ -917,21 +917,87 @@ const MODULES = [
   { to: "/ai-coach", icon: GraduationCap, name: "NitiGuide", hint: "Your briefing" },
 ] as const;
 
-type ServiceCard = {
+function ServiceGridCard({
+  name, icon: Icon, to, scoreLabel, score, lastReviewed, hasData, emptyDesc, ctaOn, ctaOff,
+}: {
   name: string;
-  desc: string;
   icon: React.ComponentType<{ className?: string }>;
-  status: "active" | "coming";
-  hasPolicies?: boolean;
-};
+  to: "/insurance-analyzer" | "/portfolio-analyzer" | "/loan-analyzer" | null;
+  scoreLabel: string | null;
+  score: number | null;
+  lastReviewed: string | null;
+  hasData: boolean;
+  emptyDesc: string;
+  ctaOn: string;
+  ctaOff: string;
+}) {
+  const isActive = to !== null;
+  const badge = isActive ? "bg-secondary-soft text-secondary" : "bg-muted text-muted-foreground";
+  const status = isActive ? "Beta" : "Coming Soon";
+  const lastReviewedText = lastReviewed
+    ? new Date(lastReviewed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    : null;
 
-const SERVICE_CARDS: ServiceCard[] = [
-  { name: "Insurance Analyzer", desc: "Upload a policy PDF. Get a fee-only, CFP-style review — coverage, gaps, next moves.", icon: ShieldCheck, status: "active" },
-  { name: "Portfolio Analyzer", desc: "Overlap, concentration, cost and tax-efficiency across everything you own.", icon: BarChart3, status: "active" },
-  { name: "Loan Optimizer", desc: "Prepay, refinance or keep — decided by real math, not by the bank calling you.", icon: Landmark, status: "coming" },
-  { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — planned before March, not after.", icon: Receipt, status: "coming" },
-  { name: "Financial Advisor", desc: "1:1 sessions with SEBI-registered, fee-only advisors — no product pitches.", icon: Users, status: "coming" },
-];
+  const inner = (
+    <>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+            <Icon className="h-4.5 w-4.5" />
+          </span>
+          <p className="truncate font-semibold text-foreground">{name}</p>
+        </div>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge}`}>{status}</span>
+      </div>
+
+      {isActive && hasData && scoreLabel ? (
+        <div className="mt-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{scoreLabel}</p>
+          <div className="mt-1 flex items-baseline gap-1.5">
+            <span className="font-display text-4xl leading-none text-foreground">{score ?? "—"}</span>
+            <span className="text-xs text-muted-foreground">/ 100</span>
+          </div>
+          {lastReviewedText && (
+            <p className="mt-2 text-[11px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
+          )}
+        </div>
+      ) : isActive ? (
+        <div className="mt-4">
+          {scoreLabel && <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{scoreLabel}</p>}
+          <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{emptyDesc}</p>
+        </div>
+      ) : (
+        <p className="mt-4 flex-1 text-[12px] leading-snug text-muted-foreground">{emptyDesc}</p>
+      )}
+
+      {isActive ? (
+        <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
+          {hasData ? ctaOn : ctaOff} <ArrowRight className="h-3.5 w-3.5" />
+        </span>
+      ) : (
+        <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+          Notify me on launch
+        </span>
+      )}
+    </>
+  );
+
+  return isActive ? (
+    <Link
+      to={to}
+      className="group flex flex-col rounded-2xl border border-primary/30 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-elevated"
+    >
+      {inner}
+    </Link>
+  ) : (
+    <div
+      aria-disabled="true"
+      className="flex flex-col rounded-2xl border border-dashed border-border bg-card/60 p-5 opacity-85"
+    >
+      {inner}
+    </div>
+  );
+}
 
 /* ─────────────── Dashboard skeleton ─────────────── */
 
