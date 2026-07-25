@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import {
   Target, Shield, PiggyBank, Wallet, TrendingUp, FlaskConical, GraduationCap,
   Briefcase, Sparkles, ArrowRight, ArrowUpRight, ArrowDownRight, RefreshCw,
-  Gauge, Hourglass, ShieldCheck, BarChart3, Landmark, Receipt, Users,
+  Gauge, Hourglass, ShieldCheck, BarChart3, Landmark, Receipt,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -26,6 +26,7 @@ import { formatINR } from "@/lib/finance/core";
 import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
 import { listInsuranceAnalyses, getPortfolioProtectionSummary } from "@/lib/insurance-analyzer/analyzer.functions";
 import { listPortfolioAnalyses, getPortfolioIntelligenceSummary } from "@/lib/portfolio-analyzer/analyzer.functions";
+import { listLoanAnalyses, getLoanPortfolioSummary } from "@/lib/loan-analyzer/analyzer.functions";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
