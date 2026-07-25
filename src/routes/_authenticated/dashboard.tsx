@@ -403,119 +403,95 @@ function Dashboard() {
         <section className="mt-10">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Services</p>
-              <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">The NitiVitt ecosystem</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Specialized financial tools built on top of NitiCore™.</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Financial services</p>
+              <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">One advisor. Four analyzers.</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Every analyzer keeps feeding the Advisor deeper intelligence about your money.</p>
             </div>
             <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
           </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {SERVICE_CARDS.map((raw) => {
-              const isInsurance = raw.name === "Insurance Analyzer";
-              const isPortfolio = raw.name === "Portfolio Analyzer";
-              const s: ServiceCard = isInsurance
-                ? { ...raw, hasPolicies: insurancePolicyCount > 0 }
-                : isPortfolio
-                  ? { ...raw, hasPolicies: portfolioCount > 0 }
-                  : raw;
-              const Icon = s.icon;
-              const isActive = s.status === "active";
-              const badge = isActive
-                ? { label: "Beta", cls: "bg-secondary-soft text-secondary" }
-                : { label: "Coming Soon", cls: "bg-muted text-muted-foreground" };
-              const meta = isInsurance
-                ? {
-                    scoreLabel: "NitiSure™ · Protection Score",
-                    score: insuranceScore,
-                    lastReviewed: insuranceLastReviewed,
-                    emptyLabel: "No policies analyzed yet.",
-                    href: "/insurance-analyzer" as const,
-                    ctaOn: "Manage Policies",
-                    ctaOff: "Analyze Policy",
-                  }
-                : isPortfolio
-                  ? {
-                      scoreLabel: "NitiInvest™ · Portfolio Health Score",
-                      score: portfolioScore,
-                      lastReviewed: portfolioLastReviewed,
-                      emptyLabel: "No portfolio analyzed yet.",
-                      href: "/portfolio-analyzer" as const,
-                      ctaOn: "Manage Portfolio",
-                      ctaOff: "Analyze Portfolio",
-                    }
-                  : null;
-              const lastReviewedText = meta?.lastReviewed
-                ? new Date(meta.lastReviewed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
-                : null;
-              const inner = (
-                <>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-                        <Icon className="h-4.5 w-4.5" />
-                      </span>
-                      <p className="truncate font-semibold text-foreground">{s.name}</p>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge.cls}`}>{badge.label}</span>
-                  </div>
 
-                  {isActive && meta ? (
-                    s.hasPolicies ? (
-                      <div className="mt-5 flex items-end justify-between gap-3">
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{meta.scoreLabel.split(" · ")[0]}</p>
-                          <div className="mt-1 flex items-baseline gap-1.5">
-                            <span className="font-display text-5xl leading-none text-foreground">{meta.score ?? "—"}</span>
-                            <span className="text-xs text-muted-foreground">/ 100</span>
-                          </div>
-                          {lastReviewedText && (
-                            <p className="mt-2 text-[11px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
-                          )}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="mt-5">
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{meta.scoreLabel.split(" · ")[0]}</p>
-                        <p className="mt-1 font-display text-3xl text-muted-foreground">—</p>
-                        <p className="mt-1 text-[11px] text-muted-foreground">{meta.emptyLabel}</p>
-                      </div>
-                    )
-                  ) : (
-                    <p className="mt-5 text-[12px] leading-snug text-muted-foreground">{s.desc}</p>
-                  )}
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {/* Featured — Financial Advisor */}
+            <Link
+              to="/services/$slug"
+              params={{ slug: "financial-advisor" }}
+              className="group relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary via-primary to-primary/85 p-7 text-primary-foreground shadow-elevated transition-all hover:-translate-y-0.5 md:p-9"
+            >
+              <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/25 blur-3xl" aria-hidden />
+              <div className="pointer-events-none absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" aria-hidden />
+              <div className="relative flex items-center justify-between">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/15 backdrop-blur">
+                  <Sparkles className="h-6 w-6" />
+                </span>
+                <span className="rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider">Coming Soon</span>
+              </div>
+              <div className="relative mt-auto pt-8">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Flagship service</p>
+                <h3 className="mt-2 font-display text-4xl font-semibold leading-tight md:text-5xl">Financial Advisor</h3>
+                <p className="mt-3 max-w-lg text-sm leading-relaxed text-primary-foreground/85">
+                  1:1 sessions with SEBI-registered, fee-only advisors — reading your full NitiVitt snapshot before you talk.
+                </p>
+                <span className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary">
+                  Join the waitlist <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
 
-                  {isActive && meta ? (
-                    <span className="mt-5 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground w-fit">
-                      {s.hasPolicies ? meta.ctaOn : meta.ctaOff} <ArrowRight className="h-3.5 w-3.5" />
-                    </span>
-                  ) : (
-                    <span className="mt-5 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
-                      Notify me on launch
-                    </span>
-                  )}
-                </>
-              );
-              return isActive && meta ? (
-                <Link
-                  key={s.name}
-                  to={meta.href}
-                  className="group flex flex-col rounded-2xl border border-primary/30 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-elevated"
-                >
-                  {inner}
-                </Link>
-              ) : (
-                <div
-                  key={s.name}
-                  aria-disabled="true"
-                  className="flex flex-col rounded-2xl border border-dashed border-border bg-card/60 p-5 opacity-80"
-                >
-                  {inner}
-                </div>
-              );
-            })}
-
+            {/* Right — 2×2 grid */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ServiceGridCard
+                name="Insurance Analyzer"
+                icon={ShieldCheck}
+                to="/insurance-analyzer"
+                scoreLabel="NitiSure™"
+                score={insuranceScore}
+                lastReviewed={insuranceLastReviewed}
+                hasData={insurancePolicyCount > 0}
+                emptyDesc="Score every policy — term, health, motor."
+                ctaOn="Manage Policies"
+                ctaOff="Analyze Policy"
+              />
+              <ServiceGridCard
+                name="Portfolio Analyzer"
+                icon={BarChart3}
+                to="/portfolio-analyzer"
+                scoreLabel="NitiInvest™"
+                score={portfolioScore}
+                lastReviewed={portfolioLastReviewed}
+                hasData={portfolioCount > 0}
+                emptyDesc="Overlap, concentration and drift across your holdings."
+                ctaOn="Manage Portfolio"
+                ctaOff="Analyze Portfolio"
+              />
+              <ServiceGridCard
+                name="Loan Analyzer"
+                icon={Landmark}
+                to="/loan-analyzer"
+                scoreLabel="Loan Health"
+                score={loanHealthScore}
+                lastReviewed={loanLastReviewed}
+                hasData={loanCount > 0}
+                emptyDesc="Loan Health, Debt Freedom Age, prepay-vs-invest."
+                ctaOn="Manage Loans"
+                ctaOff="Analyze Loan"
+              />
+              <ServiceGridCard
+                name="Tax Planner"
+                icon={Receipt}
+                to={null}
+                scoreLabel={null}
+                score={null}
+                lastReviewed={null}
+                hasData={false}
+                emptyDesc="Old vs new regime, deductions and capital gains — decided cleanly."
+                ctaOn=""
+                ctaOff=""
+              />
+            </div>
           </div>
         </section>
+
+
 
 
         {/* ── Modules ───────────────────────────────────────────────── */}
