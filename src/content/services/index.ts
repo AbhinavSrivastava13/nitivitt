@@ -108,26 +108,26 @@ const SERVICES: Service[] = [
     ],
   },
   {
-    slug: "loan-optimizer",
-    name: "Loan Optimizer",
-    tagline: "Prepay, refinance, or keep — grounded in real math.",
-    status: "Coming Soon",
+    slug: "loan-analyzer",
+    name: "NitiLoan™ — Loan Analyzer",
+    tagline: "Every loan scored — Loan Health, Debt Freedom Age, prepay-vs-invest.",
+    status: "Beta",
     category: "Planning",
     shortDescription:
-      "Enter your loans once. See the exact prepayment schedule, refinance case, tenure-vs-EMI trade-offs and the interest saved - before your bank ever calls you.",
+      "Add each loan once. NitiLoan™ scores it deterministically — Loan Health Score, Debt Freedom Age, repayment strategies and a prepay-vs-invest verdict grounded in your whole financial life.",
     whyItMatters:
-      "Most home-loan borrowers pay 60–90% of the loan amount in interest over 20 years. A ₹5,000 monthly prepayment on a ₹50 lakh home loan can cut 6+ years and lakhs in interest - but banks rarely tell you that.",
+      "Most Indian borrowers pay 60–90% of the loan amount in interest over 20 years. A ₹5,000 monthly prepayment on a ₹50 lakh home loan can cut 6+ years and lakhs in interest — but banks rarely tell you that, and prepaying isn't always right either.",
     expectedBenefits: [
-      "Amortisation schedules generated deterministically by NitiCore™.",
-      "Prepayment ‘what-if’ curves - tenure saved vs interest saved.",
-      "Refinance case with switching-cost, break-even and after-tax comparison.",
-      "Debt-vs-invest verdict when you have surplus cash flow.",
+      "Loan Health Score across affordability, burden, interest cost, flexibility and debt quality.",
+      "Debt Freedom Age under current, higher-EMI, annual-prepay and optimized strategies.",
+      "Prepay-vs-invest verdict from post-tax cost vs realistic post-tax expected return.",
+      "Cross-pillar check — buffer and protection are honoured before prepayment.",
     ],
     visionSections: [
       {
-        heading: "How it will decide",
+        heading: "How it decides",
         body:
-          "The optimizer will compare the after-tax cost of your loan against the realistic after-tax return of your alternative use of the money. If your home loan is 8.4% and your equity SIP is expected to compound at 11%, prepayment isn't automatically ‘right’ - it depends on your buffer, your goals and your risk profile. NitiCore will do the math; you get the verdict.",
+          "NitiLoan™ compares the post-tax cost of your loan against a realistic post-tax expected return for your risk profile. If your home loan is 8.4% (post-tax ~5.9%) and your equity plan is expected to compound at 11%, prepayment isn't automatically ‘right’ — it depends on your buffer, protection and life stage. NitiCore™ does the math; you get the verdict.",
       },
     ],
   },
