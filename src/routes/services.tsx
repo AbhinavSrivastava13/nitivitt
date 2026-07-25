@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck, BarChart3, Landmark } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { listServices } from "@/content/services";
 import type { Service } from "@/content/services";
@@ -91,6 +91,22 @@ function ServicesPage() {
                   className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                 >
                   <ShieldCheck className="h-4 w-4" /> Open Analyzer
+                </Link>
+              )}
+              {s.slug === "portfolio-analyzer" && (
+                <Link
+                  to="/portfolio-analyzer"
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  <BarChart3 className="h-4 w-4" /> Open Analyzer
+                </Link>
+              )}
+              {s.slug === "loan-analyzer" && (
+                <Link
+                  to="/loan-analyzer"
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  <Landmark className="h-4 w-4" /> Open Analyzer
                 </Link>
               )}
             </div>
