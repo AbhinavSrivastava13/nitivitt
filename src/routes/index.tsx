@@ -509,10 +509,10 @@ function SuiteCard({
 
 function FinancialServices() {
   const grid = [
-    { name: "Insurance Analyzer", desc: "Score every policy — term, health, motor — against real cover gaps.", icon: ShieldCheck, status: "Beta" as const, to: "/insurance-analyzer" as const },
+    { name: "Insurance Analyzer", desc: "Score every policy - term, health, motor - against real cover gaps.", icon: ShieldCheck, status: "Beta" as const, to: "/insurance-analyzer" as const },
     { name: "Portfolio Analyzer", desc: "Overlap, concentration and drift across your mutual funds and stocks.", icon: LineChart, status: "Beta" as const, to: "/portfolio-analyzer" as const },
     { name: "Loan Analyzer", desc: "Loan Health, Debt Freedom Age and a prepay-vs-invest verdict.", icon: Wallet, status: "Beta" as const, to: "/loan-analyzer" as const },
-    { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — decided cleanly.", icon: Calculator, status: "Coming Soon" as const, to: null },
+    { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains - decided cleanly.", icon: Calculator, status: "Coming Soon" as const, to: null },
   ];
 
   return (
@@ -551,7 +551,7 @@ function FinancialServices() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Flagship service</p>
             <h3 className="mt-2 font-display text-4xl font-semibold leading-tight md:text-5xl">Financial Advisor</h3>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-primary-foreground/85">
-              1:1 sessions with SEBI-registered, fee-only advisors — powered by your full NitiVitt snapshot. No commissions, no product pitches, no cold calls.
+              1:1 sessions with SEBI-registered, fee only advisors - powered by your full NitiVitt snapshot. No commissions, no product pitches, no cold calls.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary">
