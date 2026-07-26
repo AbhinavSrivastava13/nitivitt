@@ -516,7 +516,7 @@ function FinancialServices() {
   ];
 
   return (
-    <section className="container-page py-12 md:py-18">
+    <section className="container-page py-12 md:py-20">
       <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Financial services</p>
