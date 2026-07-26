@@ -20,20 +20,20 @@ function About() {
     <PageShell
       eyebrow="About"
       title="Niti. Vitt. Wise wealth."
-      lede="NitiVitt comes from two Sanskrit words — niti, meaning wisdom and right direction, and vitt, meaning wealth. Together they describe what we are building: a platform that turns knowledge into financial confidence."
+      lede="NitiVitt comes from two Sanskrit words - niti, meaning wisdom and right direction and vitt, meaning wealth. Together they describe what we are building: a platform that turns knowledge into financial confidence."
     >
       <div className="grid gap-12 md:grid-cols-2">
         <div>
           <h2 className="font-display text-3xl text-foreground">Why we exist</h2>
           <p className="mt-4 text-base leading-relaxed text-foreground">
-            Indians have never had more financial products — and never been more confused. Apps tell
+            Indians have never had more financial products - and never been more confused. Apps tell
             you to invest. YouTube tells you to trade. Advisors tell you what earns them the highest
             commission. Spreadsheets tell you nothing at all.
           </p>
           <p className="mt-4 text-base leading-relaxed text-foreground">
             NitiVitt is the answer to a different question: <em className="font-editorial">Am I on
             track?</em> Five minutes in, you should know exactly where you stand and what to do
-            next — with math you can see and trust.
+            next - with math you can see and trust.
           </p>
         </div>
         <div>
@@ -44,7 +44,7 @@ function About() {
           </p>
           <p className="mt-4 text-base leading-relaxed text-foreground">
             We don't sell financial products. We don't take commissions. We make money the same
-            way Notion or Apple Health do — by being so useful you choose to upgrade.
+            way Notion or Apple Health do - by being so useful you choose to upgrade.
           </p>
         </div>
       </div>
