@@ -509,10 +509,10 @@ function SuiteCard({
 
 function FinancialServices() {
   const grid = [
-    { name: "Insurance Analyzer", desc: "Score every policy — term, health, motor — against real cover gaps.", icon: ShieldCheck, status: "Beta" as const, to: "/insurance-analyzer" as const },
+    { name: "Insurance Analyzer", desc: "Score every policy - term, health, motor - against real cover gaps.", icon: ShieldCheck, status: "Beta" as const, to: "/insurance-analyzer" as const },
     { name: "Portfolio Analyzer", desc: "Overlap, concentration and drift across your mutual funds and stocks.", icon: LineChart, status: "Beta" as const, to: "/portfolio-analyzer" as const },
     { name: "Loan Analyzer", desc: "Loan Health, Debt Freedom Age and a prepay-vs-invest verdict.", icon: Wallet, status: "Beta" as const, to: "/loan-analyzer" as const },
-    { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains — decided cleanly.", icon: Calculator, status: "Coming Soon" as const, to: null },
+    { name: "Tax Planner", desc: "Old vs new regime, deductions and capital gains - decided cleanly.", icon: Calculator, status: "Coming Soon" as const, to: null },
   ];
 
   return (
