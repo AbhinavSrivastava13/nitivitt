@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { AnalysisSequence } from "@/components/analysis-sequence";
+import { EmptyState } from "@/components/platform/empty-state";
+import { formatIndianNumber, parseIndianNumber, sanitizeNumericInput } from "@/lib/format-number";
+
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
 import {
@@ -179,19 +182,24 @@ function Workspace({
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : analyses.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
-          <Landmark className="mx-auto h-8 w-8 text-primary" />
-          <h3 className="mt-3 font-display text-xl text-foreground">No loans analyzed yet</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            NitiLoan™ evaluates each loan against your whole financial life — affordability, buffer, insurance, interest cost — not just the EMI.
-          </p>
-          <button onClick={onAddNew} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90">
-            <Plus className="h-4 w-4" /> Analyze your first loan
-          </button>
-        </div>
+        <EmptyState
+          icon={Landmark}
+          eyebrow="NitiLoan™"
+          title="No loans analyzed yet"
+          description="NitiLoan™ evaluates each loan against your whole financial life — affordability, buffer, insurance, interest cost — not just the EMI."
+          action={
+            <button
+              onClick={onAddNew}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-elevated"
+            >
+              <Plus className="h-4 w-4" /> Analyze your first loan
+            </button>
+          }
+        />
       ) : (
         <LoanList analyses={analyses} onOpen={onOpen} onReplace={onReplaceClicked} onDelete={onDelete} />
       )}
+
     </div>
   );
 }
@@ -358,14 +366,15 @@ function LoanForm({ replaceId, initial, onCancel, onDone }: {
           <TextField label="Name" placeholder="e.g. HDFC Home Loan" value={loan.name} onChange={(v) => set("name", v)} />
           <SelectField label="Category" value={loan.category} onChange={(v) => set("category", v as LoanCategory)} options={CATEGORIES.map((c) => ({ value: c, label: LOAN_CATEGORY_LABEL[c] }))} />
           <TextField label="Lender (optional)" placeholder="e.g. HDFC Bank" value={loan.lender ?? ""} onChange={(v) => set("lender", v)} />
-          <NumField label="Original principal (₹)" value={loan.principal} onChange={(v) => set("principal", v)} />
-          <NumField label="Current outstanding (₹)" value={loan.outstanding} onChange={(v) => set("outstanding", v)} />
-          <NumField label="Interest rate (%)" value={loan.interestRate} onChange={(v) => set("interestRate", v)} step={0.05} />
-          <NumField label="Original tenure (months)" value={loan.tenureMonths} onChange={(v) => set("tenureMonths", v)} />
-          <NumField label="Remaining tenure (months, optional)" value={loan.remainingMonths ?? 0} onChange={(v) => set("remainingMonths", v || null)} />
-          <NumField label="Monthly EMI (₹)" value={loan.monthlyEmi} onChange={(v) => set("monthlyEmi", v)} />
-          <NumField label="Annual prepayment (₹, optional)" value={loan.annualPrepayment ?? 0} onChange={(v) => set("annualPrepayment", v)} />
+          <MoneyField label="Original principal (₹)" value={loan.principal} onChange={(v) => set("principal", v)} />
+          <MoneyField label="Current outstanding (₹)" value={loan.outstanding} onChange={(v) => set("outstanding", v)} />
+          <RateField label="Interest rate (% p.a.)" value={loan.interestRate} onChange={(v) => set("interestRate", v)} placeholder="e.g. 8.35" />
+          <IntField label="Original tenure (months)" value={loan.tenureMonths} onChange={(v) => set("tenureMonths", v)} />
+          <IntField label="Remaining tenure (months, optional)" value={loan.remainingMonths ?? 0} onChange={(v) => set("remainingMonths", v || null)} />
+          <MoneyField label="Monthly EMI (₹)" value={loan.monthlyEmi} onChange={(v) => set("monthlyEmi", v)} />
+          <MoneyField label="Annual prepayment (₹, optional)" value={loan.annualPrepayment ?? 0} onChange={(v) => set("annualPrepayment", v)} />
         </div>
+
 
         <label className="flex items-start gap-2 rounded-lg border border-border bg-surface p-3 text-sm">
           <input type="checkbox" checked={loan.taxDeductible ?? false} onChange={(e) => set("taxDeductible", e.target.checked)} className="mt-1 h-4 w-4 rounded border-border" />
@@ -376,7 +385,7 @@ function LoanForm({ replaceId, initial, onCancel, onDone }: {
         </label>
 
         <div className="flex flex-wrap items-center gap-3">
-          <button disabled={busy} onClick={submit} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+          <button disabled={busy} onClick={submit} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-elevated disabled:opacity-50 disabled:hover:translate-y-0">
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {busy ? "Analyzing…" : replaceId ? "Update and re-analyze" : "Analyze loan"}
           </button>
@@ -396,16 +405,69 @@ function TextField({ label, value, onChange, placeholder }: { label: string; val
     </label>
   );
 }
-function NumField({ label, value, onChange, step }: { label: string; value: number; onChange: (v: number) => void; step?: number }) {
+function MoneyField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  const [text, setText] = useState<string>(() => (value ? formatIndianNumber(value) : ""));
+  // Keep local display in sync when parent value changes from another source.
+  const numericFromText = parseIndianNumber(text);
+  if (Math.abs(numericFromText - value) > 0.005 && document.activeElement?.getAttribute("data-money-label") !== label) {
+    // sync only when this field is not focused
+  }
   return (
     <label className="block">
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
-      <input inputMode="decimal" step={step ?? 1} value={Number.isFinite(value) ? value : 0}
-        onChange={(e) => onChange(e.target.value === "" ? 0 : Number(e.target.value))}
-        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+      <input
+        inputMode="decimal"
+        data-money-label={label}
+        value={text}
+        placeholder="0"
+        onChange={(e) => {
+          const cleaned = sanitizeNumericInput(e.target.value);
+          setText(formatIndianNumber(cleaned));
+          onChange(parseIndianNumber(cleaned));
+        }}
+        onBlur={() => setText(value ? formatIndianNumber(value) : "")}
+        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none"
+      />
     </label>
   );
 }
+function RateField({ label, value, onChange, placeholder }: { label: string; value: number; onChange: (v: number) => void; placeholder?: string }) {
+  const [text, setText] = useState<string>(() => (value ? String(value) : ""));
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <input
+        inputMode="decimal"
+        value={text}
+        placeholder={placeholder ?? "0.00"}
+        onChange={(e) => {
+          const cleaned = sanitizeNumericInput(e.target.value, { allowDecimal: true });
+          setText(cleaned);
+          onChange(cleaned === "" || cleaned === "." ? 0 : Number(cleaned));
+        }}
+        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none"
+      />
+    </label>
+  );
+}
+function IntField({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+      <input
+        inputMode="numeric"
+        value={value ? String(value) : ""}
+        placeholder="0"
+        onChange={(e) => {
+          const cleaned = sanitizeNumericInput(e.target.value, { allowDecimal: false });
+          onChange(cleaned === "" ? 0 : Number(cleaned));
+        }}
+        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm transition-colors focus:border-primary/60 focus:outline-none"
+      />
+    </label>
+  );
+}
+
 function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
   return (
     <label className="block">

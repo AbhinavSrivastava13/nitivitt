@@ -516,8 +516,8 @@ function FinancialServices() {
   ];
 
   return (
-    <section className="container-page py-16 md:py-24">
-      <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+    <section className="container-page py-12 md:py-20">
+      <div className="flex flex-col items-start justify-between gap-5 md:flex-row md:items-end">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">Financial services</p>
           <h2 className="mt-3 font-display text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
@@ -529,13 +529,14 @@ function FinancialServices() {
         </p>
       </div>
 
-      <div className="mt-10 grid gap-4 lg:grid-cols-2">
+      <div className="mt-8 grid gap-4 lg:grid-cols-2">
         {/* Featured — Financial Advisor */}
         <Link
           to="/services/$slug"
           params={{ slug: "financial-advisor" }}
-          className="group relative flex min-h-[420px] flex-col overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary via-primary to-primary/85 p-8 text-primary-foreground shadow-elevated transition-all hover:-translate-y-0.5 md:p-10"
+          className="group relative flex min-h-[340px] flex-col overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary via-primary to-primary/85 p-8 text-primary-foreground shadow-elevated transition-all duration-300 hover:-translate-y-0.5 hover:shadow-glow md:p-9"
         >
+
           <div
             className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/25 blur-3xl"
             aria-hidden
@@ -547,7 +548,7 @@ function FinancialServices() {
             </span>
             <span className="rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider">Coming Soon</span>
           </div>
-          <div className="relative mt-auto pt-10">
+          <div className="relative mt-auto pt-8">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Flagship service</p>
             <h3 className="mt-2 font-display text-4xl font-semibold leading-tight md:text-5xl">Financial Advisor</h3>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-primary-foreground/85">
@@ -590,7 +591,7 @@ function FinancialServices() {
                 key={s.name}
                 to="/auth"
                 search={{ mode: "signin", redirect: s.to }}
-                className="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-elevated"
+                className="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-elevated"
               >
                 {body}
               </Link>
