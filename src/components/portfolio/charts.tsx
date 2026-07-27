@@ -169,7 +169,7 @@ export function HeroScore({ score, label }: HeroScoreProps) {
   const color = TONE_COLORS[tone];
   const data = [{ name: "score", value: s, fill: color }];
   return (
-    <div className="relative mx-auto h-[220px] w-[220px] md:h-[260px] md:w-[260px]">
+    <div className="relative mx-auto h-[240px] w-[240px] md:h-[300px] md:w-[300px]">
       <ResponsiveContainer>
         <RadialBarChart innerRadius="78%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
