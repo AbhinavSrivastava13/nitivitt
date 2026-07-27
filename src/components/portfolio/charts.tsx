@@ -42,16 +42,16 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
       {data.length === 0 ? (
         <p className="mt-6 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
       ) : (
-        <div className="mt-4 grid gap-4 sm:grid-cols-[180px_1fr] sm:items-center">
-          <div className="relative h-[180px] w-full">
+        <div className="mt-5 grid gap-6 sm:grid-cols-[220px_1fr] sm:items-center">
+          <div className="relative h-[220px] w-full">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={data}
                   dataKey="pct"
                   nameKey="label"
-                  innerRadius={55}
-                  outerRadius={80}
+                  innerRadius={68}
+                  outerRadius={98}
                   paddingAngle={1.5}
                   stroke="hsl(var(--card))"
                   strokeWidth={2}
