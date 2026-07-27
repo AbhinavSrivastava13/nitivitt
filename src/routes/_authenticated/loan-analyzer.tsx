@@ -244,13 +244,15 @@ function LoanList({ analyses, onOpen, onReplace, onDelete }: {
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${qCls}`}>
                     {quality} debt
                   </span>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                    a.loanHealthScore >= 70 ? "bg-success-soft text-success"
-                      : a.loanHealthScore >= 50 ? "bg-primary-soft text-primary"
-                        : "bg-warning-soft text-warning"
-                  }`}>
-                    Health {a.loanHealthScore}
-                  </span>
+                  {(() => {
+                    const r = deriveDebtHealthRating(a.loanHealthScore);
+                    const rc = ratingClasses(r.tone);
+                    return (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${rc.bg} ${rc.text}`}>
+                        {r.label} · {r.grade}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <p className="mt-1.5 truncate text-sm font-semibold text-foreground">{a.name}</p>
                 <p className="mt-0.5 text-[12px] text-muted-foreground">
