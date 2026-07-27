@@ -28,6 +28,7 @@ import {
   type LoanReport,
 } from "@/lib/loan-analyzer/types";
 import { inr } from "@/lib/loan-analyzer/engine";
+import { deriveDebtHealthRating, ratingClasses } from "@/lib/ratings";
 
 export const Route = createFileRoute("/_authenticated/loan-analyzer")({
   head: () => ({
