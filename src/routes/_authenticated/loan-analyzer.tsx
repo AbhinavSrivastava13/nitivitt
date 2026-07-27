@@ -28,6 +28,7 @@ import {
   type LoanReport,
 } from "@/lib/loan-analyzer/types";
 import { inr } from "@/lib/loan-analyzer/engine";
+import { deriveDebtHealthRating, ratingClasses } from "@/lib/ratings";
 
 export const Route = createFileRoute("/_authenticated/loan-analyzer")({
   head: () => ({
@@ -151,31 +152,36 @@ function Workspace({
         </button>
       </div>
 
-      {!isLoading && summary && summary.loanCount > 0 && (
-        <section className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 to-card p-6 shadow-soft">
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <p className="font-display text-2xl text-foreground">NitiLoan™ Portfolio</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Debt intelligence summary</p>
-              <div className="mt-3 flex items-baseline gap-3">
-                <span className={`font-display text-5xl ${summary.averageHealthScore >= 70 ? "text-success" : summary.averageHealthScore >= 50 ? "text-primary" : "text-warning"}`}>{summary.averageHealthScore}</span>
-                <span className="text-sm text-muted-foreground">avg Loan Health · / 100</span>
+      {!isLoading && summary && summary.loanCount > 0 && (() => {
+        const wsRating = deriveDebtHealthRating(summary.averageHealthScore);
+        const rc = ratingClasses(wsRating.tone);
+        return (
+          <section className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 to-card p-6 shadow-soft">
+            <div className="flex flex-wrap items-start justify-between gap-6">
+              <div>
+                <p className="font-display text-2xl text-foreground">NitiLoan™ Portfolio</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Debt Health Rating</p>
+                <div className="mt-3 flex items-baseline gap-3">
+                  <span className={`font-display text-5xl ${rc.text}`}>{wsRating.label}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {wsRating.grade}</span>
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">Across {summary.loanCount} loan{summary.loanCount === 1 ? "" : "s"}</p>
+                {summary.poorDebtCount > 0 && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-warning-soft px-2.5 py-1 text-[11px] font-semibold text-warning">
+                    <AlertTriangle className="h-3 w-3" /> {summary.poorDebtCount} poor-quality loan{summary.poorDebtCount === 1 ? "" : "s"}
+                  </p>
+                )}
               </div>
-              {summary.poorDebtCount > 0 && (
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-warning-soft px-2.5 py-1 text-[11px] font-semibold text-warning">
-                  <AlertTriangle className="h-3 w-3" /> {summary.poorDebtCount} poor-quality loan{summary.poorDebtCount === 1 ? "" : "s"}
-                </p>
-              )}
+              <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                <StatBlock label="Total outstanding" value={inr(summary.totalOutstanding)} />
+                <StatBlock label="Total EMI/mo" value={inr(summary.totalMonthlyEmi)} />
+                <StatBlock label="Weighted rate" value={`${summary.weightedInterestRate.toFixed(2)}%`} />
+                <StatBlock label="Loans" value={String(summary.loanCount)} />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-              <StatBlock label="Total outstanding" value={inr(summary.totalOutstanding)} />
-              <StatBlock label="Total EMI/mo" value={inr(summary.totalMonthlyEmi)} />
-              <StatBlock label="Weighted rate" value={`${summary.weightedInterestRate.toFixed(2)}%`} />
-              <StatBlock label="Loans" value={String(summary.loanCount)} />
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       {isLoading ? (
         <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-soft">
@@ -238,13 +244,15 @@ function LoanList({ analyses, onOpen, onReplace, onDelete }: {
                   <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${qCls}`}>
                     {quality} debt
                   </span>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
-                    a.loanHealthScore >= 70 ? "bg-success-soft text-success"
-                      : a.loanHealthScore >= 50 ? "bg-primary-soft text-primary"
-                        : "bg-warning-soft text-warning"
-                  }`}>
-                    Health {a.loanHealthScore}
-                  </span>
+                  {(() => {
+                    const r = deriveDebtHealthRating(a.loanHealthScore);
+                    const rc = ratingClasses(r.tone);
+                    return (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${rc.bg} ${rc.text}`}>
+                        {r.label} · {r.grade}
+                      </span>
+                    );
+                  })()}
                 </div>
                 <p className="mt-1.5 truncate text-sm font-semibold text-foreground">{a.name}</p>
                 <p className="mt-0.5 text-[12px] text-muted-foreground">
@@ -515,31 +523,36 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
   const verdict = report.prepayment.verdict;
   const verdictCls = verdict === "prepay" ? "bg-warning-soft text-warning"
     : verdict === "invest" ? "bg-success-soft text-success" : "bg-primary-soft text-primary";
+  const rating = deriveDebtHealthRating(report.loanHealthScore);
+  const rc = ratingClasses(rating.tone);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
       </button>
 
       {/* HERO */}
-      <section className="rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-6 shadow-elevated md:p-10">
-        <div className="grid gap-8 md:grid-cols-[auto,1fr] md:items-center">
-          <ScoreDial score={report.loanHealthScore} />
+      <section className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-8 shadow-elevated md:p-14">
+        <div className="grid gap-10 md:grid-cols-[auto,1fr] md:items-center md:gap-14">
+          <ScoreDial score={report.loanHealthScore} tone={rating.tone} />
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Loan Health Score</p>
-            <h2 className="mt-2 font-display text-3xl leading-tight text-foreground md:text-4xl">{report.scoreLabel}</h2>
-            <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{loan.name} · {LOAN_CATEGORY_LABEL[loan.category]}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Debt Health Rating</span>
+              <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {rating.grade}</span>
+            </div>
+            <h2 className="mt-3 font-display text-3xl leading-[1.1] tracking-tight text-foreground md:text-5xl">{rating.label}</h2>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{loan.name} · {LOAN_CATEGORY_LABEL[loan.category]}</p>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${qCls}`}>{qBadge.label}</span>
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${verdictCls}`}>Prepay-vs-invest: {verdict}</span>
               {loan.taxDeductible && <span className="rounded-full bg-secondary-soft px-2.5 py-1 text-xs font-semibold text-secondary">Tax-deductible</span>}
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-foreground/90">{qBadge.description}</p>
+            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-foreground/90">{qBadge.description}</p>
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <HeroStat label="Outstanding" value={inr(report.totalOutstanding)} />
           <HeroStat label="Monthly EMI" value={inr(report.monthlyEmi)} sub={`${report.emiToIncomePct.toFixed(1)}% of income`} />
           <HeroStat label="Effective cost" value={`${report.effectiveInterestCost.toFixed(2)}%`} sub={loan.taxDeductible ? "post-tax" : "gross"} />
@@ -775,17 +788,23 @@ function HeroStat({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
-function ScoreDial({ score }: { score: number }) {
+function ScoreDial({ score, tone }: { score: number; tone?: "success" | "primary" | "accent" | "warning" | "danger" }) {
   const s = Math.max(0, Math.min(100, score));
-  const color = s >= 75 ? "hsl(var(--success, 145 60% 40%))"
+  const color =
+    tone === "success" ? "hsl(var(--success, 145 60% 40%))"
+    : tone === "danger" ? "hsl(var(--destructive))"
+    : tone === "warning" ? "hsl(var(--warning, 35 90% 50%))"
+    : tone === "accent" ? "hsl(var(--accent))"
+    : tone === "primary" ? "hsl(var(--primary))"
+    : s >= 75 ? "hsl(var(--success, 145 60% 40%))"
     : s >= 55 ? "hsl(var(--primary))"
-      : "hsl(var(--warning, 35 90% 50%))";
+    : "hsl(var(--warning, 35 90% 50%))";
   const bg = `conic-gradient(${color} ${s * 3.6}deg, hsl(var(--muted)) 0deg)`;
   return (
-    <div className="relative flex h-36 w-36 shrink-0 items-center justify-center rounded-full" style={{ background: bg }}>
-      <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-card">
-        <span className="font-display text-4xl leading-none text-foreground">{s}</span>
-        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">/ 100</span>
+    <div className="relative flex h-44 w-44 shrink-0 items-center justify-center rounded-full shadow-soft" style={{ background: bg }}>
+      <div className="flex h-36 w-36 flex-col items-center justify-center rounded-full bg-card">
+        <span className="font-display text-5xl leading-none text-foreground">{s}</span>
+        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">/ 100</span>
       </div>
     </div>
   );

@@ -42,16 +42,16 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
       {data.length === 0 ? (
         <p className="mt-6 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
       ) : (
-        <div className="mt-4 grid gap-4 sm:grid-cols-[180px_1fr] sm:items-center">
-          <div className="relative h-[180px] w-full">
+        <div className="mt-5 grid gap-6 sm:grid-cols-[220px_1fr] sm:items-center">
+          <div className="relative h-[220px] w-full">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={data}
                   dataKey="pct"
                   nameKey="label"
-                  innerRadius={55}
-                  outerRadius={80}
+                  innerRadius={68}
+                  outerRadius={98}
                   paddingAngle={1.5}
                   stroke="hsl(var(--card))"
                   strokeWidth={2}
@@ -169,7 +169,7 @@ export function HeroScore({ score, label }: HeroScoreProps) {
   const color = TONE_COLORS[tone];
   const data = [{ name: "score", value: s, fill: color }];
   return (
-    <div className="relative mx-auto h-[220px] w-[220px] md:h-[260px] md:w-[260px]">
+    <div className="relative mx-auto h-[240px] w-[240px] md:h-[300px] md:w-[300px]">
       <ResponsiveContainer>
         <RadialBarChart innerRadius="78%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
