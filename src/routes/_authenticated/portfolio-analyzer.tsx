@@ -597,27 +597,32 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
         </ol>
       </nav>
 
-      {/* 1. HERO — Portfolio Health Score */}
-      <section id="pr-hero" className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-6 shadow-elevated md:p-10">
-        <div className="grid gap-8 md:grid-cols-[auto,1fr] md:items-center">
-          <HeroScore score={report.portfolioScore} label={report.scoreLabel} />
+      {/* 1. HERO — Portfolio Rating */}
+      <section id="pr-hero" className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-8 shadow-elevated md:p-14">
+        <div className="grid gap-10 md:grid-cols-[auto,1fr] md:items-center md:gap-14">
+          <HeroScore score={report.portfolioScore} label={rating.label} />
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Overall Portfolio Health</p>
-            <h2 className="mt-2 font-display text-3xl leading-tight text-foreground md:text-5xl">
-              {hero?.verdict ?? report.scoreLabel}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Portfolio Rating</span>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${ratingClasses(rating.tone).bg} ${ratingClasses(rating.tone).text}`}>
+                Grade {rating.grade}
+              </span>
+            </div>
+            <h2 className="mt-3 font-display text-3xl leading-[1.1] tracking-tight text-foreground md:text-5xl">
+              {hero?.verdict ?? rating.label}
             </h2>
-            {title && <p className="mt-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">{title}</p>}
+            {title && <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>}
             {hero?.keyInsights && hero.keyInsights.length > 0 && (
-              <ul className="mt-6 space-y-3">
+              <ul className="mt-8 space-y-3.5">
                 {hero.keyInsights.map((k, i) => (
                   <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-foreground/90">
-                    <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                     <span>{k}</span>
                   </li>
                 ))}
               </ul>
             )}
-            <div className="mt-6 flex flex-wrap gap-4 text-xs text-muted-foreground">
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
               <span><span className="font-semibold text-foreground">{formatInr(report.totalValue)}</span> · total value</span>
               <span><span className="font-semibold text-foreground">{report.holdingCount}</span> holdings</span>
               {snapshot && <span><span className="font-semibold text-foreground">{snapshot.riskLevelLabel}</span> risk</span>}
