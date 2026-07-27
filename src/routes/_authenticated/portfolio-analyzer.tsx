@@ -29,6 +29,7 @@ import {
   type PortfolioReport,
 } from "@/lib/portfolio-analyzer/types";
 import { formatInr } from "@/lib/portfolio-analyzer/engine";
+import { derivePortfolioRating, ratingClasses } from "@/lib/ratings";
 
 
 export const Route = createFileRoute("/_authenticated/portfolio-analyzer")({
