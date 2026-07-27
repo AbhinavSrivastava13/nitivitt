@@ -152,31 +152,36 @@ function Workspace({
         </button>
       </div>
 
-      {!isLoading && summary && summary.loanCount > 0 && (
-        <section className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 to-card p-6 shadow-soft">
-          <div className="flex flex-wrap items-start justify-between gap-6">
-            <div>
-              <p className="font-display text-2xl text-foreground">NitiLoan™ Portfolio</p>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Debt intelligence summary</p>
-              <div className="mt-3 flex items-baseline gap-3">
-                <span className={`font-display text-5xl ${summary.averageHealthScore >= 70 ? "text-success" : summary.averageHealthScore >= 50 ? "text-primary" : "text-warning"}`}>{summary.averageHealthScore}</span>
-                <span className="text-sm text-muted-foreground">avg Loan Health · / 100</span>
+      {!isLoading && summary && summary.loanCount > 0 && (() => {
+        const wsRating = deriveDebtHealthRating(summary.averageHealthScore);
+        const rc = ratingClasses(wsRating.tone);
+        return (
+          <section className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-soft/40 to-card p-6 shadow-soft">
+            <div className="flex flex-wrap items-start justify-between gap-6">
+              <div>
+                <p className="font-display text-2xl text-foreground">NitiLoan™ Portfolio</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Debt Health Rating</p>
+                <div className="mt-3 flex items-baseline gap-3">
+                  <span className={`font-display text-5xl ${rc.text}`}>{wsRating.label}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {wsRating.grade}</span>
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">Across {summary.loanCount} loan{summary.loanCount === 1 ? "" : "s"}</p>
+                {summary.poorDebtCount > 0 && (
+                  <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-warning-soft px-2.5 py-1 text-[11px] font-semibold text-warning">
+                    <AlertTriangle className="h-3 w-3" /> {summary.poorDebtCount} poor-quality loan{summary.poorDebtCount === 1 ? "" : "s"}
+                  </p>
+                )}
               </div>
-              {summary.poorDebtCount > 0 && (
-                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-warning-soft px-2.5 py-1 text-[11px] font-semibold text-warning">
-                  <AlertTriangle className="h-3 w-3" /> {summary.poorDebtCount} poor-quality loan{summary.poorDebtCount === 1 ? "" : "s"}
-                </p>
-              )}
+              <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                <StatBlock label="Total outstanding" value={inr(summary.totalOutstanding)} />
+                <StatBlock label="Total EMI/mo" value={inr(summary.totalMonthlyEmi)} />
+                <StatBlock label="Weighted rate" value={`${summary.weightedInterestRate.toFixed(2)}%`} />
+                <StatBlock label="Loans" value={String(summary.loanCount)} />
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-              <StatBlock label="Total outstanding" value={inr(summary.totalOutstanding)} />
-              <StatBlock label="Total EMI/mo" value={inr(summary.totalMonthlyEmi)} />
-              <StatBlock label="Weighted rate" value={`${summary.weightedInterestRate.toFixed(2)}%`} />
-              <StatBlock label="Loans" value={String(summary.loanCount)} />
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       {isLoading ? (
         <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-soft">
