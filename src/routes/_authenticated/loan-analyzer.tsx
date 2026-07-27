@@ -788,17 +788,23 @@ function HeroStat({ label, value, sub }: { label: string; value: string; sub?: s
   );
 }
 
-function ScoreDial({ score }: { score: number }) {
+function ScoreDial({ score, tone }: { score: number; tone?: "success" | "primary" | "accent" | "warning" | "danger" }) {
   const s = Math.max(0, Math.min(100, score));
-  const color = s >= 75 ? "hsl(var(--success, 145 60% 40%))"
+  const color =
+    tone === "success" ? "hsl(var(--success, 145 60% 40%))"
+    : tone === "danger" ? "hsl(var(--destructive))"
+    : tone === "warning" ? "hsl(var(--warning, 35 90% 50%))"
+    : tone === "accent" ? "hsl(var(--accent))"
+    : tone === "primary" ? "hsl(var(--primary))"
+    : s >= 75 ? "hsl(var(--success, 145 60% 40%))"
     : s >= 55 ? "hsl(var(--primary))"
-      : "hsl(var(--warning, 35 90% 50%))";
+    : "hsl(var(--warning, 35 90% 50%))";
   const bg = `conic-gradient(${color} ${s * 3.6}deg, hsl(var(--muted)) 0deg)`;
   return (
-    <div className="relative flex h-36 w-36 shrink-0 items-center justify-center rounded-full" style={{ background: bg }}>
-      <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-card">
-        <span className="font-display text-4xl leading-none text-foreground">{s}</span>
-        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">/ 100</span>
+    <div className="relative flex h-44 w-44 shrink-0 items-center justify-center rounded-full shadow-soft" style={{ background: bg }}>
+      <div className="flex h-36 w-36 flex-col items-center justify-center rounded-full bg-card">
+        <span className="font-display text-5xl leading-none text-foreground">{s}</span>
+        <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">/ 100</span>
       </div>
     </div>
   );
