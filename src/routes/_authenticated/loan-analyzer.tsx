@@ -523,31 +523,36 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
   const verdict = report.prepayment.verdict;
   const verdictCls = verdict === "prepay" ? "bg-warning-soft text-warning"
     : verdict === "invest" ? "bg-success-soft text-success" : "bg-primary-soft text-primary";
+  const rating = deriveDebtHealthRating(report.loanHealthScore);
+  const rc = ratingClasses(rating.tone);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
         <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
       </button>
 
       {/* HERO */}
-      <section className="rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-6 shadow-elevated md:p-10">
-        <div className="grid gap-8 md:grid-cols-[auto,1fr] md:items-center">
-          <ScoreDial score={report.loanHealthScore} />
+      <section className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-8 shadow-elevated md:p-14">
+        <div className="grid gap-10 md:grid-cols-[auto,1fr] md:items-center md:gap-14">
+          <ScoreDial score={report.loanHealthScore} tone={rating.tone} />
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Loan Health Score</p>
-            <h2 className="mt-2 font-display text-3xl leading-tight text-foreground md:text-4xl">{report.scoreLabel}</h2>
-            <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{loan.name} · {LOAN_CATEGORY_LABEL[loan.category]}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Debt Health Rating</span>
+              <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {rating.grade}</span>
+            </div>
+            <h2 className="mt-3 font-display text-3xl leading-[1.1] tracking-tight text-foreground md:text-5xl">{rating.label}</h2>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{loan.name} · {LOAN_CATEGORY_LABEL[loan.category]}</p>
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${qCls}`}>{qBadge.label}</span>
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${verdictCls}`}>Prepay-vs-invest: {verdict}</span>
               {loan.taxDeductible && <span className="rounded-full bg-secondary-soft px-2.5 py-1 text-xs font-semibold text-secondary">Tax-deductible</span>}
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-foreground/90">{qBadge.description}</p>
+            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-foreground/90">{qBadge.description}</p>
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <HeroStat label="Outstanding" value={inr(report.totalOutstanding)} />
           <HeroStat label="Monthly EMI" value={inr(report.monthlyEmi)} sub={`${report.emiToIncomePct.toFixed(1)}% of income`} />
           <HeroStat label="Effective cost" value={`${report.effectiveInterestCost.toFixed(2)}%`} sub={loan.taxDeductible ? "post-tax" : "gross"} />
