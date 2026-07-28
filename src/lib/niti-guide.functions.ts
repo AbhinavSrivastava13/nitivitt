@@ -26,6 +26,7 @@ import {
   describeContext,
   type NitiCoreInput,
 } from "@/lib/niti-core";
+import { derivePortfolioRating, deriveDebtHealthRating } from "@/lib/ratings";
 
 const InputSchema = z.object({
   focus: z
