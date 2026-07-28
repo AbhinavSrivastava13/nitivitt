@@ -578,7 +578,6 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
   const hero = report.hero;
   const alloc = report.allocationComparison ?? [];
   const peer = report.similarInvestor;
-  const rating = derivePortfolioRating(report.portfolioScore);
 
 
   return (
