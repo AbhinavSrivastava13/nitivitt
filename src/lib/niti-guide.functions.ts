@@ -365,7 +365,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
         nitiInvest: portAnalyses.length
           ? {
               portfolioCount: portAnalyses.length,
-              averageScore: input.crossService?.portfolioScore ?? 0,
+              portfolioRating: derivePortfolioRating(input.crossService?.portfolioScore ?? 0).label,
               totalValue: input.crossService?.portfolioTotalValue ?? 0,
               lastReviewedAt: portAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
             }
