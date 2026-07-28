@@ -560,7 +560,7 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
 
       {/* Score breakdown */}
       <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <SectionHeading icon={<Gauge className="h-4 w-4 text-primary" />} title="Loan Health breakdown" subtitle="Every pillar of the score, transparently." />
+        <SectionHeading icon={<Gauge className="h-4 w-4 text-primary" />} title="Debt Health breakdown" subtitle="Every pillar of the rating, transparently." />
         <ul className="mt-4 space-y-2.5">
           {report.breakdown.map((b) => (
             <li key={b.pillar}>
