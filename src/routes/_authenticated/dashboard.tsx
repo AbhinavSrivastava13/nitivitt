@@ -923,13 +923,15 @@ const MODULES = [
 ] as const;
 
 function ServiceGridCard({
-  name, icon: Icon, to, scoreLabel, score, lastReviewed, hasData, emptyDesc, ctaOn, ctaOff,
+  name, icon: Icon, to, scoreLabel, score, ratingText, ratingTone, lastReviewed, hasData, emptyDesc, ctaOn, ctaOff,
 }: {
   name: string;
   icon: React.ComponentType<{ className?: string }>;
   to: "/insurance-analyzer" | "/portfolio-analyzer" | "/loan-analyzer" | null;
   scoreLabel: string | null;
   score: number | null;
+  ratingText?: string | null;
+  ratingTone?: import("@/lib/ratings").RatingTone | null;
   lastReviewed: string | null;
   hasData: boolean;
   emptyDesc: string;
@@ -942,6 +944,7 @@ function ServiceGridCard({
   const lastReviewedText = lastReviewed
     ? new Date(lastReviewed).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
     : null;
+  const ratingCls = ratingTone ? ratingClasses(ratingTone).text : "text-foreground";
 
   const inner = (
     <>
@@ -958,10 +961,16 @@ function ServiceGridCard({
       {isActive && hasData && scoreLabel ? (
         <div className="mt-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{scoreLabel}</p>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="font-display text-4xl leading-none text-foreground">{score ?? "—"}</span>
-            <span className="text-xs text-muted-foreground">/ 100</span>
-          </div>
+          {ratingText ? (
+            <div className="mt-1">
+              <span className={`font-display text-3xl leading-tight ${ratingCls}`}>{ratingText}</span>
+            </div>
+          ) : (
+            <div className="mt-1 flex items-baseline gap-1.5">
+              <span className="font-display text-4xl leading-none text-foreground">{score ?? "—"}</span>
+              <span className="text-xs text-muted-foreground">/ 100</span>
+            </div>
+          )}
           {lastReviewedText && (
             <p className="mt-2 text-[11px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
           )}
