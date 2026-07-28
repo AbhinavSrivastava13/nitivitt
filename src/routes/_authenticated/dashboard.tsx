@@ -27,6 +27,7 @@ import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
 import { listInsuranceAnalyses, getPortfolioProtectionSummary } from "@/lib/insurance-analyzer/analyzer.functions";
 import { listPortfolioAnalyses, getPortfolioIntelligenceSummary } from "@/lib/portfolio-analyzer/analyzer.functions";
 import { listLoanAnalyses, getLoanPortfolioSummary } from "@/lib/loan-analyzer/analyzer.functions";
+import { derivePortfolioRating, deriveDebtHealthRating, ratingClasses } from "@/lib/ratings";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
