@@ -163,7 +163,6 @@ function Workspace({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Debt Health Rating</p>
                 <div className="mt-3 flex items-baseline gap-3">
                   <span className={`font-display text-5xl ${rc.text}`}>{wsRating.label}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {wsRating.grade}</span>
                 </div>
                 <p className="mt-1 text-[11px] text-muted-foreground">Across {summary.loanCount} loan{summary.loanCount === 1 ? "" : "s"}</p>
                 {summary.poorDebtCount > 0 && (
