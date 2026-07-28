@@ -57,7 +57,7 @@ function LoanAnalyzerPage() {
     <PageShell
       eyebrow="Service · NitiLoan™"
       title="Loan Analyzer"
-      lede="Every loan you carry, scored the NitiCore™ way. Loan Health Score, Debt Freedom Age, prepayment intelligence and repayment strategies — grounded in your whole financial life."
+      lede="Every loan you carry, rated the NitiCore™ way. Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies — grounded in your whole financial life."
     >
       <div className="mx-auto max-w-5xl space-y-6">
         {view.kind === "workspace" && (
