@@ -456,8 +456,10 @@ function Dashboard() {
                 name="Portfolio Analyzer"
                 icon={BarChart3}
                 to="/portfolio-analyzer"
-                scoreLabel="NitiInvest™"
+                scoreLabel="Portfolio Rating"
                 score={portfolioScore}
+                ratingText={portfolioScore != null ? derivePortfolioRating(portfolioScore).label : null}
+                ratingTone={portfolioScore != null ? derivePortfolioRating(portfolioScore).tone : null}
                 lastReviewed={portfolioLastReviewed}
                 hasData={portfolioCount > 0}
                 emptyDesc="Overlap, concentration and drift across your holdings."
@@ -468,11 +470,13 @@ function Dashboard() {
                 name="Loan Analyzer"
                 icon={Landmark}
                 to="/loan-analyzer"
-                scoreLabel="Loan Health"
+                scoreLabel="Debt Health Rating"
                 score={loanHealthScore}
+                ratingText={loanHealthScore != null ? deriveDebtHealthRating(loanHealthScore).label : null}
+                ratingTone={loanHealthScore != null ? deriveDebtHealthRating(loanHealthScore).tone : null}
                 lastReviewed={loanLastReviewed}
                 hasData={loanCount > 0}
-                emptyDesc="Loan Health, Debt Freedom Age, prepay-vs-invest."
+                emptyDesc="Debt Health, Debt Freedom Age, prepay-vs-invest."
                 ctaOn="Manage Loans"
                 ctaOff="Analyze Loan"
               />
