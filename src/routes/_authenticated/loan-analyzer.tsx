@@ -248,7 +248,7 @@ function LoanList({ analyses, onOpen, onReplace, onDelete }: {
                     const rc = ratingClasses(r.tone);
                     return (
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${rc.bg} ${rc.text}`}>
-                        {r.label} · {r.grade}
+                        {r.label}
                       </span>
                     );
                   })()}
