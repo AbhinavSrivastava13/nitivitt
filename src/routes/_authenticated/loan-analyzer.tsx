@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/loan-analyzer")({
   head: () => ({
     meta: [
       { title: "NitiLoan™ — Loan Analyzer — NitiVitt" },
-      { name: "description", content: "Every loan analyzed the NitiCore™ way — Loan Health Score, Debt Freedom Age, prepayment intelligence and repayment strategies grounded in your whole financial life." },
+      { name: "description", content: "Every loan analyzed the NitiCore™ way — Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies grounded in your whole financial life." },
     ],
   }),
   component: LoanAnalyzerPage,
@@ -57,7 +57,7 @@ function LoanAnalyzerPage() {
     <PageShell
       eyebrow="Service · NitiLoan™"
       title="Loan Analyzer"
-      lede="Every loan you carry, scored the NitiCore™ way. Loan Health Score, Debt Freedom Age, prepayment intelligence and repayment strategies — grounded in your whole financial life."
+      lede="Every loan you carry, rated the NitiCore™ way. Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies — grounded in your whole financial life."
     >
       <div className="mx-auto max-w-5xl space-y-6">
         {view.kind === "workspace" && (
@@ -163,7 +163,6 @@ function Workspace({
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Debt Health Rating</p>
                 <div className="mt-3 flex items-baseline gap-3">
                   <span className={`font-display text-5xl ${rc.text}`}>{wsRating.label}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {wsRating.grade}</span>
                 </div>
                 <p className="mt-1 text-[11px] text-muted-foreground">Across {summary.loanCount} loan{summary.loanCount === 1 ? "" : "s"}</p>
                 {summary.poorDebtCount > 0 && (
@@ -249,7 +248,7 @@ function LoanList({ analyses, onOpen, onReplace, onDelete }: {
                     const rc = ratingClasses(r.tone);
                     return (
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${rc.bg} ${rc.text}`}>
-                        {r.label} · {r.grade}
+                        {r.label}
                       </span>
                     );
                   })()}
@@ -539,7 +538,6 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Debt Health Rating</span>
-              <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {rating.grade}</span>
             </div>
             <h2 className="mt-3 font-display text-3xl leading-[1.1] tracking-tight text-foreground md:text-5xl">{rating.label}</h2>
             <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{loan.name} · {LOAN_CATEGORY_LABEL[loan.category]}</p>
@@ -562,7 +560,7 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
 
       {/* Score breakdown */}
       <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <SectionHeading icon={<Gauge className="h-4 w-4 text-primary" />} title="Loan Health breakdown" subtitle="Every pillar of the score, transparently." />
+        <SectionHeading icon={<Gauge className="h-4 w-4 text-primary" />} title="Debt Health breakdown" subtitle="Every pillar of the rating, transparently." />
         <ul className="mt-4 space-y-2.5">
           {report.breakdown.map((b) => (
             <li key={b.pillar}>

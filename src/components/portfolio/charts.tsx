@@ -34,27 +34,27 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
   const data = slices.slice(0, 7);
   const total = data.reduce((a, s) => a + s.pct, 0);
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
       <div>
-        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
-        {subtitle && <p className="mt-0.5 text-[11px] text-muted-foreground">{subtitle}</p>}
+        <h4 className="text-base font-semibold text-foreground">{title}</h4>
+        {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
       </div>
       {data.length === 0 ? (
         <p className="mt-6 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
       ) : (
-        <div className="mt-5 grid gap-6 sm:grid-cols-[220px_1fr] sm:items-center">
-          <div className="relative h-[220px] w-full">
+        <div className="mt-6 grid gap-8 sm:grid-cols-[300px_1fr] sm:items-center">
+          <div className="relative mx-auto h-[300px] w-[300px]">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={data}
                   dataKey="pct"
                   nameKey="label"
-                  innerRadius={68}
-                  outerRadius={98}
-                  paddingAngle={1.5}
+                  innerRadius={92}
+                  outerRadius={140}
+                  paddingAngle={2}
                   stroke="hsl(var(--card))"
-                  strokeWidth={2}
+                  strokeWidth={3}
                 >
                   {data.map((_, i) => <Cell key={i} fill={CHART_PALETTE[i % CHART_PALETTE.length]} />)}
                 </Pie>
@@ -71,17 +71,17 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
             </ResponsiveContainer>
             {(centerValue || centerLabel) && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                {centerValue && <span className="font-display text-xl text-foreground">{centerValue}</span>}
-                {centerLabel && <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{centerLabel}</span>}
+                {centerValue && <span className="font-display text-2xl text-foreground">{centerValue}</span>}
+                {centerLabel && <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{centerLabel}</span>}
               </div>
             )}
           </div>
-          <ul className="space-y-1.5 text-[12px]">
+          <ul className="space-y-2 text-[13px]">
             {data.map((s, i) => (
-              <li key={s.label} className="flex items-center justify-between gap-2">
-                <span className="flex min-w-0 items-center gap-2 text-foreground">
-                  <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-                  <span className="truncate">{s.label}</span>
+              <li key={s.label} className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-surface/60">
+                <span className="flex min-w-0 items-center gap-2.5 text-foreground">
+                  <span className="h-3 w-3 shrink-0 rounded-sm" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+                  <span className="truncate font-medium">{s.label}</span>
                 </span>
                 <span className="font-mono text-muted-foreground">{s.pct}%</span>
               </li>
@@ -169,18 +169,18 @@ export function HeroScore({ score, label }: HeroScoreProps) {
   const color = TONE_COLORS[tone];
   const data = [{ name: "score", value: s, fill: color }];
   return (
-    <div className="relative mx-auto h-[240px] w-[240px] md:h-[300px] md:w-[300px]">
+    <div className="relative mx-auto h-[320px] w-[320px] md:h-[380px] md:w-[380px]">
       <ResponsiveContainer>
-        <RadialBarChart innerRadius="78%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
+        <RadialBarChart innerRadius="80%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-          <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={16} />
+          <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={20} />
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">NitiInvest™</span>
-        <span className="mt-1 font-display text-6xl leading-none text-foreground md:text-7xl">{s}</span>
+        <span className="mt-2 font-display text-7xl leading-none text-foreground md:text-8xl">{s}</span>
         <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">out of 100</span>
-        <span className="mt-2 max-w-[140px] text-center text-[11px] font-medium text-foreground/80">{label}</span>
+        <span className="mt-3 max-w-[180px] text-center text-[12px] font-semibold text-foreground/90">{label}</span>
       </div>
     </div>
   );

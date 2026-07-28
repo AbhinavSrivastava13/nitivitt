@@ -573,11 +573,11 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
   const goal = report.goalAlignment;
   const positives = report.intelligence?.positives ?? report.strengths;
   const insights = report.intelligence?.insights ?? report.observations;
-  const execSummary = report.executiveSummary ?? report.scoreLabel;
+  const rating = derivePortfolioRating(report.portfolioScore);
+  const execSummary = report.executiveSummary ?? rating.label;
   const hero = report.hero;
   const alloc = report.allocationComparison ?? [];
   const peer = report.similarInvestor;
-  const rating = derivePortfolioRating(report.portfolioScore);
 
 
   return (

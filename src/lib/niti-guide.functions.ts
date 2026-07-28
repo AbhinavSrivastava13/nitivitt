@@ -26,6 +26,7 @@ import {
   describeContext,
   type NitiCoreInput,
 } from "@/lib/niti-core";
+import { derivePortfolioRating } from "@/lib/ratings";
 
 const InputSchema = z.object({
   focus: z
@@ -144,7 +145,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
         nitiInvest: portAnalyses.length
           ? {
               portfolioCount: portAnalyses.length,
-              averageScore: input.crossService?.portfolioScore ?? 0,
+              portfolioRating: derivePortfolioRating(input.crossService?.portfolioScore ?? 0).label,
               totalValue: input.crossService?.portfolioTotalValue ?? 0,
               lastReviewedAt: portAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
             }
@@ -191,7 +192,7 @@ Rules — non-negotiable:
 6. Address the user by first name once, naturally.
 7. Do not use headings, markdown tables, or emojis. Do use short paragraphs.
 8. Aim for 120-180 words unless the focus is "overview" — then 180-240.
-9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference those scores by name (NitiSure™, NitiInvest™) at least once and connect them to the wider picture — e.g. how a strong NitiInvest™ score contrasts with any protection gap, or how a healthy NitiSure™ score frees the user to focus on investing.`;
+9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference them by name. When talking about the portfolio, always say "Portfolio Rating" (Excellent, Strong, Balanced, Needs Attention, High Risk) — never "portfolio score" or a raw /100 number. If a loan section is discussed, always say "Debt Health Rating" (Healthy, Stable, Watchlist, Stressed, Critical) — never "loan health score". Connect the ratings to the wider picture — e.g. a Strong Portfolio Rating alongside a protection gap, or a Healthy Debt Health Rating freeing room to invest.`;
 
     const userPrompt = data.question
       ? `The user asks: "${data.question}"\n\nAnswer using ONLY the authoritative NitiCore JSON below. If the answer requires numbers not present, say so honestly and suggest opening NitiSim.\n\n${JSON.stringify(structured, null, 2)}`
@@ -364,7 +365,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
         nitiInvest: portAnalyses.length
           ? {
               portfolioCount: portAnalyses.length,
-              averageScore: input.crossService?.portfolioScore ?? 0,
+              portfolioRating: derivePortfolioRating(input.crossService?.portfolioScore ?? 0).label,
               totalValue: input.crossService?.portfolioTotalValue ?? 0,
               lastReviewedAt: portAnalyses.map((a) => a.last_reviewed_at).sort().at(-1) ?? null,
             }
@@ -428,7 +429,7 @@ Non-negotiable rules:
 5. Respect Indian context: joint families, dependents, salaried vs self-employed, EMI culture, FD/gold bias, PPF/EPF/ELSS/SIP behaviour, insurance under-coverage, retirement anxiety.
 6. Address them by first name once, near the start.
 7. Return Markdown paragraphs, no JSON, no code fences.
-8. If "analyzers.nitiSure" is present, weave in the NitiSure™ protection score and what it says about their insurance layer. If "analyzers.nitiInvest" is present, weave in the NitiInvest™ portfolio score and what it says about how their investments are actually built. When both are present, connect them — a strong portfolio with weak protection is a very different picture from balanced strength across both.
+8. If "analyzers.nitiSure" is present, weave in the NitiSure™ protection score and what it says about their insurance layer. If "analyzers.nitiInvest" is present, refer to it as their **Portfolio Rating** (e.g. Excellent, Strong, Balanced, Needs Attention, High Risk) — never a raw score or /100 number. If loan analyses are present, refer to their **Debt Health Rating** (Healthy, Stable, Watchlist, Stressed, Critical) — never "loan health score". When multiple ratings are present, connect them — a Strong Portfolio Rating with weak protection is a very different picture from balanced strength across both.
 
 Structure — use these six sections in order, each 2–4 sentences:
 
