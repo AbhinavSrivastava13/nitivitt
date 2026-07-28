@@ -22,6 +22,7 @@ import { Route as ServicesSlugRouteImport } from './routes/services.$slug'
 import { Route as KnowledgeSlugRouteImport } from './routes/knowledge.$slug'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth.reset-password'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthenticatedTaxPlannerRouteImport } from './routes/_authenticated/tax-planner'
 import { Route as AuthenticatedSimulatorRouteImport } from './routes/_authenticated/simulator'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRetirementRouteImport } from './routes/_authenticated/retirement'
@@ -103,6 +104,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
   getParentRoute: () => AuthRoute,
+} as any)
+const AuthenticatedTaxPlannerRoute = AuthenticatedTaxPlannerRouteImport.update({
+  id: '/tax-planner',
+  path: '/tax-planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSimulatorRoute = AuthenticatedSimulatorRouteImport.update({
   id: '/simulator',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/retirement': typeof AuthenticatedRetirementRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
+  '/tax-planner': typeof AuthenticatedTaxPlannerRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/retirement': typeof AuthenticatedRetirementRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/simulator': typeof AuthenticatedSimulatorRoute
+  '/tax-planner': typeof AuthenticatedTaxPlannerRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/_authenticated/retirement': typeof AuthenticatedRetirementRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/simulator': typeof AuthenticatedSimulatorRoute
+  '/_authenticated/tax-planner': typeof AuthenticatedTaxPlannerRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/knowledge/$slug': typeof KnowledgeSlugRoute
@@ -319,6 +328,7 @@ export interface FileRouteTypes {
     | '/retirement'
     | '/settings'
     | '/simulator'
+    | '/tax-planner'
     | '/auth/callback'
     | '/auth/reset-password'
     | '/knowledge/$slug'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/retirement'
     | '/settings'
     | '/simulator'
+    | '/tax-planner'
     | '/auth/callback'
     | '/auth/reset-password'
     | '/knowledge/$slug'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/_authenticated/retirement'
     | '/_authenticated/settings'
     | '/_authenticated/simulator'
+    | '/_authenticated/tax-planner'
     | '/auth/callback'
     | '/auth/reset-password'
     | '/knowledge/$slug'
@@ -494,6 +506,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_authenticated/tax-planner': {
+      id: '/_authenticated/tax-planner'
+      path: '/tax-planner'
+      fullPath: '/tax-planner'
+      preLoaderRoute: typeof AuthenticatedTaxPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/simulator': {
       id: '/_authenticated/simulator'
@@ -635,6 +654,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRetirementRoute: typeof AuthenticatedRetirementRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSimulatorRoute: typeof AuthenticatedSimulatorRoute
+  AuthenticatedTaxPlannerRoute: typeof AuthenticatedTaxPlannerRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -655,6 +675,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRetirementRoute: AuthenticatedRetirementRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSimulatorRoute: AuthenticatedSimulatorRoute,
+  AuthenticatedTaxPlannerRoute: AuthenticatedTaxPlannerRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
