@@ -191,7 +191,7 @@ Rules — non-negotiable:
 6. Address the user by first name once, naturally.
 7. Do not use headings, markdown tables, or emojis. Do use short paragraphs.
 8. Aim for 120-180 words unless the focus is "overview" — then 180-240.
-9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference those scores by name (NitiSure™, NitiInvest™) at least once and connect them to the wider picture — e.g. how a strong NitiInvest™ score contrasts with any protection gap, or how a healthy NitiSure™ score frees the user to focus on investing.`;
+9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference them by name. When talking about the portfolio, always say "Portfolio Rating" (Excellent, Strong, Balanced, Needs Attention, High Risk) — never "portfolio score" or a raw /100 number. If a loan section is discussed, always say "Debt Health Rating" (Healthy, Stable, Watchlist, Stressed, Critical) — never "loan health score". Connect the ratings to the wider picture — e.g. a Strong Portfolio Rating alongside a protection gap, or a Healthy Debt Health Rating freeing room to invest.`;
 
     const userPrompt = data.question
       ? `The user asks: "${data.question}"\n\nAnswer using ONLY the authoritative NitiCore JSON below. If the answer requires numbers not present, say so honestly and suggest opening NitiSim.\n\n${JSON.stringify(structured, null, 2)}`
