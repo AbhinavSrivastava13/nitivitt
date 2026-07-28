@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/loan-analyzer")({
   head: () => ({
     meta: [
       { title: "NitiLoan™ — Loan Analyzer — NitiVitt" },
-      { name: "description", content: "Every loan analyzed the NitiCore™ way — Loan Health Score, Debt Freedom Age, prepayment intelligence and repayment strategies grounded in your whole financial life." },
+      { name: "description", content: "Every loan analyzed the NitiCore™ way — Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies grounded in your whole financial life." },
     ],
   }),
   component: LoanAnalyzerPage,
