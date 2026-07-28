@@ -538,7 +538,6 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Debt Health Rating</span>
-              <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${rc.bg} ${rc.text}`}>Grade {rating.grade}</span>
             </div>
             <h2 className="mt-3 font-display text-3xl leading-[1.1] tracking-tight text-foreground md:text-5xl">{rating.label}</h2>
             <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{loan.name} · {LOAN_CATEGORY_LABEL[loan.category]}</p>
