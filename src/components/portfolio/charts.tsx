@@ -35,27 +35,27 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
   const data = slices.slice(0, 7);
   const total = data.reduce((a, s) => a + s.pct, 0);
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+    <div className="rounded-3xl border border-border/70 bg-card p-8 shadow-soft md:p-10">
       <div>
-        <h4 className="text-base font-semibold text-foreground">{title}</h4>
-        {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
+        <h4 className="font-display text-lg font-semibold tracking-tight text-foreground">{title}</h4>
+        {subtitle && <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">{subtitle}</p>}
       </div>
       {data.length === 0 ? (
-        <p className="mt-6 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
+        <p className="mt-8 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
       ) : (
-        <div className="mt-6 grid gap-8 sm:grid-cols-[300px_1fr] sm:items-center">
-          <div className="relative mx-auto h-[300px] w-[300px]">
+        <div className="mt-10 grid gap-10 sm:grid-cols-[360px_1fr] sm:items-center">
+          <div className="relative mx-auto h-[360px] w-[360px]">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={data}
                   dataKey="pct"
                   nameKey="label"
-                  innerRadius={92}
-                  outerRadius={140}
+                  innerRadius={112}
+                  outerRadius={170}
                   paddingAngle={2}
                   stroke="hsl(var(--card))"
-                  strokeWidth={3}
+                  strokeWidth={4}
                 >
                   {data.map((_, i) => <Cell key={i} fill={CHART_PALETTE[i % CHART_PALETTE.length]} />)}
                 </Pie>
@@ -63,8 +63,9 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
                   contentStyle={{
                     background: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
-                    borderRadius: 8,
+                    borderRadius: 10,
                     fontSize: 12,
+                    boxShadow: "0 8px 24px -8px rgba(0,0,0,0.15)",
                   }}
                   formatter={(v: number, n) => [`${v}%`, n as string]}
                 />
@@ -72,23 +73,23 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
             </ResponsiveContainer>
             {(centerValue || centerLabel) && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                {centerValue && <span className="font-display text-2xl text-foreground">{centerValue}</span>}
-                {centerLabel && <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{centerLabel}</span>}
+                {centerValue && <span className="font-display text-3xl text-foreground">{centerValue}</span>}
+                {centerLabel && <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{centerLabel}</span>}
               </div>
             )}
           </div>
-          <ul className="space-y-2 text-[13px]">
+          <ul className="space-y-2.5 text-[13px]">
             {data.map((s, i) => (
-              <li key={s.label} className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-surface/60">
-                <span className="flex min-w-0 items-center gap-2.5 text-foreground">
-                  <span className="h-3 w-3 shrink-0 rounded-sm" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+              <li key={s.label} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-surface/70">
+                <span className="flex min-w-0 items-center gap-3 text-foreground">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-card" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
                   <span className="truncate font-medium">{s.label}</span>
                 </span>
-                <span className="font-mono text-muted-foreground">{s.pct}%</span>
+                <span className="font-mono text-[12px] tabular-nums text-muted-foreground">{s.pct}%</span>
               </li>
             ))}
             {total < 99.5 && (
-              <li className="pt-1 text-[10px] italic text-muted-foreground">Shown: {total.toFixed(0)}% of tracked value</li>
+              <li className="pt-2 text-[10px] italic text-muted-foreground">Shown: {total.toFixed(0)}% of tracked value</li>
             )}
           </ul>
         </div>
