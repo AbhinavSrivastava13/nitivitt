@@ -531,12 +531,12 @@ function FinancialServices() {
         </p>
       </div>
 
-      <div className="mt-14 grid gap-8 lg:grid-cols-5 lg:gap-10">
-        {/* Featured — Financial Advisor (spans 3/5) */}
+      <div className="mt-14 grid gap-8 lg:grid-cols-12 lg:gap-12">
+        {/* Featured — Financial Advisor (spans 6/12, was 3/5 ≈ 60% → now 50%) */}
         <Link
           to="/services/$slug"
           params={{ slug: "financial-advisor" }}
-          className="group relative flex min-h-[440px] flex-col overflow-hidden rounded-[28px] p-9 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-12 lg:col-span-3"
+          className="group relative flex min-h-[380px] flex-col overflow-hidden rounded-[28px] p-8 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-10 lg:col-span-6"
           style={{
             background:
               "radial-gradient(120% 100% at 0% 0%, oklch(0.42 0.14 258) 0%, oklch(0.28 0.10 258) 55%, oklch(0.22 0.08 258) 100%)",
