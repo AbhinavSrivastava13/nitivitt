@@ -568,23 +568,23 @@ function FinancialServices() {
           </div>
 
           {/* Body */}
-          <div className="relative mt-auto pt-12">
+          <div className="relative mt-auto pt-10">
             <div className="flex items-center gap-4">
-              <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-foreground/10 ring-1 ring-primary-foreground/20 backdrop-blur-sm">
-                <Sparkles className="h-7 w-7" />
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-foreground/10 ring-1 ring-primary-foreground/20 backdrop-blur-sm">
+                <Sparkles className="h-6 w-6" />
               </span>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">NitiVitt Advisory</p>
-                <h3 className="font-display text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+                <h3 className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
                   Financial Advisor
                 </h3>
               </div>
             </div>
-            <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-primary-foreground/85 md:text-base">
+            <p className="mt-5 max-w-md text-[14px] leading-relaxed text-primary-foreground/85">
               1:1 sessions with SEBI-registered, fee only advisors - powered by your full NitiVitt snapshot. No commissions, no product pitches, no cold calls.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <span className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-6 py-3 text-sm font-semibold text-primary transition-transform duration-300 group-hover:translate-x-0.5">
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <span className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary transition-transform duration-300 group-hover:translate-x-0.5">
                 Join the waitlist <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground/75">
@@ -594,8 +594,8 @@ function FinancialServices() {
           </div>
         </Link>
 
-        {/* Right — 2×2 grid (spans 2/5) */}
-        <div className="grid gap-5 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-1 xl:grid-cols-2">
+        {/* Right — 2×2 grid (spans 6/12) */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:col-span-6 lg:grid-cols-2">
           {grid.map((s) => {
             const Icon = s.icon;
             const isActive = s.status === "Beta";
