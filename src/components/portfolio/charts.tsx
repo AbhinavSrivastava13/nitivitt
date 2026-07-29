@@ -171,18 +171,18 @@ export function HeroScore({ score, label }: HeroScoreProps) {
   const color = TONE_COLORS[tone];
   const data = [{ name: "score", value: s, fill: color }];
   return (
-    <div className="relative mx-auto h-[320px] w-[320px] md:h-[380px] md:w-[380px]">
+    <div className="relative mx-auto h-[360px] w-[360px] md:h-[440px] md:w-[440px]">
       <ResponsiveContainer>
-        <RadialBarChart innerRadius="80%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
+        <RadialBarChart innerRadius="82%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-          <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={20} />
+          <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={24} />
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">NitiInvest™</span>
-        <span className="mt-2 font-display text-7xl leading-none text-foreground md:text-8xl">{s}</span>
-        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">out of 100</span>
-        <span className="mt-3 max-w-[180px] text-center text-[12px] font-semibold text-foreground/90">{label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">NitiInvest™</span>
+        <span className="mt-3 font-display text-8xl leading-none text-foreground md:text-9xl">{s}</span>
+        <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">out of 100</span>
+        <span className="mt-4 max-w-[200px] text-center text-[13px] font-semibold text-foreground/90">{label}</span>
       </div>
     </div>
   );
