@@ -517,8 +517,8 @@ function FinancialServices() {
 
   return (
     <section className="container-page py-20 md:py-28">
-      {/* Header */}
-      <div className="mx-auto max-w-3xl text-center">
+      {/* Header — left-aligned for better visual balance */}
+      <div className="max-w-3xl">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">Financial services</p>
         <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-foreground md:text-6xl">
           One flagship advisor.
@@ -526,17 +526,17 @@ function FinancialServices() {
           <span className="font-editorial italic font-normal text-primary"> Four </span>
           analyzers behind it.
         </h2>
-        <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
           Every analyzer feeds the Financial Advisor with deeper intelligence. Every recommendation ends with a human conversation — never a product pitch.
         </p>
       </div>
 
-      <div className="mt-14 grid gap-8 lg:grid-cols-12 lg:gap-12">
-        {/* Featured — Financial Advisor (spans 6/12, was 3/5 ≈ 60% → now 50%) */}
+      <div className="mt-14 grid gap-8 lg:grid-cols-[5.5fr_6.5fr] lg:gap-10">
+        {/* Featured — Financial Advisor */}
         <Link
           to="/services/$slug"
           params={{ slug: "financial-advisor" }}
-          className="group relative flex min-h-[380px] flex-col overflow-hidden rounded-[28px] p-8 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-10 lg:col-span-6"
+          className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-[28px] p-7 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-8"
           style={{
             background:
               "radial-gradient(120% 100% at 0% 0%, oklch(0.42 0.14 258) 0%, oklch(0.28 0.10 258) 55%, oklch(0.22 0.08 258) 100%)",
@@ -568,23 +568,23 @@ function FinancialServices() {
           </div>
 
           {/* Body */}
-          <div className="relative mt-auto pt-10">
+          <div className="relative mt-auto pt-8">
             <div className="flex items-center gap-4">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-foreground/10 ring-1 ring-primary-foreground/20 backdrop-blur-sm">
-                <Sparkles className="h-6 w-6" />
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-foreground/10 ring-1 ring-primary-foreground/20 backdrop-blur-sm">
+                <Sparkles className="h-5 w-5" />
               </span>
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">NitiVitt Advisory</p>
-                <h3 className="font-display text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
+                <h3 className="font-display text-2xl font-semibold leading-tight tracking-tight md:text-3xl">
                   Financial Advisor
                 </h3>
               </div>
             </div>
-            <p className="mt-5 max-w-md text-[14px] leading-relaxed text-primary-foreground/85">
+            <p className="mt-4 max-w-md text-[14px] leading-relaxed text-primary-foreground/85">
               1:1 sessions with SEBI-registered, fee only advisors - powered by your full NitiVitt snapshot. No commissions, no product pitches, no cold calls.
             </p>
-            <div className="mt-6 flex flex-wrap items-center gap-4">
-              <span className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary transition-transform duration-300 group-hover:translate-x-0.5">
+            <div className="mt-5 flex flex-wrap items-center gap-4">
+              <span className="inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary transition-transform duration-300 group-hover:translate-x-0.5">
                 Join the waitlist <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
               </span>
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground/75">
@@ -594,23 +594,29 @@ function FinancialServices() {
           </div>
         </Link>
 
-        {/* Right — 2×2 grid (spans 6/12) */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:col-span-6 lg:grid-cols-2">
+        {/* Right — 2×2 grid */}
+        <div className="grid gap-5 sm:grid-cols-2">
           {grid.map((s) => {
             const Icon = s.icon;
             const isActive = s.status === "Beta";
             const body = (
               <>
                 <div className="flex items-start justify-between gap-3">
-                  <span
-                    className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ring-1 transition-all duration-500 ${
-                      isActive
-                        ? "bg-primary-soft text-primary ring-primary/15 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/40"
-                        : "bg-muted text-muted-foreground ring-border"
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ring-1 transition-all duration-500 ${
+                        isActive
+                          ? "bg-primary-soft text-primary ring-primary/15 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/40"
+                          : "bg-muted text-muted-foreground ring-border"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary/90">{s.tag}</p>
+                      <h4 className="font-display text-lg font-semibold tracking-tight text-foreground">{s.name}</h4>
+                    </div>
+                  </div>
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${
                       isActive ? "bg-secondary-soft text-secondary" : "bg-muted text-muted-foreground"
@@ -620,14 +626,10 @@ function FinancialServices() {
                   </span>
                 </div>
 
-                <div className="mt-8">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary/90">{s.tag}</p>
-                  <h4 className="mt-1.5 font-display text-lg font-semibold tracking-tight text-foreground">{s.name}</h4>
-                  <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{s.desc}</p>
-                </div>
+                <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">{s.desc}</p>
 
                 <span
-                  className={`mt-6 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] ${
+                  className={`mt-auto inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] ${
                     isActive ? "text-primary" : "text-muted-foreground"
                   }`}
                 >
@@ -641,7 +643,7 @@ function FinancialServices() {
                 key={s.name}
                 to="/auth"
                 search={{ mode: "signin", redirect: s.to }}
-                className="group flex min-h-[220px] flex-col rounded-2xl border border-border/70 bg-card p-6 shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevated"
+                className="group flex min-h-[140px] flex-col rounded-2xl border border-border/70 bg-card p-6 shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevated"
               >
                 {body}
               </Link>
@@ -649,7 +651,7 @@ function FinancialServices() {
               <div
                 key={s.name}
                 aria-disabled="true"
-                className="flex min-h-[220px] flex-col rounded-2xl border border-dashed border-border/70 bg-card/50 p-6"
+                className="flex min-h-[140px] flex-col rounded-2xl border border-dashed border-border/70 bg-card/50 p-6"
               >
                 {body}
               </div>
@@ -658,6 +660,7 @@ function FinancialServices() {
         </div>
       </div>
     </section>
+
   );
 }
 
