@@ -8,15 +8,16 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
 } from "recharts";
 
+// Softer, INDmoney/Apple-Health inspired palette — muted jewel tones, high contrast in both themes.
 export const CHART_PALETTE = [
-  "hsl(var(--primary))",
-  "hsl(var(--secondary))",
-  "hsl(var(--accent))",
-  "#f59e0b",
-  "#0ea5e9",
-  "#a855f7",
-  "#ef4444",
-  "#14b8a6",
+  "#6366f1", // indigo
+  "#14b8a6", // teal
+  "#f59e0b", // amber
+  "#8b5cf6", // violet
+  "#0ea5e9", // sky
+  "#ec4899", // pink
+  "#22c55e", // emerald
+  "#f97316", // orange
 ];
 
 export interface Slice { label: string; pct: number; value: number }
