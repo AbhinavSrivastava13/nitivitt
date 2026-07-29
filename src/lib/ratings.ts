@@ -61,7 +61,7 @@ export function derivePortfolioRating(score: number): Rating {
 /** Debt Health Rating (NitiLoan™) — five tiers. */
 export function deriveDebtHealthRating(score: number): Rating {
   const s = Math.max(0, Math.min(100, Math.round(score)));
-  const g = grade(s);
+  const g = debtGrade(s);
   if (s >= 85) return { label: "Healthy",   grade: g, tone: "success", score: s };
   if (s >= 70) return { label: "Stable",    grade: g, tone: "primary", score: s };
   if (s >= 55) return { label: "Watchlist", grade: g, tone: "accent",  score: s };
