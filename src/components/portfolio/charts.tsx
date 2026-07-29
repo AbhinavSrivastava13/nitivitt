@@ -8,15 +8,16 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend,
 } from "recharts";
 
+// Softer, INDmoney/Apple-Health inspired palette — muted jewel tones, high contrast in both themes.
 export const CHART_PALETTE = [
-  "hsl(var(--primary))",
-  "hsl(var(--secondary))",
-  "hsl(var(--accent))",
-  "#f59e0b",
-  "#0ea5e9",
-  "#a855f7",
-  "#ef4444",
-  "#14b8a6",
+  "#6366f1", // indigo
+  "#14b8a6", // teal
+  "#f59e0b", // amber
+  "#8b5cf6", // violet
+  "#0ea5e9", // sky
+  "#ec4899", // pink
+  "#22c55e", // emerald
+  "#f97316", // orange
 ];
 
 export interface Slice { label: string; pct: number; value: number }
@@ -34,27 +35,27 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
   const data = slices.slice(0, 7);
   const total = data.reduce((a, s) => a + s.pct, 0);
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+    <div className="rounded-3xl border border-border/70 bg-card p-8 shadow-soft md:p-10">
       <div>
-        <h4 className="text-base font-semibold text-foreground">{title}</h4>
-        {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
+        <h4 className="font-display text-lg font-semibold tracking-tight text-foreground">{title}</h4>
+        {subtitle && <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">{subtitle}</p>}
       </div>
       {data.length === 0 ? (
-        <p className="mt-6 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
+        <p className="mt-8 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
       ) : (
-        <div className="mt-6 grid gap-8 sm:grid-cols-[300px_1fr] sm:items-center">
-          <div className="relative mx-auto h-[300px] w-[300px]">
+        <div className="mt-10 grid gap-10 sm:grid-cols-[360px_1fr] sm:items-center">
+          <div className="relative mx-auto h-[360px] w-[360px]">
             <ResponsiveContainer>
               <PieChart>
                 <Pie
                   data={data}
                   dataKey="pct"
                   nameKey="label"
-                  innerRadius={92}
-                  outerRadius={140}
+                  innerRadius={112}
+                  outerRadius={170}
                   paddingAngle={2}
                   stroke="hsl(var(--card))"
-                  strokeWidth={3}
+                  strokeWidth={4}
                 >
                   {data.map((_, i) => <Cell key={i} fill={CHART_PALETTE[i % CHART_PALETTE.length]} />)}
                 </Pie>
@@ -62,8 +63,9 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
                   contentStyle={{
                     background: "hsl(var(--card))",
                     border: "1px solid hsl(var(--border))",
-                    borderRadius: 8,
+                    borderRadius: 10,
                     fontSize: 12,
+                    boxShadow: "0 8px 24px -8px rgba(0,0,0,0.15)",
                   }}
                   formatter={(v: number, n) => [`${v}%`, n as string]}
                 />
@@ -71,23 +73,23 @@ export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue
             </ResponsiveContainer>
             {(centerValue || centerLabel) && (
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                {centerValue && <span className="font-display text-2xl text-foreground">{centerValue}</span>}
-                {centerLabel && <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{centerLabel}</span>}
+                {centerValue && <span className="font-display text-3xl text-foreground">{centerValue}</span>}
+                {centerLabel && <span className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{centerLabel}</span>}
               </div>
             )}
           </div>
-          <ul className="space-y-2 text-[13px]">
+          <ul className="space-y-2.5 text-[13px]">
             {data.map((s, i) => (
-              <li key={s.label} className="flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 hover:bg-surface/60">
-                <span className="flex min-w-0 items-center gap-2.5 text-foreground">
-                  <span className="h-3 w-3 shrink-0 rounded-sm" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+              <li key={s.label} className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-surface/70">
+                <span className="flex min-w-0 items-center gap-3 text-foreground">
+                  <span className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-card" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
                   <span className="truncate font-medium">{s.label}</span>
                 </span>
-                <span className="font-mono text-muted-foreground">{s.pct}%</span>
+                <span className="font-mono text-[12px] tabular-nums text-muted-foreground">{s.pct}%</span>
               </li>
             ))}
             {total < 99.5 && (
-              <li className="pt-1 text-[10px] italic text-muted-foreground">Shown: {total.toFixed(0)}% of tracked value</li>
+              <li className="pt-2 text-[10px] italic text-muted-foreground">Shown: {total.toFixed(0)}% of tracked value</li>
             )}
           </ul>
         </div>
@@ -169,18 +171,18 @@ export function HeroScore({ score, label }: HeroScoreProps) {
   const color = TONE_COLORS[tone];
   const data = [{ name: "score", value: s, fill: color }];
   return (
-    <div className="relative mx-auto h-[320px] w-[320px] md:h-[380px] md:w-[380px]">
+    <div className="relative mx-auto h-[360px] w-[360px] md:h-[440px] md:w-[440px]">
       <ResponsiveContainer>
-        <RadialBarChart innerRadius="80%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
+        <RadialBarChart innerRadius="82%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
           <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-          <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={20} />
+          <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={24} />
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">NitiInvest™</span>
-        <span className="mt-2 font-display text-7xl leading-none text-foreground md:text-8xl">{s}</span>
-        <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">out of 100</span>
-        <span className="mt-3 max-w-[180px] text-center text-[12px] font-semibold text-foreground/90">{label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">NitiInvest™</span>
+        <span className="mt-3 font-display text-8xl leading-none text-foreground md:text-9xl">{s}</span>
+        <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">out of 100</span>
+        <span className="mt-4 max-w-[200px] text-center text-[13px] font-semibold text-foreground/90">{label}</span>
       </div>
     </div>
   );

@@ -12,12 +12,21 @@ export type RatingTone = "success" | "primary" | "accent" | "warning" | "danger"
 
 export interface Rating {
   label: string;
-  grade: "A+" | "A" | "B" | "C" | "D";
+  grade: "A+" | "A" | "B+" | "B" | "C" | "D";
   tone: RatingTone;
   score: number;
 }
 
-function grade(score: number): Rating["grade"] {
+function portfolioGrade(score: number): Rating["grade"] {
+  if (score >= 85) return "A+";
+  if (score >= 72) return "A";
+  if (score >= 60) return "B+";
+  if (score >= 50) return "B";
+  if (score >= 38) return "C";
+  return "D";
+}
+
+function debtGrade(score: number): Rating["grade"] {
   if (score >= 85) return "A+";
   if (score >= 70) return "A";
   if (score >= 55) return "B";
@@ -37,21 +46,22 @@ export function ratingClasses(tone: RatingTone) {
   return TONE_TW[tone];
 }
 
-/** Portfolio Rating (NitiInvest™) — five tiers. */
+/** Portfolio Rating (NitiInvest™) — six-tier grade system with descriptive labels. */
 export function derivePortfolioRating(score: number): Rating {
   const s = Math.max(0, Math.min(100, Math.round(score)));
-  const g = grade(s);
-  if (s >= 85) return { label: "Excellent",       grade: g, tone: "success", score: s };
-  if (s >= 70) return { label: "Strong",          grade: g, tone: "primary", score: s };
-  if (s >= 55) return { label: "Balanced",        grade: g, tone: "accent",  score: s };
-  if (s >= 40) return { label: "Needs Attention", grade: g, tone: "warning", score: s };
-  return       { label: "High Risk",              grade: g, tone: "danger",  score: s };
+  const g = portfolioGrade(s);
+  if (s >= 85) return { label: "Exceptional",       grade: g, tone: "success", score: s };
+  if (s >= 72) return { label: "Strong",            grade: g, tone: "primary", score: s };
+  if (s >= 60) return { label: "Well Balanced",     grade: g, tone: "accent",  score: s };
+  if (s >= 50) return { label: "Well Balanced",     grade: g, tone: "accent",  score: s };
+  if (s >= 38) return { label: "Needs Improvement", grade: g, tone: "warning", score: s };
+  return       { label: "High Risk",                grade: g, tone: "danger",  score: s };
 }
 
 /** Debt Health Rating (NitiLoan™) — five tiers. */
 export function deriveDebtHealthRating(score: number): Rating {
   const s = Math.max(0, Math.min(100, Math.round(score)));
-  const g = grade(s);
+  const g = debtGrade(s);
   if (s >= 85) return { label: "Healthy",   grade: g, tone: "success", score: s };
   if (s >= 70) return { label: "Stable",    grade: g, tone: "primary", score: s };
   if (s >= 55) return { label: "Watchlist", grade: g, tone: "accent",  score: s };
