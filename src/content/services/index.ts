@@ -133,9 +133,9 @@ const SERVICES: Service[] = [
   },
   {
     slug: "tax-planner",
-    name: "Tax Planner",
-    tagline: "Old vs new regime, deductions, and capital-gains - decided cleanly.",
-    status: "Coming Soon",
+    name: "NitiTax™ — Tax Planner",
+    tagline: "A tax decision engine, not a calculator.",
+    status: "Beta",
     category: "Planning",
     shortDescription:
       "A guided walkthrough that picks the right regime for your salary structure, surfaces the deductions you're actually eligible for, and estimates capital-gains tax on planned exits - before you file.",

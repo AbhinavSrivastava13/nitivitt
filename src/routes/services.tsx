@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Sparkles, ShieldCheck, BarChart3, Landmark } from "lucide-react";
+import { ArrowRight, Sparkles, ShieldCheck, BarChart3, Landmark, Receipt } from "lucide-react";
 import { PageShell } from "@/components/page-shell";
 import { listServices } from "@/content/services";
 import type { Service } from "@/content/services";
