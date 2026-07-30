@@ -1,9 +1,9 @@
 /**
- * NitiTax™ — Tax Planner types (V1 scaffold).
+ * NitiTax™ — Tax Decision Engine types (V1).
  *
- * This file only defines the deterministic interfaces. All actual math
- * (regime comparison, HRA, capital-gains slabs, deductions) is intentionally
- * unimplemented — the next milestone fills `engine.ts`.
+ * NitiTax deliberately produces NO score, rating or grade. Tax is about
+ * decisions, not a number. Everything below is deterministic output from
+ * `engine.ts`; the AI layer only explains it.
  */
 
 export type TaxRegime = "old" | "new";
@@ -28,7 +28,7 @@ export interface SalaryIncome {
 
 export interface OtherIncome {
   interest: number;         // FD / SB
-  rental: number;
+  rental: number;           // gross annual rent received
   dividend: number;
   business: number;
   other: number;
@@ -85,7 +85,7 @@ export interface OtherDeductions {
 export interface TaxInput {
   ageYears: number;
   employmentType: EmploymentType;
-  regimePreference?: TaxRegime;   // null → recommend
+  regimePreference?: TaxRegime | null;   // null → let NitiTax recommend
 
   salary: SalaryIncome;
   otherIncome: OtherIncome;
@@ -106,15 +106,19 @@ export interface RegimeResult {
   grossIncome: number;
   standardDeduction: number;
   hraExempt: number;
-  chapterVIA: number;         // 80C+80CCD+80D+others where allowed
-  taxableIncome: number;
+  chapterVIA: number;         // 80C + 80CCD + 80D + others allowed in this regime
+  otherExemptions: number;    // professional tax, 24(b), rental standard deduction
+  taxableIncome: number;      // slab-rate income only
+  specialRateIncome: number;  // 111A / 112A / property LTCG
   slabTax: number;
   capitalGainsTax: number;
+  rebate87A: number;
   surcharge: number;
   cess: number;
   totalTax: number;
   takeHome: number;
   effectiveRatePct: number;
+  marginalRatePct: number;
   breakdown: TaxLineItem[];
 }
 
@@ -124,41 +128,98 @@ export interface TaxLineItem {
   hint?: string;
 }
 
-export type TaxHealthTone = "healthy" | "watchlist" | "stressed";
+export interface DeductionUsage {
+  section: string;
+  label: string;
+  limit: number;         // 0 = no statutory ceiling
+  used: number;
+  remaining: number;
+  allowedInNewRegime: boolean;
+  note?: string;
+}
 
-export interface TaxSavingSuggestion {
+export interface TaxOpportunity {
   id: string;
   title: string;
-  section: string;          // "80C" / "80D" / "80CCD(1B)" / "HRA" / …
+  section: string;
   priority: "high" | "medium" | "low";
+  additionalDeduction: number;
   estimatedTaxSaving: number;
+  regime: TaxRegime | "both";
   reason: string;
   action: string;
+}
+
+export interface TaxStrategy {
+  id: string;
+  name: string;
+  description: string;
+  estimatedAnnualSaving: number;
+  cashRequired: number;
+  lockIn: string;
+  tradeOffs: string[];
+  isRecommended: boolean;
+}
+
+export interface ChecklistItem {
+  id: string;
+  label: string;
+  detail: string;
+  deadline: string;
+  priority: "high" | "medium" | "low";
+}
+
+export interface TaxFinding {
+  id: string;
+  title: string;
+  detail: string;
+  tone: "success" | "info" | "warning" | "danger";
+}
+
+export interface CompositionSlice {
+  label: string;
+  amount: number;
 }
 
 export interface TaxReport {
   taxYear: string;
   ageYears: number;
+  employmentType: EmploymentType;
+
+  grossIncome: number;
   recommendedRegime: TaxRegime;
-  regimeDeltaTax: number;   // (other regime tax) - (recommended regime tax) — positive = savings
+  regimeDeltaTax: number;      // tax saved purely by choosing the recommended regime
   old: RegimeResult;
   new: RegimeResult;
-  effectiveRatePct: number; // recommended regime
+
+  totalTaxPayable: number;
+  estimatedTaxSaved: number;   // vs a zero-deduction baseline in the same regime
+  effectiveRatePct: number;
   marginalRatePct: number;
-  taxHealthScore: number;   // 0-100 deterministic
-  taxHealthTone: TaxHealthTone;
-  suggestions: TaxSavingSuggestion[];
+  monthlyTdsEstimate: number;
+
+  incomeComposition: CompositionSlice[];
+  taxComposition: CompositionSlice[];
+  deductions: DeductionUsage[];
+  remainingDeductionCapacity: number;
+
+  opportunities: TaxOpportunity[];
+  strategies: TaxStrategy[];
+  checklist: ChecklistItem[];
+  findings: TaxFinding[];
+
   contextSummary: string;
-  narrative?: string;       // AI-written summary (optional)
+  narrative?: string;          // NitiGuide™ (AI) — explanation only
 }
 
 export function emptyTaxInput(): TaxInput {
   return {
     ageYears: 30,
     employmentType: "salaried",
+    regimePreference: null,
     salary: {
       basic: 0, hra: 0, specialAllowance: 0, lta: 0, bonus: 0,
-      professionalTax: 0, employerNps: 0, employerPf: 0,
+      professionalTax: 2400, employerNps: 0, employerPf: 0,
     },
     otherIncome: { interest: 0, rental: 0, dividend: 0, business: 0, other: 0 },
     capitalGains: {
@@ -182,3 +243,11 @@ export function emptyTaxInput(): TaxInput {
     cityMetro: true,
   };
 }
+
+export const EMPLOYMENT_LABEL: Record<EmploymentType, string> = {
+  salaried: "Salaried",
+  self_employed: "Self-employed",
+  business: "Business owner",
+  freelancer: "Freelancer / professional",
+  other: "Other",
+};

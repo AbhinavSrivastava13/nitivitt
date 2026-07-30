@@ -668,6 +668,63 @@ export type Database = {
         }
         Relationships: []
       }
+      tax_analyses: {
+        Row: {
+          age_years: number
+          created_at: string
+          effective_rate_pct: number
+          employment_type: string
+          estimated_tax_saved: number
+          gross_income: number
+          id: string
+          input: Json
+          last_reviewed_at: string
+          name: string
+          recommended_regime: string
+          report: Json
+          tax_year: string
+          total_tax: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age_years?: number
+          created_at?: string
+          effective_rate_pct?: number
+          employment_type?: string
+          estimated_tax_saved?: number
+          gross_income?: number
+          id?: string
+          input?: Json
+          last_reviewed_at?: string
+          name?: string
+          recommended_regime?: string
+          report?: Json
+          tax_year?: string
+          total_tax?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_years?: number
+          created_at?: string
+          effective_rate_pct?: number
+          employment_type?: string
+          estimated_tax_saved?: number
+          gross_income?: number
+          id?: string
+          input?: Json
+          last_reviewed_at?: string
+          name?: string
+          recommended_regime?: string
+          report?: Json
+          tax_year?: string
+          total_tax?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           assumptions: Json | null
