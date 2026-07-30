@@ -483,14 +483,14 @@ function Dashboard() {
               <ServiceGridCard
                 name="Tax Planner"
                 icon={Receipt}
-                to={null}
+                to="/tax-planner"
                 scoreLabel={null}
                 score={null}
                 lastReviewed={null}
                 hasData={false}
-                emptyDesc="Old vs new regime, deductions and capital gains — decided cleanly."
-                ctaOn=""
-                ctaOff=""
+                emptyDesc="Old vs new regime, deductions and a year-end action plan."
+                ctaOn="Manage Tax Reviews"
+                ctaOff="Run Tax Review"
               />
             </div>
           </div>
@@ -927,7 +927,7 @@ function ServiceGridCard({
 }: {
   name: string;
   icon: React.ComponentType<{ className?: string }>;
-  to: "/insurance-analyzer" | "/portfolio-analyzer" | "/loan-analyzer" | null;
+  to: "/insurance-analyzer" | "/portfolio-analyzer" | "/loan-analyzer" | "/tax-planner" | null;
   scoreLabel: string | null;
   score: number | null;
   ratingText?: string | null;
