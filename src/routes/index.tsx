@@ -512,7 +512,7 @@ function FinancialServices() {
     { name: "Insurance Analyzer", tag: "NitiSure™",   desc: "Score every policy against real cover gaps.",                   icon: ShieldCheck, status: "Beta"        as const, to: "/insurance-analyzer" as const },
     { name: "Portfolio Analyzer", tag: "NitiInvest™", desc: "Overlap, concentration and drift across your holdings.",        icon: LineChart,   status: "Beta"        as const, to: "/portfolio-analyzer" as const },
     { name: "Loan Analyzer",      tag: "NitiLoan™",   desc: "Debt Health, Debt Freedom Age and a prepay-vs-invest verdict.", icon: Wallet,      status: "Beta"        as const, to: "/loan-analyzer"      as const },
-    { name: "Tax Planner",        tag: "NitiTax™",    desc: "Old vs new regime, deductions and capital gains — decided cleanly.", icon: Calculator, status: "Coming Soon" as const, to: null },
+    { name: "Tax Planner",        tag: "NitiTax™",    desc: "Old vs new regime, deductions and a year-end action plan.",     icon: Calculator,  status: "Beta"        as const, to: "/tax-planner"        as const },
   ];
 
   return (

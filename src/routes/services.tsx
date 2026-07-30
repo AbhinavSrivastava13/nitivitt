@@ -101,6 +101,14 @@ function ServicesPage() {
                   <BarChart3 className="h-4 w-4" /> Open Analyzer
                 </Link>
               )}
+              {s.slug === "tax-planner" && (
+                <Link
+                  to="/tax-planner"
+                  className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                >
+                  <Receipt className="h-4 w-4" /> Open Tax Planner
+                </Link>
+              )}
               {s.slug === "loan-analyzer" && (
                 <Link
                   to="/loan-analyzer"
