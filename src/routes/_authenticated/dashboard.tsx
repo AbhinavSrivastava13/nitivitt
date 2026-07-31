@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 import {
   Target, Shield, PiggyBank, Wallet, TrendingUp, FlaskConical, GraduationCap,
   Briefcase, Sparkles, ArrowRight, ArrowUpRight, ArrowDownRight, RefreshCw,
-  Gauge, Hourglass, ShieldCheck, BarChart3, Landmark, Receipt,
+  Gauge, Hourglass, ShieldCheck, BarChart3, Landmark, Receipt, Leaf,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -157,6 +157,13 @@ function Dashboard() {
       ? { label: `Behind by ${ageDeltaYears}y`, cls: "bg-warning-soft text-warning" }
       : { label: "On par", cls: "bg-muted text-muted-foreground" };
 
+  const agePill = ageDirection === "ahead"
+    ? { label: "Financially Young", cls: "bg-secondary-soft text-secondary ring-secondary/20" }
+    : ageDirection === "behind"
+      ? { label: "Habits Catching Up", cls: "bg-warning-soft text-warning ring-warning/20" }
+      : { label: "On Par For Your Age", cls: "bg-muted text-muted-foreground ring-border" };
+
+
   const emStatus = emergency.status === "on_track"
     ? { label: "On track", cls: "bg-secondary-soft text-secondary" }
     : emergency.status === "needs_attention"
@@ -269,14 +276,19 @@ function Dashboard() {
               unit="yrs"
               footer={
                 <>
-                  <p className="mt-3 text-[11px] text-muted-foreground">
-                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · financial age reflects your money habits.
+                  <span className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ring-1 ${agePill.cls}`}>
+                    <Leaf className="h-3 w-3" aria-hidden />
+                    {agePill.label}
+                  </span>
+                  <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
+                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · a lower Financial Age means stronger money habits and better long-term financial health.
                   </p>
                   <p className="mt-2 text-[11px] text-muted-foreground">
                     {agePayload?.interpretation ?? "Financial age matches your actual age."}
                   </p>
                 </>
               }
+
             />
 
             {/* Net Worth */}
@@ -401,47 +413,80 @@ function Dashboard() {
         </section>
 
         {/* ── Services ─────────────────────────────────────────────── */}
-        <section className="mt-10">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Financial services</p>
-              <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">One advisor. Four analyzers.</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Every analyzer keeps feeding the Advisor deeper intelligence about your money.</p>
+        <section className="mt-14">
+          <div className="flex items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">Financial services</p>
+              <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                One flagship advisor.{" "}
+                <span className="font-editorial italic font-normal text-primary">Four</span> analyzers behind it.
+              </h2>
+              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+                Every analyzer keeps feeding the Financial Advisor deeper intelligence about your money.
+              </p>
             </div>
-            <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
+            <Link to="/services" className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary hover:underline">All services →</Link>
           </div>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[5.5fr_6.5fr] lg:gap-10">
             {/* Featured — Financial Advisor */}
             <Link
               to="/services/$slug"
               params={{ slug: "financial-advisor" }}
-              className="group relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary via-primary to-primary/85 p-7 text-primary-foreground shadow-elevated transition-all hover:-translate-y-0.5 md:p-9"
+              className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-[28px] p-7 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-8"
+              style={{
+                background:
+                  "radial-gradient(120% 100% at 0% 0%, oklch(0.42 0.14 258) 0%, oklch(0.28 0.10 258) 55%, oklch(0.22 0.08 258) 100%)",
+              }}
             >
-              <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/25 blur-3xl" aria-hidden />
-              <div className="pointer-events-none absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" aria-hidden />
-              <div className="relative flex items-center justify-between">
-                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/15 backdrop-blur">
-                  <Sparkles className="h-6 w-6" />
+              <div className="pointer-events-none absolute -right-28 -top-28 h-80 w-80 rounded-full bg-accent/25 blur-3xl" aria-hidden />
+              <div className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-secondary/15 blur-3xl" aria-hidden />
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
+                  backgroundSize: "48px 48px",
+                  maskImage: "radial-gradient(ellipse 70% 60% at 30% 20%, black 20%, transparent 75%)",
+                }}
+                aria-hidden
+              />
+
+              <div className="relative flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] ring-1 ring-primary-foreground/15 backdrop-blur-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  Flagship service
                 </span>
-                <span className="rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider">Coming Soon</span>
+                <span className="rounded-full bg-primary-foreground/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] ring-1 ring-primary-foreground/15">
+                  Coming Soon
+                </span>
               </div>
+
               <div className="relative mt-auto pt-8">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Flagship service</p>
-                <h3 className="mt-2 font-display text-4xl font-semibold leading-tight md:text-5xl">Financial Advisor</h3>
-                <p className="mt-3 max-w-lg text-sm leading-relaxed text-primary-foreground/85">
-                  1:1 sessions with SEBI-registered, fee-only advisors — reading your full NitiVitt snapshot before you talk.
+                <div className="flex items-center gap-4">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-foreground/10 ring-1 ring-primary-foreground/20 backdrop-blur-sm">
+                    <Sparkles className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">NitiVitt Advisory</p>
+                    <h3 className="font-display text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Financial Advisor</h3>
+                  </div>
+                </div>
+                <p className="mt-4 max-w-md text-[14px] leading-relaxed text-primary-foreground/85">
+                  1:1 sessions with SEBI-registered, fee only advisors - powered by your full NitiVitt snapshot. No commissions, no product pitches, no cold calls.
                 </p>
-                <span className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary">
-                  Join the waitlist <ArrowRight className="h-4 w-4" />
+                <span className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary transition-transform duration-300 group-hover:translate-x-0.5">
+                  Join the waitlist <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                 </span>
               </div>
             </Link>
 
             {/* Right — 2×2 grid */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2">
+
               <ServiceGridCard
                 name="Insurance Analyzer"
+                tag="NitiSure™"
                 icon={ShieldCheck}
                 to="/insurance-analyzer"
                 scoreLabel="NitiSure™"
@@ -454,6 +499,7 @@ function Dashboard() {
               />
               <ServiceGridCard
                 name="Portfolio Analyzer"
+                tag="NitiInvest™"
                 icon={BarChart3}
                 to="/portfolio-analyzer"
                 scoreLabel="Portfolio Rating"
@@ -468,6 +514,7 @@ function Dashboard() {
               />
               <ServiceGridCard
                 name="Loan Analyzer"
+                tag="NitiLoan™"
                 icon={Landmark}
                 to="/loan-analyzer"
                 scoreLabel="Debt Health Rating"
@@ -482,6 +529,7 @@ function Dashboard() {
               />
               <ServiceGridCard
                 name="Tax Planner"
+                tag="NitiTax™"
                 icon={Receipt}
                 to="/tax-planner"
                 scoreLabel={null}
@@ -923,9 +971,10 @@ const MODULES = [
 ] as const;
 
 function ServiceGridCard({
-  name, icon: Icon, to, scoreLabel, score, ratingText, ratingTone, lastReviewed, hasData, emptyDesc, ctaOn, ctaOff,
+  name, tag, icon: Icon, to, scoreLabel, score, ratingText, ratingTone, lastReviewed, hasData, emptyDesc, ctaOn, ctaOff,
 }: {
   name: string;
+  tag?: string;
   icon: React.ComponentType<{ className?: string }>;
   to: "/insurance-analyzer" | "/portfolio-analyzer" | "/loan-analyzer" | "/tax-planner" | null;
   scoreLabel: string | null;
@@ -948,26 +997,37 @@ function ServiceGridCard({
 
   const inner = (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-            <Icon className="h-4.5 w-4.5" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 transition-all duration-500 ${
+              isActive
+                ? "bg-primary-soft text-primary ring-primary/15 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/40"
+                : "bg-muted text-muted-foreground ring-border"
+            }`}
+          >
+            <Icon className="h-5 w-5" />
           </span>
-          <p className="truncate font-semibold text-foreground">{name}</p>
+          <div className="min-w-0">
+            {tag && <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary/90">{tag}</p>}
+            <h4 className="truncate font-display text-lg font-semibold tracking-tight text-foreground">{name}</h4>
+          </div>
         </div>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge}`}>{status}</span>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${badge}`}
+        >
+          {status}
+        </span>
       </div>
 
       {isActive && hasData && scoreLabel ? (
         <div className="mt-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{scoreLabel}</p>
           {ratingText ? (
-            <div className="mt-1">
-              <span className={`font-display text-3xl leading-tight ${ratingCls}`}>{ratingText}</span>
-            </div>
+            <p className={`mt-1 font-display text-2xl font-semibold leading-tight ${ratingCls}`}>{ratingText}</p>
           ) : (
             <div className="mt-1 flex items-baseline gap-1.5">
-              <span className="font-display text-4xl leading-none text-foreground">{score ?? "—"}</span>
+              <span className="font-display text-3xl font-semibold leading-none text-foreground">{score ?? "—"}</span>
               <span className="text-xs text-muted-foreground">/ 100</span>
             </div>
           )}
@@ -975,21 +1035,17 @@ function ServiceGridCard({
             <p className="mt-2 text-[11px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
           )}
         </div>
-      ) : isActive ? (
-        <div className="mt-4">
-          {scoreLabel && <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{scoreLabel}</p>}
-          <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{emptyDesc}</p>
-        </div>
       ) : (
-        <p className="mt-4 flex-1 text-[12px] leading-snug text-muted-foreground">{emptyDesc}</p>
+        <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">{emptyDesc}</p>
       )}
 
       {isActive ? (
-        <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
-          {hasData ? ctaOn : ctaOff} <ArrowRight className="h-3.5 w-3.5" />
+        <span className="mt-auto inline-flex w-fit items-center gap-1.5 pt-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+          {hasData ? ctaOn : ctaOff}
+          <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
         </span>
       ) : (
-        <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+        <span className="mt-auto inline-flex w-fit items-center gap-1.5 pt-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Notify me on launch
         </span>
       )}
@@ -999,17 +1055,18 @@ function ServiceGridCard({
   return isActive ? (
     <Link
       to={to}
-      className="group flex flex-col rounded-2xl border border-primary/30 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-elevated"
+      className="group flex min-h-[190px] flex-col rounded-2xl border border-border/70 bg-card p-6 shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevated"
     >
       {inner}
     </Link>
   ) : (
     <div
       aria-disabled="true"
-      className="flex flex-col rounded-2xl border border-dashed border-border bg-card/60 p-5 opacity-85"
+      className="flex min-h-[190px] flex-col rounded-2xl border border-dashed border-border/70 bg-card/50 p-6"
     >
       {inner}
     </div>
+
   );
 }
 
