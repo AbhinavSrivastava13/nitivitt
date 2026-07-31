@@ -486,6 +486,7 @@ function Dashboard() {
 
               <ServiceGridCard
                 name="Insurance Analyzer"
+                tag="NitiSure™"
                 icon={ShieldCheck}
                 to="/insurance-analyzer"
                 scoreLabel="NitiSure™"
@@ -498,6 +499,7 @@ function Dashboard() {
               />
               <ServiceGridCard
                 name="Portfolio Analyzer"
+                tag="NitiInvest™"
                 icon={BarChart3}
                 to="/portfolio-analyzer"
                 scoreLabel="Portfolio Rating"
@@ -512,6 +514,7 @@ function Dashboard() {
               />
               <ServiceGridCard
                 name="Loan Analyzer"
+                tag="NitiLoan™"
                 icon={Landmark}
                 to="/loan-analyzer"
                 scoreLabel="Debt Health Rating"
@@ -526,6 +529,7 @@ function Dashboard() {
               />
               <ServiceGridCard
                 name="Tax Planner"
+                tag="NitiTax™"
                 icon={Receipt}
                 to="/tax-planner"
                 scoreLabel={null}
