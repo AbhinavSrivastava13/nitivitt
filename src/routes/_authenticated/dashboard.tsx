@@ -413,45 +413,77 @@ function Dashboard() {
         </section>
 
         {/* ── Services ─────────────────────────────────────────────── */}
-        <section className="mt-10">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Financial services</p>
-              <h2 className="mt-1 font-display text-xl text-foreground md:text-2xl">One advisor. Four analyzers.</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Every analyzer keeps feeding the Advisor deeper intelligence about your money.</p>
+        <section className="mt-14">
+          <div className="flex items-end justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">Financial services</p>
+              <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+                One flagship advisor.{" "}
+                <span className="font-editorial italic font-normal text-primary">Four</span> analyzers behind it.
+              </h2>
+              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+                Every analyzer keeps feeding the Financial Advisor deeper intelligence about your money.
+              </p>
             </div>
-            <Link to="/services" className="text-[11px] font-semibold text-primary hover:underline">All services →</Link>
+            <Link to="/services" className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary hover:underline">All services →</Link>
           </div>
 
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          <div className="mt-10 grid gap-8 lg:grid-cols-[5.5fr_6.5fr] lg:gap-10">
             {/* Featured — Financial Advisor */}
             <Link
               to="/services/$slug"
               params={{ slug: "financial-advisor" }}
-              className="group relative flex min-h-[360px] flex-col overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-primary via-primary to-primary/85 p-7 text-primary-foreground shadow-elevated transition-all hover:-translate-y-0.5 md:p-9"
+              className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-[28px] p-7 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-8"
+              style={{
+                background:
+                  "radial-gradient(120% 100% at 0% 0%, oklch(0.42 0.14 258) 0%, oklch(0.28 0.10 258) 55%, oklch(0.22 0.08 258) 100%)",
+              }}
             >
-              <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/25 blur-3xl" aria-hidden />
-              <div className="pointer-events-none absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-secondary/20 blur-3xl" aria-hidden />
-              <div className="relative flex items-center justify-between">
-                <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-foreground/15 backdrop-blur">
-                  <Sparkles className="h-6 w-6" />
+              <div className="pointer-events-none absolute -right-28 -top-28 h-80 w-80 rounded-full bg-accent/25 blur-3xl" aria-hidden />
+              <div className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-secondary/15 blur-3xl" aria-hidden />
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.06]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
+                  backgroundSize: "48px 48px",
+                  maskImage: "radial-gradient(ellipse 70% 60% at 30% 20%, black 20%, transparent 75%)",
+                }}
+                aria-hidden
+              />
+
+              <div className="relative flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] ring-1 ring-primary-foreground/15 backdrop-blur-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  Flagship service
                 </span>
-                <span className="rounded-full bg-primary-foreground/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider">Coming Soon</span>
+                <span className="rounded-full bg-primary-foreground/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] ring-1 ring-primary-foreground/15">
+                  Coming Soon
+                </span>
               </div>
+
               <div className="relative mt-auto pt-8">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">Flagship service</p>
-                <h3 className="mt-2 font-display text-4xl font-semibold leading-tight md:text-5xl">Financial Advisor</h3>
-                <p className="mt-3 max-w-lg text-sm leading-relaxed text-primary-foreground/85">
-                  1:1 sessions with SEBI-registered, fee-only advisors — reading your full NitiVitt snapshot before you talk.
+                <div className="flex items-center gap-4">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-foreground/10 ring-1 ring-primary-foreground/20 backdrop-blur-sm">
+                    <Sparkles className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">NitiVitt Advisory</p>
+                    <h3 className="font-display text-2xl font-semibold leading-tight tracking-tight md:text-3xl">Financial Advisor</h3>
+                  </div>
+                </div>
+                <p className="mt-4 max-w-md text-[14px] leading-relaxed text-primary-foreground/85">
+                  1:1 sessions with SEBI-registered, fee only advisors - powered by your full NitiVitt snapshot. No commissions, no product pitches, no cold calls.
                 </p>
-                <span className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-5 py-2.5 text-sm font-semibold text-primary">
-                  Join the waitlist <ArrowRight className="h-4 w-4" />
+                <span className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary-foreground px-4 py-2 text-sm font-semibold text-primary transition-transform duration-300 group-hover:translate-x-0.5">
+                  Join the waitlist <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
                 </span>
               </div>
             </Link>
 
             {/* Right — 2×2 grid */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2">
+
               <ServiceGridCard
                 name="Insurance Analyzer"
                 icon={ShieldCheck}
