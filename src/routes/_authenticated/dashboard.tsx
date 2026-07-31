@@ -157,6 +157,13 @@ function Dashboard() {
       ? { label: `Behind by ${ageDeltaYears}y`, cls: "bg-warning-soft text-warning" }
       : { label: "On par", cls: "bg-muted text-muted-foreground" };
 
+  const agePill = ageDirection === "ahead"
+    ? { label: "Financially Young", cls: "bg-secondary-soft text-secondary ring-secondary/20" }
+    : ageDirection === "behind"
+      ? { label: "Habits Catching Up", cls: "bg-warning-soft text-warning ring-warning/20" }
+      : { label: "On Par For Your Age", cls: "bg-muted text-muted-foreground ring-border" };
+
+
   const emStatus = emergency.status === "on_track"
     ? { label: "On track", cls: "bg-secondary-soft text-secondary" }
     : emergency.status === "needs_attention"
