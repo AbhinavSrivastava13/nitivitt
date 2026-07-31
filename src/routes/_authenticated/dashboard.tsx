@@ -971,9 +971,10 @@ const MODULES = [
 ] as const;
 
 function ServiceGridCard({
-  name, icon: Icon, to, scoreLabel, score, ratingText, ratingTone, lastReviewed, hasData, emptyDesc, ctaOn, ctaOff,
+  name, tag, icon: Icon, to, scoreLabel, score, ratingText, ratingTone, lastReviewed, hasData, emptyDesc, ctaOn, ctaOff,
 }: {
   name: string;
+  tag?: string;
   icon: React.ComponentType<{ className?: string }>;
   to: "/insurance-analyzer" | "/portfolio-analyzer" | "/loan-analyzer" | "/tax-planner" | null;
   scoreLabel: string | null;
