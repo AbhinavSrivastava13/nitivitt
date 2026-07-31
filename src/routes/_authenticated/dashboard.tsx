@@ -996,26 +996,37 @@ function ServiceGridCard({
 
   const inner = (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2.5">
-          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-            <Icon className="h-4.5 w-4.5" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span
+            className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ring-1 transition-all duration-500 ${
+              isActive
+                ? "bg-primary-soft text-primary ring-primary/15 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/40"
+                : "bg-muted text-muted-foreground ring-border"
+            }`}
+          >
+            <Icon className="h-5 w-5" />
           </span>
-          <p className="truncate font-semibold text-foreground">{name}</p>
+          <div className="min-w-0">
+            {tag && <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary/90">{tag}</p>}
+            <h4 className="truncate font-display text-lg font-semibold tracking-tight text-foreground">{name}</h4>
+          </div>
         </div>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badge}`}>{status}</span>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${badge}`}
+        >
+          {status}
+        </span>
       </div>
 
       {isActive && hasData && scoreLabel ? (
         <div className="mt-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{scoreLabel}</p>
           {ratingText ? (
-            <div className="mt-1">
-              <span className={`font-display text-3xl leading-tight ${ratingCls}`}>{ratingText}</span>
-            </div>
+            <p className={`mt-1 font-display text-2xl font-semibold leading-tight ${ratingCls}`}>{ratingText}</p>
           ) : (
             <div className="mt-1 flex items-baseline gap-1.5">
-              <span className="font-display text-4xl leading-none text-foreground">{score ?? "—"}</span>
+              <span className="font-display text-3xl font-semibold leading-none text-foreground">{score ?? "—"}</span>
               <span className="text-xs text-muted-foreground">/ 100</span>
             </div>
           )}
@@ -1023,21 +1034,17 @@ function ServiceGridCard({
             <p className="mt-2 text-[11px] text-muted-foreground">Last reviewed {lastReviewedText}</p>
           )}
         </div>
-      ) : isActive ? (
-        <div className="mt-4">
-          {scoreLabel && <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-secondary">{scoreLabel}</p>}
-          <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{emptyDesc}</p>
-        </div>
       ) : (
-        <p className="mt-4 flex-1 text-[12px] leading-snug text-muted-foreground">{emptyDesc}</p>
+        <p className="mt-4 text-[13px] leading-relaxed text-muted-foreground">{emptyDesc}</p>
       )}
 
       {isActive ? (
-        <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
-          {hasData ? ctaOn : ctaOff} <ArrowRight className="h-3.5 w-3.5" />
+        <span className="mt-auto inline-flex w-fit items-center gap-1.5 pt-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
+          {hasData ? ctaOn : ctaOff}
+          <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
         </span>
       ) : (
-        <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+        <span className="mt-auto inline-flex w-fit items-center gap-1.5 pt-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Notify me on launch
         </span>
       )}
@@ -1047,17 +1054,18 @@ function ServiceGridCard({
   return isActive ? (
     <Link
       to={to}
-      className="group flex flex-col rounded-2xl border border-primary/30 bg-gradient-to-br from-primary-soft/40 via-card to-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-elevated"
+      className="group flex min-h-[190px] flex-col rounded-2xl border border-border/70 bg-card p-6 shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevated"
     >
       {inner}
     </Link>
   ) : (
     <div
       aria-disabled="true"
-      className="flex flex-col rounded-2xl border border-dashed border-border bg-card/60 p-5 opacity-85"
+      className="flex min-h-[190px] flex-col rounded-2xl border border-dashed border-border/70 bg-card/50 p-6"
     >
       {inner}
     </div>
+
   );
 }
 
