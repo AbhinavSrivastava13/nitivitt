@@ -276,14 +276,19 @@ function Dashboard() {
               unit="yrs"
               footer={
                 <>
-                  <p className="mt-3 text-[11px] text-muted-foreground">
-                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · financial age reflects your money habits.
+                  <span className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ring-1 ${agePill.cls}`}>
+                    <Leaf className="h-3 w-3" aria-hidden />
+                    {agePill.label}
+                  </span>
+                  <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
+                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · a lower Financial Age means stronger money habits and better long-term financial health.
                   </p>
                   <p className="mt-2 text-[11px] text-muted-foreground">
                     {agePayload?.interpretation ?? "Financial age matches your actual age."}
                   </p>
                 </>
               }
+
             />
 
             {/* Net Worth */}
