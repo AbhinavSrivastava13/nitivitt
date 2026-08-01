@@ -529,7 +529,7 @@ function FinancialServices() {
           </h2>
         </div>
         <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground md:text-right">
-          Every analyzer feeds the Financial Advisor with deeper intelligence. Every recommendation ends with a human conversation — never a product pitch.
+          Every analyzer feeds the Financial Advisor with deeper intelligence. Every recommendation ends with a human conversation - never a product pitch.
         </p>
       </div>
 
