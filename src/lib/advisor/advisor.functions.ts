@@ -300,7 +300,7 @@ export const submitAdvisorRequest = createServerFn({ method: "POST" })
           payment_status: payment.status,
           payment_provider: payment.provider,
           payment_reference: payment.reference,
-          briefing: briefing as unknown as Record<string, unknown>,
+          briefing: JSON.parse(JSON.stringify(briefing)),
           status: "submitted",
         })
         .select("*")
