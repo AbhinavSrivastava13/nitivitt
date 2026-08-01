@@ -37,6 +37,7 @@ import { Route as AuthenticatedInsuranceAnalyzerRouteImport } from './routes/_au
 import { Route as AuthenticatedInsuranceRouteImport } from './routes/_authenticated/insurance'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFinancialHealthRouteImport } from './routes/_authenticated/financial-health'
+import { Route as AuthenticatedFinancialAdvisorRouteImport } from './routes/_authenticated/financial-advisor'
 import { Route as AuthenticatedEmergencyFundRouteImport } from './routes/_authenticated/emergency-fund'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAiCoachRouteImport } from './routes/_authenticated/ai-coach'
@@ -186,6 +187,12 @@ const AuthenticatedFinancialHealthRoute =
     path: '/financial-health',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFinancialAdvisorRoute =
+  AuthenticatedFinancialAdvisorRouteImport.update({
+    id: '/financial-advisor',
+    path: '/financial-advisor',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEmergencyFundRoute =
   AuthenticatedEmergencyFundRouteImport.update({
     id: '/emergency-fund',
@@ -214,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/ai-coach': typeof AuthenticatedAiCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/emergency-fund': typeof AuthenticatedEmergencyFundRoute
+  '/financial-advisor': typeof AuthenticatedFinancialAdvisorRoute
   '/financial-health': typeof AuthenticatedFinancialHealthRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
@@ -246,6 +254,7 @@ export interface FileRoutesByTo {
   '/ai-coach': typeof AuthenticatedAiCoachRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/emergency-fund': typeof AuthenticatedEmergencyFundRoute
+  '/financial-advisor': typeof AuthenticatedFinancialAdvisorRoute
   '/financial-health': typeof AuthenticatedFinancialHealthRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/insurance': typeof AuthenticatedInsuranceRoute
@@ -280,6 +289,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-coach': typeof AuthenticatedAiCoachRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/emergency-fund': typeof AuthenticatedEmergencyFundRoute
+  '/_authenticated/financial-advisor': typeof AuthenticatedFinancialAdvisorRoute
   '/_authenticated/financial-health': typeof AuthenticatedFinancialHealthRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/insurance': typeof AuthenticatedInsuranceRoute
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
+    | '/financial-advisor'
     | '/financial-health'
     | '/goals'
     | '/insurance'
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/ai-coach'
     | '/dashboard'
     | '/emergency-fund'
+    | '/financial-advisor'
     | '/financial-health'
     | '/goals'
     | '/insurance'
@@ -379,6 +391,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-coach'
     | '/_authenticated/dashboard'
     | '/_authenticated/emergency-fund'
+    | '/_authenticated/financial-advisor'
     | '/_authenticated/financial-health'
     | '/_authenticated/goals'
     | '/_authenticated/insurance'
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFinancialHealthRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/financial-advisor': {
+      id: '/_authenticated/financial-advisor'
+      path: '/financial-advisor'
+      fullPath: '/financial-advisor'
+      preLoaderRoute: typeof AuthenticatedFinancialAdvisorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/emergency-fund': {
       id: '/_authenticated/emergency-fund'
       path: '/emergency-fund'
@@ -640,6 +660,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiCoachRoute: typeof AuthenticatedAiCoachRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmergencyFundRoute: typeof AuthenticatedEmergencyFundRoute
+  AuthenticatedFinancialAdvisorRoute: typeof AuthenticatedFinancialAdvisorRoute
   AuthenticatedFinancialHealthRoute: typeof AuthenticatedFinancialHealthRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedInsuranceRoute: typeof AuthenticatedInsuranceRoute
@@ -661,6 +682,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiCoachRoute: AuthenticatedAiCoachRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmergencyFundRoute: AuthenticatedEmergencyFundRoute,
+  AuthenticatedFinancialAdvisorRoute: AuthenticatedFinancialAdvisorRoute,
   AuthenticatedFinancialHealthRoute: AuthenticatedFinancialHealthRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedInsuranceRoute: AuthenticatedInsuranceRoute,
