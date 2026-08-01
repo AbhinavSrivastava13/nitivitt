@@ -281,10 +281,11 @@ function Dashboard() {
                     {agePill.label}
                   </span>
                   <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
-                    Actual age <span className="font-semibold text-foreground">{input.ageYears}</span> · a lower Financial Age means stronger money habits and better long-term financial health.
-                  </p>
-                  <p className="mt-2 text-[11px] text-muted-foreground">
-                    {agePayload?.interpretation ?? "Financial age matches your actual age."}
+                    {ageDirection === "ahead"
+                      ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} ahead of your peers, giving you a Financial Age of ${nitiAge.value}.`
+                      : ageDirection === "behind"
+                        ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} behind your peers, giving you a Financial Age of ${nitiAge.value}.`
+                        : `Your financial habits match your peers, giving you a Financial Age of ${nitiAge.value}.`}
                   </p>
                 </>
               }

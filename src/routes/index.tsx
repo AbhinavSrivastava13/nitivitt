@@ -517,16 +517,18 @@ function FinancialServices() {
 
   return (
     <section className="container-page py-20 md:py-28">
-      {/* Header — left-aligned for better visual balance */}
-      <div className="max-w-3xl">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">Financial services</p>
-        <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-foreground md:text-6xl">
-          One flagship advisor.
-          <br className="hidden sm:block" />
-          <span className="font-editorial italic font-normal text-primary"> Four </span>
-          analyzers behind it.
-        </h2>
-        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground">
+      {/* Header — two-column layout for balanced visual weight */}
+      <div className="flex flex-col items-start gap-8 md:flex-row md:items-end md:justify-between">
+        <div className="max-w-2xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">Financial services</p>
+          <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-foreground md:text-6xl">
+            One flagship advisor.
+            <br className="hidden sm:block" />
+            <span className="font-editorial italic font-normal text-primary"> Four </span>
+            analyzers behind it.
+          </h2>
+        </div>
+        <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground md:text-right">
           Every analyzer feeds the Financial Advisor with deeper intelligence. Every recommendation ends with a human conversation — never a product pitch.
         </p>
       </div>
