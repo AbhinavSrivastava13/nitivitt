@@ -25,7 +25,7 @@ const SERVICES: Service[] = [
     slug: "financial-advisor",
     name: "Connect with a Financial Advisor",
     tagline: "1:1 conversations with SEBI-registered, fee-only advisors.",
-    status: "Coming Soon",
+    status: "Beta",
     category: "Advisory",
     shortDescription:
       "Book a private session with a SEBI-registered advisor who reviews your NitiVitt snapshot with you - no commissions, no product-pushing.",

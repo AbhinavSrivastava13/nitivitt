@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      advisor_requests: {
+        Row: {
+          amount_inr: number
+          briefing: Json
+          contact_phone: string | null
+          created_at: string
+          documents: Json
+          id: string
+          notified_at: string | null
+          package_id: string
+          package_name: string
+          payment_provider: string | null
+          payment_reference: string | null
+          payment_status: string
+          preferred_slots: Json
+          reference_id: string
+          status: string
+          summary: string
+          timezone: string
+          topics: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_inr?: number
+          briefing?: Json
+          contact_phone?: string | null
+          created_at?: string
+          documents?: Json
+          id?: string
+          notified_at?: string | null
+          package_id: string
+          package_name: string
+          payment_provider?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          preferred_slots?: Json
+          reference_id: string
+          status?: string
+          summary?: string
+          timezone?: string
+          topics?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_inr?: number
+          briefing?: Json
+          contact_phone?: string | null
+          created_at?: string
+          documents?: Json
+          id?: string
+          notified_at?: string | null
+          package_id?: string
+          package_name?: string
+          payment_provider?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          preferred_slots?: Json
+          reference_id?: string
+          status?: string
+          summary?: string
+          timezone?: string
+          topics?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           category: string
