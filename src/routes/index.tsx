@@ -528,7 +528,7 @@ function FinancialServices() {
             analyzers behind it.
           </h2>
         </div>
-        <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground md:text-right">
+        <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">
           Every analyzer feeds the Financial Advisor with deeper intelligence. Every recommendation ends with a human conversation - never a product pitch.
         </p>
       </div>
