@@ -432,8 +432,7 @@ function Dashboard() {
           <div className="mt-10 grid gap-8 lg:grid-cols-[5.5fr_6.5fr] lg:gap-10">
             {/* Featured — Financial Advisor */}
             <Link
-              to="/services/$slug"
-              params={{ slug: "financial-advisor" }}
+              to="/financial-advisor"
               className="group relative flex min-h-[300px] flex-col overflow-hidden rounded-[28px] p-7 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-8"
               style={{
                 background:
