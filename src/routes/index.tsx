@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { FinancialServicesSection } from "@/components/platform/financial-services";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
