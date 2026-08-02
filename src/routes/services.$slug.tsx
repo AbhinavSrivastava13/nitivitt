@@ -1,8 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Gift, Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { getServiceBySlug, listServices } from "@/content/services";
+import { useAuth } from "@/hooks/use-auth";
+import { getServiceBySlug, listServices, statusToneClasses, GUEST_CTA } from "@/content/services";
 import type { Service } from "@/content/services";
 
 export const Route = createFileRoute("/services/$slug")({
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/services/$slug")({
   },
   head: ({ loaderData }) => {
     const s = loaderData?.service;
-    if (!s) return { meta: [{ title: "Service not found — NitiVitt" }] };
+    if (!s) return { meta: [{ title: "Service not found — NitiVitt" }, { name: "robots", content: "noindex" }] };
     return {
       meta: [
         { title: `${s.name} — NitiVitt Services` },
@@ -58,20 +59,44 @@ export const Route = createFileRoute("/services/$slug")({
   component: ServiceDetail,
 });
 
-function statusTone(status: Service["status"]): string {
-  if (status === "Available") return "bg-success-soft text-success";
-  if (status === "Beta") return "bg-secondary-soft text-secondary";
-  return "bg-muted text-muted-foreground";
+/** Primary CTA — context-aware, identical wording across every service. */
+function ServiceCta({ service, className = "" }: { service: Service; className?: string }) {
+  const { isAuthenticated } = useAuth();
+  const base = `inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated ${className}`;
+
+  if (!isAuthenticated) {
+    return (
+      <Link to="/auth" search={{ mode: "signin", redirect: service.appRoute }} className={base}>
+        {GUEST_CTA} <ArrowRight className="h-4 w-4" />
+      </Link>
+    );
+  }
+
+  const label = `Open ${service.name}`;
+  switch (service.appRoute) {
+    case "/financial-advisor":
+      return <Link to="/financial-advisor" className={base}>{service.ctaActive} <ArrowRight className="h-4 w-4" /></Link>;
+    case "/insurance-analyzer":
+      return <Link to="/insurance-analyzer" className={base}>{label} <ArrowRight className="h-4 w-4" /></Link>;
+    case "/portfolio-analyzer":
+      return <Link to="/portfolio-analyzer" className={base}>{label} <ArrowRight className="h-4 w-4" /></Link>;
+    case "/loan-analyzer":
+      return <Link to="/loan-analyzer" className={base}>{label} <ArrowRight className="h-4 w-4" /></Link>;
+    default:
+      return <Link to="/tax-planner" className={base}>{label} <ArrowRight className="h-4 w-4" /></Link>;
+  }
 }
 
 function ServiceDetail() {
   const { service, prev, next } = Route.useLoaderData();
+  const Icon = service.icon;
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main>
-        <section className="border-b border-border">
+        {/* Hero */}
+        <section className="border-b border-border bg-surface">
           <div className="container-page py-14 md:py-20">
             <Link
               to="/services"
@@ -79,45 +104,46 @@ function ServiceDetail() {
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Services
             </Link>
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary">{service.category}</p>
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${statusTone(service.status)}`}>
-                {service.status}
+
+            <div className="mt-6 flex items-center gap-4">
+              <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary ring-1 ring-primary/15">
+                <Icon className="h-6 w-6" />
               </span>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">{service.tag}</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="font-display text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
+                    {service.name}
+                  </h1>
+                  <span className={`rounded-full px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em] ${statusToneClasses(service.status)}`}>
+                    {service.status}
+                  </span>
+                </div>
+              </div>
             </div>
-            <h1 className="mt-3 max-w-4xl text-balance font-display text-4xl leading-tight text-foreground md:text-5xl">
-              {service.name}
-            </h1>
-            <p className="mt-4 max-w-3xl text-lg leading-relaxed text-muted-foreground">{service.tagline}</p>
-            {service.slug === "insurance-analyzer" && (
-              <Link
-                to="/insurance-analyzer"
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90"
-              >
-                Analyze Policy <ArrowRight className="h-4 w-4" />
-              </Link>
-            )}
-            {service.slug === "portfolio-analyzer" && (
-              <Link
-                to="/portfolio-analyzer"
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90"
-              >
-                Open NitiInvest™ <ArrowRight className="h-4 w-4" />
-              </Link>
-            )}
+
+            <p className="mt-5 max-w-3xl text-lg leading-relaxed text-muted-foreground">{service.tagline}</p>
+            <div className="mt-7">
+              <ServiceCta service={service} />
+            </div>
           </div>
         </section>
 
-        <article className="container-page grid gap-10 py-12 md:py-16 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <article className="container-page grid gap-10 py-12 md:py-16 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="space-y-10">
             <section>
-              <h2 className="font-display text-2xl text-foreground">In one paragraph</h2>
+              <h2 className="font-display text-2xl text-foreground">What this service does</h2>
               <p className="mt-3 text-base leading-relaxed text-foreground/90">{service.shortDescription}</p>
             </section>
 
             <section>
               <h2 className="font-display text-2xl text-foreground">Why it matters</h2>
               <p className="mt-3 text-base leading-relaxed text-foreground/90">{service.whyItMatters}</p>
+            </section>
+
+            <section>
+              <h2 className="font-display text-2xl text-foreground">Why it is different from ordinary tools</h2>
+              <p className="mt-3 text-base leading-relaxed text-foreground/90">{service.whyDifferent}</p>
             </section>
 
             {service.visionSections.map((s: { heading: string; body: string }, i: number) => (
@@ -134,7 +160,7 @@ function ServiceDetail() {
                 <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary-soft text-primary">
                   <Sparkles className="h-4 w-4" />
                 </span>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Expected benefits</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Key benefits</p>
               </div>
               <ul className="mt-4 space-y-3 text-sm text-foreground">
                 {service.expectedBenefits.map((b: string, i: number) => (
@@ -147,31 +173,28 @@ function ServiceDetail() {
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</p>
-              <p className="mt-2 text-sm text-foreground">
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${statusTone(service.status)}`}>
-                  {service.status}
+              <div className="flex items-center gap-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-secondary-soft text-secondary">
+                  <Gift className="h-4 w-4" />
                 </span>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">What you receive</p>
+              </div>
+              <ul className="mt-4 space-y-3 text-sm text-foreground">
+                {service.whatYouReceive.map((b: string, i: number) => (
+                  <li key={i} className="flex gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-primary/30 bg-gradient-to-b from-card to-primary-soft/25 p-5 shadow-soft">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Get started</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Your NitiVitt profile powers this service. Sign in and it runs on data you already entered.
               </p>
-              <p className="mt-3 text-[12px] text-muted-foreground">
-                You'll be notified inside NitiVitt as soon as this service opens for early access.
-              </p>
-              {service.slug === "insurance-analyzer" && (
-                <Link
-                  to="/insurance-analyzer"
-                  className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-                >
-                  Open Insurance Analyzer <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              )}
-              {service.slug === "portfolio-analyzer" && (
-                <Link
-                  to="/portfolio-analyzer"
-                  className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-                >
-                  Open NitiInvest™ <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              )}
+              <ServiceCta service={service} className="mt-4 w-full" />
             </div>
           </aside>
         </article>
