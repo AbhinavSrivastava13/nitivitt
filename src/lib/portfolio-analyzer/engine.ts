@@ -18,6 +18,14 @@ import {
   type PortfolioRecommendation,
   type PortfolioReport,
 } from "./types";
+import {
+  buildDiagnostics,
+  buildHoldingIntelligence,
+  buildInsights,
+  buildPeerBenchmark,
+  type IntelligenceInput,
+} from "./intelligence";
+
 
 interface EngineInput {
   holdings: Holding[];
@@ -628,7 +636,40 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     });
   }
 
+  // ─────────────── NitiInvest™ V2 — Portfolio Intelligence ───────────────
+  const intelInput: IntelligenceInput = {
+    holdings: cleaned,
+    totalValue,
+    equityPct,
+    debtPct,
+    goldPct,
+    cashPct: pct(cash, totalValue),
+    targetEquityPct: targetEquityClamped,
+    diversificationScore,
+    concentrationScore,
+    topPct,
+    topName: topHolding?.name ?? null,
+    indexShare,
+    bySector,
+    input,
+    context,
+  };
+  const diagnostics = buildDiagnostics(intelInput);
+  const holdingIntelligence = buildHoldingIntelligence(intelInput);
+  const peerBenchmark = buildPeerBenchmark(intelInput);
+  const v2Insights = buildInsights(intelInput);
+
+  const worstDiagnostic = [...diagnostics].sort((a, b) => a.score - b.score)[0];
+  const bestDiagnostic = [...diagnostics].sort((a, b) => b.score - a.score)[0];
+  const largestRisk =
+    v2Insights.find((i) => i.severity === "risk")?.title ??
+    (worstDiagnostic ? `${worstDiagnostic.label}: ${worstDiagnostic.valueLabel}` : "No material risk flagged");
+  const biggestStrength =
+    positives[0]?.title ??
+    (bestDiagnostic ? `${bestDiagnostic.label}: ${bestDiagnostic.valueLabel}` : "Portfolio is still being built");
+
   return {
+
     portfolioScore,
     scoreLabel: scoreLabel(portfolioScore),
     totalValue,
@@ -655,7 +696,14 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     allocationComparison,
     similarInvestor,
     portfolioQuality,
+    diagnostics,
+    holdingIntelligence,
+    peerBenchmark,
+    insights: v2Insights,
+    largestRisk,
+    biggestStrength,
   };
+
 }
 
 
