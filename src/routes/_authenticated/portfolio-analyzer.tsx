@@ -370,6 +370,7 @@ function ConfirmFlow({
   const qc = useQueryClient();
   const [rows, setRows] = useState<Holding[]>(initialHoldings.length ? initialHoldings : [emptyHolding()]);
   const [busy, setBusy] = useState(false);
+  const [isPrimary, setIsPrimary] = useState(true);
 
   function update(i: number, patch: Partial<Holding>) {
     setRows((prev) => prev.map((r, j) => (j === i ? { ...r, ...patch } : r)));
@@ -398,6 +399,7 @@ function ConfirmFlow({
           narrate: true,
           enrich: true,
           replaceId,
+          isPrimary,
         },
       });
       toast.success("Portfolio saved and analyzed.");
@@ -505,6 +507,21 @@ function ConfirmFlow({
         </p>
       </div>
 
+      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-4">
+        <input
+          type="checkbox"
+          checked={isPrimary}
+          onChange={(e) => setIsPrimary(e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-border accent-[hsl(var(--primary))]"
+        />
+        <span>
+          <span className="text-sm font-semibold text-foreground">This is my portfolio</span>
+          <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+            Link these holdings to your NitiCore™ profile so your investment total, net worth and recommendations across NitiVitt reflect them. Leave unticked to analyse someone else&rsquo;s portfolio or run a what-if without changing your financial picture.
+          </span>
+        </span>
+      </label>
+
       <div className="flex flex-wrap items-center gap-3">
         <button disabled={busy} onClick={onAnalyze} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -545,7 +562,7 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
       </div>
     );
   }
-  return <ReportView report={data.analysis.report} onBack={onBack} title={data.analysis.name} />;
+  return <ReportView report={data.analysis.report} onBack={onBack} title={data.analysis.name} lastReviewedAt={data.analysis.lastReviewedAt ?? data.analysis.createdAt} />;
 }
 
 // ─────────────────────────── REPORT ───────────────────────────
