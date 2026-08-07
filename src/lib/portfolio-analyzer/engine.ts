@@ -502,11 +502,14 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
   // ─────────────── V3: Hero, allocation comparison, similar-investor comparison ───────────────
   const targetDebt = Math.max(5, Math.min(70, 100 - targetEquityClamped - 10));
   const targetGold = 10;
+  const peerEquity = Math.max(10, Math.min(95, targetEquityClamped + (input.ageYears < 35 ? 6 : -4)));
+  const peerDebt = Math.max(5, Math.min(70, 100 - peerEquity - 8));
   const allocationComparison: import("./types").AllocationComparisonRow[] = totalValue > 0 ? [
-    { label: "Equity", you: equityPct, recommended: targetEquityClamped },
-    { label: "Debt", you: debtPct, recommended: targetDebt },
-    { label: "Gold", you: goldPct, recommended: targetGold },
+    { label: "Equity", you: equityPct, recommended: targetEquityClamped, peer: peerEquity },
+    { label: "Debt", you: debtPct, recommended: targetDebt, peer: peerDebt },
+    { label: "Gold", you: goldPct, recommended: targetGold, peer: 8 },
   ] : [];
+
 
   const lifeStageLabel = {
     early_career: "Early career (18-29)",

@@ -176,7 +176,9 @@ export interface AllocationComparisonRow {
   label: string;      // "Equity", "Debt", "Gold"
   you: number;        // %
   recommended: number; // %
+  peer?: number;       // % — typical cohort average
 }
+
 
 export interface SimilarInvestorMetric {
   label: string;
