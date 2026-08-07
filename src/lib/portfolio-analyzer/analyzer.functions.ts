@@ -298,9 +298,13 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
     }
 
     const report = runEngine({ holdings, input: nitiInput, context: ctx });
+    report.isPrimary = data.isPrimary;
 
     if (data.narrate) {
-      const mentor = await narrate(report, ctx);
+      const [mentor] = await Promise.all([
+        narrate(report, ctx),
+        enrichHoldingIntelligence(report),
+      ]);
       if (mentor) report.mentorSummary = mentor;
     }
 
@@ -315,6 +319,7 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
       total_value: totalValue,
       portfolio_score: report.portfolioScore,
       report,
+      is_primary: data.isPrimary,
       last_reviewed_at: new Date().toISOString(),
     };
 
@@ -330,8 +335,54 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
       analysisId = inserted?.id ?? null;
     }
     if (!analysisId) throw new Error("Portfolio analysis could not be saved: no id returned.");
+
+    // Only one portfolio can drive NitiCore™ at a time.
+    if (data.isPrimary) {
+      const relax = supabase as unknown as {
+        from: (t: string) => { update: (r: Record<string, unknown>) => { eq: (c: string, v: string) => { neq: (c: string, v: string) => Promise<unknown> } } };
+      };
+      await relax.from("portfolio_analyses").update({ is_primary: false }).eq("user_id", userId).neq("id", analysisId);
+    }
     return { report, analysisId };
   });
+
+/**
+ * Gemini enriches — never calculates. Adds one plain-language summary per
+ * major holding on top of the deterministic facts already computed.
+ */
+async function enrichHoldingIntelligence(report: PortfolioReport): Promise<void> {
+  const items = report.holdingIntelligence ?? [];
+  if (items.length === 0) return;
+  const slim = items.slice(0, 10).map((h, i) => ({
+    i,
+    name: h.name,
+    kind: h.kind,
+    facts: Object.fromEntries(h.facts.map((f) => [f.label, f.value])),
+    objective: h.objective,
+  }));
+  const system = `You are an Indian investment analyst writing one-sentence explainers for a client's holdings.
+
+For each holding, write a single sentence (max 28 words) that explains what this fund or company actually is and what job it does inside a portfolio. Be concrete and educational. Never predict returns, never say buy or sell, never rate the holding, never invent data you were not given. Avoid em dashes.
+
+Return strict JSON: {"summaries":[{"i":number,"summary":string}]}`;
+  try {
+    const res = await callAiChat({
+      temperature: 0.3,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: JSON.stringify(slim) },
+      ],
+    });
+    const parsed = safeParseJson(res?.text ?? "") as { summaries?: { i: number; summary: string }[] } | null;
+    for (const s of parsed?.summaries ?? []) {
+      const target = items[s.i];
+      if (target && typeof s.summary === "string") target.aiSummary = s.summary.trim();
+    }
+  } catch (err) {
+    console.warn("[niti-invest] holding enrichment failed", err);
+  }
+}
+
 
 async function narrate(
   report: PortfolioReport,
