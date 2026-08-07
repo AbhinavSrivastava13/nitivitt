@@ -210,6 +210,7 @@ interface DbRow {
   total_value: string | number | null;
   portfolio_score: number;
   report: unknown;
+  is_primary?: boolean | null;
   last_reviewed_at: string;
   created_at: string;
   updated_at: string;
@@ -450,6 +451,7 @@ export interface PortfolioListItem {
   totalValue: number;
   holdingCount: number;
   portfolioScore: number;
+  isPrimary: boolean;
   createdAt: string;
   lastReviewedAt: string;
 }
@@ -460,7 +462,7 @@ export const listPortfolioAnalyses = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const client = supabase as unknown as DbClient;
     const { data, error } = await client.from("portfolio_analyses")
-      .select("id, name, source_platform, total_value, portfolio_score, holdings, created_at, last_reviewed_at")
+      .select("id, name, source_platform, total_value, portfolio_score, holdings, is_primary, created_at, last_reviewed_at")
       .eq("user_id", userId).order!("last_reviewed_at", { ascending: false }).limit(50);
     if (error) throw new Error(error.message);
     return {
@@ -471,6 +473,7 @@ export const listPortfolioAnalyses = createServerFn({ method: "GET" })
         totalValue: r.total_value == null ? 0 : Number(r.total_value),
         holdingCount: Array.isArray(r.holdings) ? (r.holdings as unknown[]).length : 0,
         portfolioScore: r.portfolio_score,
+        isPrimary: Boolean(r.is_primary),
         createdAt: r.created_at,
         lastReviewedAt: r.last_reviewed_at,
       })),
@@ -532,9 +535,10 @@ export const getPortfolioIntelligenceSummary = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const client = supabase as unknown as DbClient;
     const { data } = await client.from("portfolio_analyses")
-      .select("total_value, portfolio_score, last_reviewed_at")
+      .select("total_value, portfolio_score, is_primary, last_reviewed_at")
       .eq("user_id", userId).order!("last_reviewed_at", { ascending: false }).limit(50);
-    const rows = data ?? [];
+    const all = data ?? [];
+    const rows = all.filter((r) => r.is_primary);
     const totalValue = rows.reduce((a, r) => a + Number(r.total_value ?? 0), 0);
     const avg = rows.length ? Math.round(rows.reduce((a, r) => a + r.portfolio_score, 0) / rows.length) : 0;
     return {

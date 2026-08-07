@@ -56,7 +56,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
       supabase.from("insurance").select("*").eq("user_id", userId),
       supabase.from("goals").select("*").eq("user_id", userId),
       supabase.from("insurance_analyses").select("id, protection_score, last_reviewed_at").eq("user_id", userId),
-      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, last_reviewed_at").eq("user_id", userId),
+      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, is_primary, last_reviewed_at").eq("user_id", userId).eq("is_primary", true),
     ]);
 
     const profile = profileRes.data;
@@ -259,7 +259,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       supabase.from("financial_snapshots").select("*").eq("user_id", userId)
         .order("taken_at", { ascending: false }).limit(2),
       supabase.from("insurance_analyses").select("id, protection_score, last_reviewed_at").eq("user_id", userId),
-      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, last_reviewed_at").eq("user_id", userId),
+      supabase.from("portfolio_analyses").select("id, portfolio_score, total_value, is_primary, last_reviewed_at").eq("user_id", userId).eq("is_primary", true),
     ]);
     const snapshots = snapsRes.data ?? [];
     const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
