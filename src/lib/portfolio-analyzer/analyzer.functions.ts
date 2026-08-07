@@ -195,8 +195,10 @@ const AnalyzeInput = z.object({
   holdings: z.array(z.record(z.string(), z.unknown())).min(1).max(500),
   narrate: z.boolean().default(true),
   enrich: z.boolean().default(true),
+  isPrimary: z.boolean().default(false),
   replaceId: z.string().uuid().optional(),
 });
+
 
 interface DbRow {
   id: string;
