@@ -191,6 +191,57 @@ export interface SimilarInvestor {
   metrics: SimilarInvestorMetric[];
 }
 
+/* ─────────────── V2 — Portfolio Intelligence ─────────────── */
+
+export type DiagnosticStatus = "good" | "watch" | "action";
+
+export interface PortfolioDiagnostic {
+  id: string;
+  label: string;
+  score: number; // 0-100, higher is better
+  status: DiagnosticStatus;
+  valueLabel: string;
+  targetLabel: string;
+  detail: string;
+}
+
+export interface HoldingIntelligence {
+  name: string;
+  assetClass: AssetClass;
+  kind: "fund" | "stock" | "other";
+  pct: number;
+  value: number;
+  facts: { label: string; value: string }[];
+  objective: string | null;
+  strengths: string[];
+  risks: string[];
+  suggestedRole: string;
+  aiSummary: string | null;
+}
+
+export interface PeerBenchmarkRow {
+  label: string;
+  you: number;
+  typical: number;
+  unit: string;
+  verdict: string;
+}
+
+export interface PeerBenchmark {
+  cohort: string;
+  rows: PeerBenchmarkRow[];
+  note: string;
+}
+
+export interface PortfolioInsight {
+  id: string;
+  severity: FindingSeverity;
+  title: string;
+  whyItMatters: string;
+  impact: string;
+  action: string;
+}
+
 export interface PortfolioReport {
   portfolioScore: number; // 0-100 deterministic
   scoreLabel: string;
@@ -221,6 +272,15 @@ export interface PortfolioReport {
   allocationComparison?: AllocationComparisonRow[];
   similarInvestor?: SimilarInvestor;
   portfolioQuality?: PortfolioQualityFinding[];
+  // NitiInvest™ V2 — Portfolio Intelligence platform.
+  diagnostics?: PortfolioDiagnostic[];
+  holdingIntelligence?: HoldingIntelligence[];
+  peerBenchmark?: PeerBenchmark;
+  insights?: PortfolioInsight[];
+  largestRisk?: string;
+  biggestStrength?: string;
+  isPrimary?: boolean;
 }
+
 
 
