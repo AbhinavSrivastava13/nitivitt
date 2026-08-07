@@ -195,8 +195,10 @@ const AnalyzeInput = z.object({
   holdings: z.array(z.record(z.string(), z.unknown())).min(1).max(500),
   narrate: z.boolean().default(true),
   enrich: z.boolean().default(true),
+  isPrimary: z.boolean().default(false),
   replaceId: z.string().uuid().optional(),
 });
+
 
 interface DbRow {
   id: string;
@@ -208,6 +210,7 @@ interface DbRow {
   total_value: string | number | null;
   portfolio_score: number;
   report: unknown;
+  is_primary?: boolean | null;
   last_reviewed_at: string;
   created_at: string;
   updated_at: string;
@@ -296,9 +299,13 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
     }
 
     const report = runEngine({ holdings, input: nitiInput, context: ctx });
+    report.isPrimary = data.isPrimary;
 
     if (data.narrate) {
-      const mentor = await narrate(report, ctx);
+      const [mentor] = await Promise.all([
+        narrate(report, ctx),
+        enrichHoldingIntelligence(report),
+      ]);
       if (mentor) report.mentorSummary = mentor;
     }
 
@@ -313,6 +320,7 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
       total_value: totalValue,
       portfolio_score: report.portfolioScore,
       report,
+      is_primary: data.isPrimary,
       last_reviewed_at: new Date().toISOString(),
     };
 
@@ -328,8 +336,54 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
       analysisId = inserted?.id ?? null;
     }
     if (!analysisId) throw new Error("Portfolio analysis could not be saved: no id returned.");
+
+    // Only one portfolio can drive NitiCore™ at a time.
+    if (data.isPrimary) {
+      const relax = supabase as unknown as {
+        from: (t: string) => { update: (r: Record<string, unknown>) => { eq: (c: string, v: string) => { neq: (c: string, v: string) => Promise<unknown> } } };
+      };
+      await relax.from("portfolio_analyses").update({ is_primary: false }).eq("user_id", userId).neq("id", analysisId);
+    }
     return { report, analysisId };
   });
+
+/**
+ * Gemini enriches — never calculates. Adds one plain-language summary per
+ * major holding on top of the deterministic facts already computed.
+ */
+async function enrichHoldingIntelligence(report: PortfolioReport): Promise<void> {
+  const items = report.holdingIntelligence ?? [];
+  if (items.length === 0) return;
+  const slim = items.slice(0, 10).map((h, i) => ({
+    i,
+    name: h.name,
+    kind: h.kind,
+    facts: Object.fromEntries(h.facts.map((f) => [f.label, f.value])),
+    objective: h.objective,
+  }));
+  const system = `You are an Indian investment analyst writing one-sentence explainers for a client's holdings.
+
+For each holding, write a single sentence (max 28 words) that explains what this fund or company actually is and what job it does inside a portfolio. Be concrete and educational. Never predict returns, never say buy or sell, never rate the holding, never invent data you were not given. Avoid em dashes.
+
+Return strict JSON: {"summaries":[{"i":number,"summary":string}]}`;
+  try {
+    const res = await callAiChat({
+      temperature: 0.3,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: JSON.stringify(slim) },
+      ],
+    });
+    const parsed = safeParseJson(res?.text ?? "") as { summaries?: { i: number; summary: string }[] } | null;
+    for (const s of parsed?.summaries ?? []) {
+      const target = items[s.i];
+      if (target && typeof s.summary === "string") target.aiSummary = s.summary.trim();
+    }
+  } catch (err) {
+    console.warn("[niti-invest] holding enrichment failed", err);
+  }
+}
+
 
 async function narrate(
   report: PortfolioReport,
@@ -337,36 +391,39 @@ async function narrate(
 ): Promise<string | null> {
   const payload = {
     verdict: report.hero?.verdict,
-    keyInsights: report.hero?.keyInsights,
-    portfolioScore: report.portfolioScore,
-    snapshot: report.snapshot,
-    riskMeter: report.riskMeter,
-    goalAlignment: report.goalAlignment,
-    allocation: report.allocation,
-    topHoldings: report.topHoldings,
-    positives: report.intelligence?.positives.map((f) => f.title) ?? report.strengths.map((f) => f.title),
-    gaps: report.gaps.map((f) => f.title),
-    insights: report.intelligence?.insights.map((f) => f.title) ?? report.observations.map((f) => f.title),
-    similarInvestor: report.similarInvestor,
+    portfolioStyle: report.snapshot?.style,
+    riskLabel: report.snapshot?.riskLevelLabel,
+    largestRisk: report.largestRisk,
+    biggestStrength: report.biggestStrength,
+    diagnostics: (report.diagnostics ?? []).map((d) => ({ area: d.label, status: d.status })),
+    insights: (report.insights ?? []).map((i) => ({ title: i.title, why: i.whyItMatters })),
+    holdingKinds: (report.holdingIntelligence ?? []).map((h) => ({ kind: h.kind, role: h.suggestedRole })),
+    recommendations: report.recommendations.map((r) => r.title),
+    peerCohort: report.peerBenchmark?.cohort,
     context: { lifeStage: ctx.lifeStage, protectionPosture: ctx.protectionPosture, liquidityHealth: ctx.liquidityHealth, hasDependents: ctx.hasDependents },
   };
-  const system = `You are NitiGuide — an experienced Indian Certified Financial Planner sitting across from a real client, walking them through their portfolio.
+  const system = `You are NitiGuide, an experienced Indian Certified Financial Planner sitting across from a real client at the end of a portfolio review.
 
-Do NOT restate percentages, scores, or metrics already shown on the report. Do NOT recommend specific funds, stocks, AMCs or insurers. Do NOT predict returns. Do NOT use fear-based language. Avoid em dashes, bullet points, headings, and AI-summariser tone.
+Everything numerical is already on the report above you. Your job is the part a dashboard cannot do: teach.
 
-Instead, focus on educational context that the numbers do not carry on their own:
-- Briefly explain the role of the asset classes present (why large cap, mid cap, small cap, debt, gold or hybrid exist in a portfolio).
-- Explain what real diversification means beyond just holding many funds.
-- Explain the concept of portfolio construction fitting an investor's life stage.
-- Talk about behaviours (SIP discipline, avoiding fund proliferation, matching risk to horizon) — not numbers.
+Hard rules. Never restate a percentage, score, grade, rupee amount or holding count. Never name a specific fund, stock, AMC or insurer. Never predict returns. Never use fear-based language. Avoid em dashes, bullet points, headings and AI-summariser phrasing such as "in conclusion" or "overall".
 
-Write 4 short paragraphs, 2-3 sentences each, separated by a blank line, in this order:
-1. What stands out first when you look at this portfolio, in plain language.
-2. What is genuinely working and worth protecting, framed educationally.
-3. The one concept this investor should really internalise — opportunity cost, structural blind spot, or long-term principle. Teach, do not alarm.
-4. The logical next priorities in the order they matter, distinguishing urgent from what can wait.
+Cover, in your own words and only where relevant to this client:
+- how portfolios are actually constructed: a boring core, a smaller satellite, and something that behaves differently from equity
+- what real diversification is, and why owning many similar funds is not it
+- the trade-offs behind the recommendations they just read, including what they give up by acting and by not acting
+- the behavioural traps that decide most outcomes: chasing last year's winner, abandoning a plan mid-drawdown, adding funds instead of adding money, confusing activity with progress
+- why cost and asset allocation matter more over a decade than fund selection
 
-Sound like a warm mentor, not a machine. This should read like a premium wealth-review conversation.`;
+Write five short paragraphs, two to three sentences each, separated by a blank line, in this order:
+1. What an experienced planner notices first about how this portfolio is built.
+2. What is genuinely working and why that habit is worth protecting.
+3. The single concept this investor should internalise this year, taught properly rather than asserted.
+4. The behavioural mistake most likely to undo their progress, and how it usually shows up in practice.
+5. What to do next and in what order, separating what is urgent from what can wait a year.
+
+Sound like a warm, direct mentor who has done this for twenty years. This should read like a premium wealth-review conversation, not a report summary.`;
+
 
   const res = await callAiChat({
     temperature: 0.45,
@@ -394,6 +451,7 @@ export interface PortfolioListItem {
   totalValue: number;
   holdingCount: number;
   portfolioScore: number;
+  isPrimary: boolean;
   createdAt: string;
   lastReviewedAt: string;
 }
@@ -404,7 +462,7 @@ export const listPortfolioAnalyses = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const client = supabase as unknown as DbClient;
     const { data, error } = await client.from("portfolio_analyses")
-      .select("id, name, source_platform, total_value, portfolio_score, holdings, created_at, last_reviewed_at")
+      .select("id, name, source_platform, total_value, portfolio_score, holdings, is_primary, created_at, last_reviewed_at")
       .eq("user_id", userId).order!("last_reviewed_at", { ascending: false }).limit(50);
     if (error) throw new Error(error.message);
     return {
@@ -415,6 +473,7 @@ export const listPortfolioAnalyses = createServerFn({ method: "GET" })
         totalValue: r.total_value == null ? 0 : Number(r.total_value),
         holdingCount: Array.isArray(r.holdings) ? (r.holdings as unknown[]).length : 0,
         portfolioScore: r.portfolio_score,
+        isPrimary: Boolean(r.is_primary),
         createdAt: r.created_at,
         lastReviewedAt: r.last_reviewed_at,
       })),
@@ -476,9 +535,10 @@ export const getPortfolioIntelligenceSummary = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const client = supabase as unknown as DbClient;
     const { data } = await client.from("portfolio_analyses")
-      .select("total_value, portfolio_score, last_reviewed_at")
+      .select("total_value, portfolio_score, is_primary, last_reviewed_at")
       .eq("user_id", userId).order!("last_reviewed_at", { ascending: false }).limit(50);
-    const rows = data ?? [];
+    const all = data ?? [];
+    const rows = all.filter((r) => r.is_primary);
     const totalValue = rows.reduce((a, r) => a + Number(r.total_value ?? 0), 0);
     const avg = rows.length ? Math.round(rows.reduce((a, r) => a + r.portfolio_score, 0) / rows.length) : 0;
     return {

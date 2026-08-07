@@ -569,6 +569,7 @@ export type Database = {
           file_name: string | null
           holdings: Json
           id: string
+          is_primary: boolean
           last_reviewed_at: string
           name: string | null
           portfolio_score: number
@@ -583,6 +584,7 @@ export type Database = {
           file_name?: string | null
           holdings?: Json
           id?: string
+          is_primary?: boolean
           last_reviewed_at?: string
           name?: string | null
           portfolio_score?: number
@@ -597,6 +599,7 @@ export type Database = {
           file_name?: string | null
           holdings?: Json
           id?: string
+          is_primary?: boolean
           last_reviewed_at?: string
           name?: string | null
           portfolio_score?: number

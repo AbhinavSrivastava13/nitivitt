@@ -5,13 +5,13 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, Info, Loader2, Plus,
   RefreshCw, Sparkles, Trash2, TrendingUp, Upload, AlertTriangle,
-  ShieldCheck, Target, Layers, PieChart, Gauge as GaugeIcon, Award,
+  ShieldCheck, Target, Layers, PieChart, Gauge as GaugeIcon,
 } from "lucide-react";
 import { AnalysisSequence } from "@/components/analysis-sequence";
 import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
-import { Donut, Gauge, AllocationBars, HeroScore } from "@/components/portfolio/charts";
+import { Donut, AllocationBars, HeroScore, HoldingsDistribution, PeerBars } from "@/components/portfolio/charts";
 
 import {
   extractPortfolioFromScreenshots,
@@ -180,6 +180,9 @@ function Workspace({
                   <h3 className="mt-1 font-display text-lg text-foreground">{a.name}</h3>
                 </div>
                 <ScorePill score={a.portfolioScore} />
+                {a.isPrimary && (
+                  <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success">My portfolio</span>
+                )}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                 <Metric label="Total value" value={formatInr(a.totalValue)} />
@@ -370,6 +373,7 @@ function ConfirmFlow({
   const qc = useQueryClient();
   const [rows, setRows] = useState<Holding[]>(initialHoldings.length ? initialHoldings : [emptyHolding()]);
   const [busy, setBusy] = useState(false);
+  const [isPrimary, setIsPrimary] = useState(true);
 
   function update(i: number, patch: Partial<Holding>) {
     setRows((prev) => prev.map((r, j) => (j === i ? { ...r, ...patch } : r)));
@@ -398,6 +402,7 @@ function ConfirmFlow({
           narrate: true,
           enrich: true,
           replaceId,
+          isPrimary,
         },
       });
       toast.success("Portfolio saved and analyzed.");
@@ -505,6 +510,21 @@ function ConfirmFlow({
         </p>
       </div>
 
+      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-4">
+        <input
+          type="checkbox"
+          checked={isPrimary}
+          onChange={(e) => setIsPrimary(e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-border accent-[hsl(var(--primary))]"
+        />
+        <span>
+          <span className="text-sm font-semibold text-foreground">This is my portfolio</span>
+          <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+            Link these holdings to your NitiCore™ profile so your investment total, net worth and recommendations across NitiVitt reflect them. Leave unticked to analyse someone else&rsquo;s portfolio or run a what-if without changing your financial picture.
+          </span>
+        </span>
+      </label>
+
       <div className="flex flex-wrap items-center gap-3">
         <button disabled={busy} onClick={onAnalyze} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
@@ -545,127 +565,116 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
       </div>
     );
   }
-  return <ReportView report={data.analysis.report} onBack={onBack} title={data.analysis.name} />;
+  return <ReportView report={data.analysis.report} onBack={onBack} title={data.analysis.name} lastReviewedAt={data.analysis.lastReviewedAt ?? data.analysis.createdAt} />;
 }
 
 // ─────────────────────────── REPORT ───────────────────────────
 
 const SECTION_STEPS: { id: string; label: string }[] = [
-  { id: "hero", label: "Portfolio Health" },
   { id: "summary", label: "Executive Summary" },
-  { id: "snapshot", label: "Snapshot" },
-  { id: "visuals", label: "Allocation Charts" },
-  { id: "meters", label: "Risk & Concentration" },
-  { id: "compare", label: "Allocation vs Recommended" },
-  { id: "quality", label: "Portfolio Quality" },
-  { id: "peers", label: "Similar Investor" },
-  { id: "strengths", label: "What's Working" },
-  { id: "risks", label: "Risks & Gaps" },
-  { id: "intel", label: "Portfolio Intelligence" },
+  { id: "snapshot", label: "Portfolio Snapshot" },
+  { id: "allocation", label: "Portfolio Allocation" },
+  { id: "diagnostics", label: "Portfolio Diagnostics" },
+  { id: "holdings", label: "Fund & Stock Intelligence" },
+  { id: "peers", label: "Peer Benchmark" },
   { id: "actions", label: "Recommended Actions" },
   { id: "guide", label: "NitiGuide™" },
 ];
 
-
-function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack: () => void; title?: string }) {
+function ReportView({
+  report, onBack, title, lastReviewedAt,
+}: {
+  report: PortfolioReport;
+  onBack: () => void;
+  title?: string;
+  lastReviewedAt?: string;
+}) {
   const snapshot = report.snapshot;
-  const risk = report.riskMeter;
-  const goal = report.goalAlignment;
-  const positives = report.intelligence?.positives ?? report.strengths;
-  const insights = report.intelligence?.insights ?? report.observations;
   const rating = derivePortfolioRating(report.portfolioScore);
+  const tone = ratingClasses(rating.tone);
   const execSummary = report.executiveSummary ?? rating.label;
   const hero = report.hero;
   const alloc = report.allocationComparison ?? [];
-  const peer = report.similarInvestor;
-
+  const diagnostics = report.diagnostics ?? [];
+  const holdings = report.holdingIntelligence ?? [];
+  const peer = report.peerBenchmark;
+  const insights = report.insights ?? [];
+  const reviewed = lastReviewedAt ? new Date(lastReviewedAt) : new Date();
 
   return (
-    <div className="space-y-8">
-      <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
-      </button>
-
-      {/* Section jump nav */}
-      <nav className="rounded-2xl border border-border bg-card p-4 shadow-soft">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Portfolio review · sections</p>
-        <ol className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted-foreground">
-          {SECTION_STEPS.map((s, i) => (
-            <li key={s.id}>
-              <a href={`#pr-${s.id}`} className="hover:text-primary">
-                <span className="text-foreground/80">{String(i + 1).padStart(2, "0")}.</span> {s.label}
-              </a>
-            </li>
+    <div className="space-y-10">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
+        </button>
+        <nav className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-medium text-muted-foreground">
+          {SECTION_STEPS.map((s) => (
+            <a key={s.id} href={`#pr-${s.id}`} className="hover:text-primary">{s.label}</a>
           ))}
-        </ol>
-      </nav>
+        </nav>
+      </div>
 
-      {/* 1. HERO — Portfolio Rating */}
-      <section id="pr-hero" className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary-soft/50 via-card to-card p-8 shadow-elevated md:p-14">
+      {/* 1. EXECUTIVE SUMMARY */}
+      <section id="pr-summary" className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary-soft/40 via-card to-card p-8 shadow-elevated md:p-12">
         <div className="grid gap-10 md:grid-cols-[auto,1fr] md:items-center md:gap-14">
           <HeroScore score={report.portfolioScore} label={rating.label} />
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Portfolio Rating</span>
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${ratingClasses(rating.tone).bg} ${ratingClasses(rating.tone).text}`}>
-                Grade {rating.grade}
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Executive summary</span>
+              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${tone.bg} ${tone.text}`}>
+                Grade {rating.grade} · {rating.label}
               </span>
+              {report.isPrimary && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-success">
+                  <CheckCircle2 className="h-3 w-3" /> Linked to NitiCore™
+                </span>
+              )}
             </div>
-            <h2 className="mt-3 font-display text-3xl leading-[1.1] tracking-tight text-foreground md:text-5xl">
+            <h2 className="mt-3 font-display text-3xl leading-[1.12] tracking-tight text-foreground md:text-[2.75rem]">
               {hero?.verdict ?? rating.label}
             </h2>
-            {title && <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>}
+            {title && <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{title}</p>}
+            <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-foreground/85">{execSummary}</p>
             {hero?.keyInsights && hero.keyInsights.length > 0 && (
-              <ul className="mt-8 space-y-3.5">
+              <ul className="mt-6 space-y-2.5">
                 {hero.keyInsights.map((k, i) => (
-                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-foreground/90">
+                  <li key={i} className="flex gap-3 text-sm leading-relaxed text-foreground/90">
                     <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                     <span>{k}</span>
                   </li>
                 ))}
               </ul>
             )}
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-              <span><span className="font-semibold text-foreground">{formatInr(report.totalValue)}</span> · total value</span>
-              <span><span className="font-semibold text-foreground">{report.holdingCount}</span> holdings</span>
-              {snapshot && <span><span className="font-semibold text-foreground">{snapshot.riskLevelLabel}</span> risk</span>}
-            </div>
           </div>
         </div>
       </section>
 
-      {/* 2. Executive Summary */}
-      <section id="pr-summary" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Executive summary</p>
-        </div>
-        <p className="mt-3 text-lg leading-relaxed text-foreground/90">{execSummary}</p>
-        <p className="mt-4 rounded-lg bg-surface p-3 text-[11px] text-muted-foreground">{report.contextSummary}</p>
-      </section>
-
-      {/* 3. Portfolio Snapshot */}
-      <section id="pr-snapshot" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="Portfolio snapshot" subtitle="A quick read of what this portfolio looks like today." />
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {/* 2. PORTFOLIO SNAPSHOT */}
+      <section id="pr-snapshot">
+        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="Portfolio snapshot" subtitle="The six facts that frame everything below." />
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <SnapCard label="Portfolio value" value={snapshot?.valueLabel ?? formatInr(report.totalValue)} />
-          <SnapCard label="Holdings" value={snapshot?.holdingsLabel ?? String(report.holdingCount)} />
-          <SnapCard label="Portfolio style" value={snapshot?.style ?? "Portfolio building in progress"} />
-          <SnapCard label="Diversification" value={snapshot?.diversificationBand ?? `${report.diversificationScore}/100`} />
-          <SnapCard label="Risk level" value={snapshot?.riskLevelLabel ?? "Being established"} />
-          <SnapCard
-            label="Largest holding"
-            value={snapshot?.largestHolding ?? (report.topHoldings[0]?.name ?? "—")}
-            sub={snapshot ? `${snapshot.largestHoldingPct}% of portfolio` : undefined}
-          />
-          <SnapCard label="Investment behaviour" value={snapshot?.investmentBehaviour ?? "Portfolio building in progress"} className="sm:col-span-2" />
+          <SnapCard label="Holdings" value={String(report.holdingCount)} sub={snapshot?.style} />
+          <SnapCard label="Portfolio rating" value={`${rating.label} · Grade ${rating.grade}`} sub={`${report.portfolioScore}/100 deterministic`} />
+          <SnapCard label="Largest risk" value={report.largestRisk ?? report.gaps[0]?.title ?? "None flagged"} />
+          <SnapCard label="Biggest strength" value={report.biggestStrength ?? report.strengths[0]?.title ?? "Being established"} />
+          <SnapCard label="Last reviewed" value={reviewed.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} />
         </div>
       </section>
 
-      {/* 4. Visualisations — proper charts */}
-      <section id="pr-visuals" className="space-y-4">
-        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Portfolio allocation" subtitle="Understand the structure of the portfolio at a glance." />
-        <div className="grid gap-4 lg:grid-cols-3">
+      {/* 3. PORTFOLIO ALLOCATION */}
+      <section id="pr-allocation" className="space-y-5">
+        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Portfolio allocation" subtitle="Not just what percentage — whether that percentage should worry you." />
+        {alloc.length > 0 && (
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
+            <h4 className="font-display text-lg text-foreground">You vs recommended vs peers</h4>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Recommended comes from NitiCore™ for your age, risk profile and life stage. Peer average is what investors in your cohort typically hold.
+            </p>
+            <div className="mt-6"><AllocationBars rows={alloc} /></div>
+          </div>
+        )}
+        <div className="grid gap-5 xl:grid-cols-2">
           <Donut
             title="Asset allocation"
             subtitle="Where your money sits by asset class."
@@ -675,217 +684,118 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
           />
           <Donut
             title="Market cap mix"
-            subtitle="Large / mid / small distribution across equity."
+            subtitle="Large, mid and small exposure across the equity sleeve."
             slices={report.allocation.byMarketCap}
-            empty="Market-cap data appears once equity holdings are enriched."
+            empty="Market-cap data appears once equity holdings are matched."
           />
           <Donut
             title="Sector mix"
             subtitle="Sector spread across identified holdings."
             slices={report.allocation.bySector}
-            empty="Sector data appears once holdings are enriched."
+            empty="Sector data appears once holdings are matched to listed securities."
           />
+          <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
+            <h4 className="font-display text-lg text-foreground">Holdings distribution</h4>
+            <p className="mt-1 text-xs text-muted-foreground">Anything above 25% is shown in red — that position now drives your outcome.</p>
+            <div className="mt-6"><HoldingsDistribution rows={report.topHoldings} /></div>
+          </div>
         </div>
       </section>
 
-      {/* 4b. Risk / Diversification / Concentration meters */}
-      <section id="pr-meters" className="space-y-4">
-        <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Risk & diversification" subtitle="How the portfolio behaves — beyond just what it holds." />
-        <div className="grid gap-4 lg:grid-cols-3">
-          <Gauge
-            title="Portfolio risk"
-            subtitle={`Target ~${risk?.targetEquityPct ?? 0}% equity for your age & profile`}
-            value={risk?.equityPct ?? 0}
-            label={risk?.label ?? "—"}
-            tone={risk && Math.abs((risk.equityPct ?? 0) - (risk.targetEquityPct ?? 0)) <= 8 ? "success" : "warning"}
-            footer={risk ? `${risk.equityPct}% equity now` : undefined}
-          />
-          <Gauge
-            title="Diversification"
-            subtitle="Higher = spread across more asset classes."
-            value={report.diversificationScore}
-            label={snapshot?.diversificationBand ?? "—"}
-            tone={report.diversificationScore >= 70 ? "success" : report.diversificationScore >= 45 ? "primary" : "warning"}
-          />
-          <Gauge
-            title="Concentration"
-            subtitle="Lower = single holdings do not dominate."
-            value={Math.max(0, 100 - report.concentrationScore)}
-            label={report.concentrationScore <= 30 ? "Well spread" : report.concentrationScore <= 50 ? "Moderate" : "Concentrated"}
-            tone={report.concentrationScore <= 30 ? "success" : report.concentrationScore <= 50 ? "warning" : "danger"}
-            footer={report.topHoldings[0] ? `Largest: ${report.topHoldings[0].pct}%` : undefined}
-          />
-        </div>
-        {report.topHoldings.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-            <h4 className="text-sm font-semibold text-foreground">Top holdings</h4>
-            <ul className="mt-3 space-y-2.5">
-              {report.topHoldings.map((h) => (
-                <li key={h.name}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-foreground">{h.name}<span className="ml-2 text-[11px] text-muted-foreground">{ASSET_CLASS_LABEL[h.assetClass]}</span></span>
-                    <span className="font-mono text-muted-foreground">{h.pct}%</span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div className="h-full bg-primary" style={{ width: `${Math.min(100, h.pct)}%` }} />
-                  </div>
+      {/* 4. PORTFOLIO DIAGNOSTICS */}
+      {diagnostics.length > 0 && (
+        <section id="pr-diagnostics">
+          <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Portfolio diagnostics" subtitle="Six structural checks, each scored deterministically by NitiCore™." />
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {diagnostics.map((d) => <DiagnosticCard key={d.id} d={d} />)}
+          </div>
+          {insights.length > 0 && (
+            <ul className="mt-5 grid gap-3 lg:grid-cols-2">
+              {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {/* 5. FUND & STOCK INTELLIGENCE */}
+      {holdings.length > 0 && (
+        <section id="pr-holdings">
+          <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Fund & stock intelligence" subtitle="What each major holding actually is, and the job it is doing in this portfolio." />
+          <div className="mt-5 space-y-3">
+            {holdings.map((h) => <HoldingCard key={`${h.name}-${h.pct}`} h={h} />)}
+          </div>
+        </section>
+      )}
+
+      {/* 6. PEER BENCHMARK */}
+      {peer && (
+        <section id="pr-peers">
+          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Peer benchmark" subtitle={peer.cohort} />
+          <div className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
+            <PeerBars rows={peer.rows} />
+            <ul className="mt-6 divide-y divide-border/70 border-t border-border/70">
+              {peer.rows.map((r) => (
+                <li key={r.label} className="flex flex-wrap items-baseline justify-between gap-2 py-2.5 text-sm">
+                  <span className="font-medium text-foreground">{r.label}</span>
+                  <span className="flex items-center gap-4">
+                    <span className="font-mono text-xs tabular-nums text-foreground">{r.you}{r.unit}</span>
+                    <span className="font-mono text-xs tabular-nums text-muted-foreground">peers {r.typical}{r.unit}</span>
+                    <span className="text-[11px] text-muted-foreground">{r.verdict}</span>
+                  </span>
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-        <div className="grid gap-4 md:grid-cols-2">
-          <GoalAlignmentCard goal={goal} />
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-            <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
-              <h4 className="text-sm font-semibold text-foreground">Portfolio shape</h4>
-            </div>
-            <p className="mt-3 font-display text-lg text-foreground">{snapshot?.style ?? "Building"}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{snapshot?.investmentBehaviour ?? "Add holdings to profile investment behaviour."}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Allocation vs Recommended — proper grouped bar chart */}
-      {alloc.length > 0 && (
-        <section id="pr-compare" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Allocation vs recommended" subtitle="How your mix compares with what NitiCore™ suggests for your age, risk profile and life stage." />
-          <div className="mt-4">
-            <AllocationBars rows={alloc} />
+            <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">{peer.note}</p>
           </div>
         </section>
       )}
 
-      {/* 5b. Portfolio Quality */}
-      {report.portfolioQuality && report.portfolioQuality.length > 0 && (
-        <section id="pr-quality" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <SectionHeading icon={<Award className="h-4 w-4 text-primary" />} title="Portfolio quality" subtitle="A holistic read on how well this portfolio is put together — beyond individual metrics." />
-          <ul className="mt-4 grid gap-3 md:grid-cols-2">
-            {report.portfolioQuality.map((q) => {
-              const tone =
-                q.tone === "positive" ? { icon: <CheckCircle2 className="h-4 w-4 text-success" />, border: "border-success/30 bg-success-soft/30" } :
-                q.tone === "watch" ? { icon: <AlertTriangle className="h-4 w-4 text-warning" />, border: "border-warning/30 bg-warning-soft/30" } :
-                { icon: <Info className="h-4 w-4 text-muted-foreground" />, border: "border-border/60 bg-surface" };
-              return (
-                <li key={q.id} className={`flex gap-3 rounded-xl border p-4 ${tone.border}`}>
-                  <span className="mt-0.5 shrink-0">{tone.icon}</span>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{q.title}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{q.detail}</p>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
-
-      {/* 6. Similar Investor */}
-      {peer && (
-        <section id="pr-peers" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Similar investor comparison" subtitle={`How your portfolio compares to a typical ${peer.lifeStage.toLowerCase()} investor with a ${peer.riskProfile.toLowerCase()} risk profile. Educational — not a ranking.`} />
-          <div className="mt-4 overflow-hidden rounded-xl border border-border">
-            <table className="w-full text-sm">
-              <thead className="bg-surface text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-2 text-left">Metric</th>
-                  <th className="px-4 py-2 text-right">Your portfolio</th>
-                  <th className="px-4 py-2 text-right">Typical investor</th>
-                </tr>
-              </thead>
-              <tbody>
-                {peer.metrics.map((m) => (
-                  <tr key={m.label} className="border-t border-border">
-                    <td className="px-4 py-2 text-foreground">{m.label}</td>
-                    <td className="px-4 py-2 text-right font-mono text-foreground">{m.you}</td>
-                    <td className="px-4 py-2 text-right font-mono text-muted-foreground">{m.typical}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* 7. RECOMMENDED ACTIONS */}
+      <section id="pr-actions">
+        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Recommended actions" subtitle="Ordered by what matters most, given your whole financial context." />
+        {report.recommendations.length === 0 ? (
+          <div className="mt-5 rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
+            No priority actions right now. Revisit after any material change to income, goals or life stage.
           </div>
-        </section>
-      )}
-
-      {/* 7. Strengths */}
-      <section id="pr-strengths">
-        <FindingsBlock title="What is working" tone="success" findings={positives} emptyLabel="Strengths will appear once your portfolio has enough data." />
-      </section>
-
-      {/* 8. Risks & Gaps */}
-      <section id="pr-risks">
-        <FindingsBlock title="Risks & gaps" tone="danger" findings={report.gaps} emptyLabel="No material risks were flagged — keep monitoring quarterly." />
-      </section>
-
-      {/* 7. Portfolio Intelligence */}
-      <section id="pr-intel" className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Portfolio intelligence" subtitle="What is worth understanding beyond the raw numbers." />
-        {insights.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No additional insights right now.</p>
         ) : (
-          <ul className="mt-4 grid gap-3 md:grid-cols-2">
-            {insights.map((f) => (
-              <li key={f.id} className="rounded-xl border border-border/60 bg-surface p-4">
-                <p className="text-sm font-semibold text-foreground">{f.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{f.detail}</p>
+          <ul className="mt-5 space-y-3">
+            {report.recommendations.map((r) => (
+              <li key={r.id} className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-display text-lg leading-snug text-foreground">{r.title}</p>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                    r.priority === "high" ? "bg-destructive/10 text-destructive" :
+                    r.priority === "medium" ? "bg-accent/15 text-accent-foreground" :
+                    "bg-muted text-muted-foreground"
+                  }`}>{r.priority}</span>
+                </div>
+                <p className="mt-1.5 text-xs text-muted-foreground">{r.reason}</p>
+                <p className="mt-3 text-sm text-foreground/90"><strong className="font-semibold">Expected benefit:</strong> {r.expectedBenefit}</p>
+                {r.tradeOffs.length > 0 && (
+                  <p className="mt-1.5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground/80">Trade-offs:</strong> {r.tradeOffs.join(" ")}</p>
+                )}
+                {r.crossPillarNote && (
+                  <p className="mt-3 rounded-lg bg-accent/10 px-3 py-1.5 text-[11px] text-accent-foreground">{r.crossPillarNote}</p>
+                )}
               </li>
             ))}
           </ul>
         )}
       </section>
 
-      {/* 8. Recommended Actions */}
-      <section id="pr-actions">
-        {report.recommendations.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
-            No priority actions right now. Revisit this portfolio after any material change (income, goals, life event).
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-            <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Recommended actions" subtitle="Ordered by what matters most, given your whole financial context." />
-            <ul className="mt-4 space-y-3">
-              {report.recommendations.map((r) => (
-                <li key={r.id} className="rounded-xl border border-border bg-surface p-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-semibold text-foreground">{r.title}</p>
-                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                      r.priority === "high" ? "bg-destructive/10 text-destructive" :
-                      r.priority === "medium" ? "bg-accent/15 text-accent-foreground" :
-                      "bg-muted text-muted-foreground"
-                    }`}>{r.priority}</span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{r.reason}</p>
-                  <p className="mt-2 text-sm text-foreground/90"><strong>Expected benefit:</strong> {r.expectedBenefit}</p>
-                  {r.tradeOffs.length > 0 && (
-                    <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-muted-foreground">
-                      {r.tradeOffs.map((t, i) => <li key={i}>{t}</li>)}
-                    </ul>
-                  )}
-                  {r.crossPillarNote && (
-                    <p className="mt-2 rounded-md bg-accent/10 px-2 py-1 text-[11px] text-accent-foreground">{r.crossPillarNote}</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      {/* 9. NitiGuide */}
+      {/* 8. NITIGUIDE */}
       <section id="pr-guide">
         {report.mentorSummary ? (
-          <div className="rounded-2xl border border-primary/30 bg-primary-soft/30 p-6">
+          <div className="rounded-3xl border border-primary/30 bg-primary-soft/25 p-7 md:p-10">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">NitiGuide™ · portfolio review</p>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">NitiGuide™ · portfolio mentor</p>
             </div>
-            <div className="mt-3 space-y-3 whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+            <div className="mt-5 max-w-3xl space-y-4 whitespace-pre-wrap text-[15px] leading-[1.75] text-foreground/90">
               {report.mentorSummary}
             </div>
-            <p className="mt-3 text-[11px] text-muted-foreground">
-              NitiGuide explains the deterministic findings above. It never recommends specific funds or predicts returns.
+            <p className="mt-6 text-[11px] text-muted-foreground">
+              NitiGuide teaches and explains. Every number and recommendation above is calculated deterministically by NitiCore™.
             </p>
           </div>
         ) : (
@@ -906,6 +816,98 @@ function ReportView({ report, onBack, title }: { report: PortfolioReport; onBack
     </div>
   );
 }
+
+function DiagnosticCard({ d }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic }) {
+  const map = {
+    good: { text: "text-success", bar: "bg-success", chip: "bg-success-soft text-success", word: "Healthy" },
+    watch: { text: "text-warning", bar: "bg-warning", chip: "bg-warning-soft text-warning", word: "Watch" },
+    action: { text: "text-destructive", bar: "bg-destructive", chip: "bg-destructive/10 text-destructive", word: "Act" },
+  }[d.status];
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
+      <div className="flex items-center justify-between gap-2">
+        <h4 className="text-sm font-semibold text-foreground">{d.label}</h4>
+        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${map.chip}`}>{map.word}</span>
+      </div>
+      <p className={`mt-3 font-display text-xl ${map.text}`}>{d.valueLabel}</p>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className={`h-full rounded-full ${map.bar}`} style={{ width: `${Math.max(4, Math.min(100, d.score))}%` }} />
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">{d.targetLabel}</p>
+      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{d.detail}</p>
+    </div>
+  );
+}
+
+function InsightCard({ insight }: { insight: import("@/lib/portfolio-analyzer/types").PortfolioInsight }) {
+  const icon = insight.severity === "risk"
+    ? <AlertTriangle className="h-4 w-4 text-destructive" />
+    : insight.severity === "gap"
+      ? <Info className="h-4 w-4 text-warning" />
+      : <Info className="h-4 w-4 text-muted-foreground" />;
+  return (
+    <li className="rounded-2xl border border-border bg-surface p-5">
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 shrink-0">{icon}</span>
+        <p className="text-sm font-semibold leading-snug text-foreground">{insight.title}</p>
+      </div>
+      <dl className="mt-3 space-y-2 text-xs leading-relaxed">
+        <div><dt className="inline font-semibold text-foreground/80">Why it matters. </dt><dd className="inline text-muted-foreground">{insight.whyItMatters}</dd></div>
+        <div><dt className="inline font-semibold text-foreground/80">Potential impact. </dt><dd className="inline text-muted-foreground">{insight.impact}</dd></div>
+        <div><dt className="inline font-semibold text-foreground/80">Suggested action. </dt><dd className="inline text-muted-foreground">{insight.action}</dd></div>
+      </dl>
+    </li>
+  );
+}
+
+function HoldingCard({ h }: { h: import("@/lib/portfolio-analyzer/types").HoldingIntelligence }) {
+  return (
+    <article className="rounded-2xl border border-border bg-card p-5 shadow-soft md:p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h4 className="font-display text-lg leading-snug text-foreground">{h.name}</h4>
+        <span className="font-mono text-xs tabular-nums text-muted-foreground">{h.pct}% · {formatInr(h.value)}</span>
+      </div>
+      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-secondary">
+        {h.kind === "fund" ? "Mutual fund" : h.kind === "stock" ? "Direct equity" : ASSET_CLASS_LABEL[h.assetClass]}
+      </p>
+      <dl className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+        {h.facts.map((f) => (
+          <div key={f.label} className="flex items-baseline justify-between gap-3 border-b border-border/60 pb-1.5">
+            <dt className="text-[11px] uppercase tracking-wider text-muted-foreground">{f.label}</dt>
+            <dd className="truncate text-xs font-medium text-foreground">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+      {h.objective && <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{h.objective}</p>}
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {h.strengths.length > 0 && (
+          <div className="rounded-xl bg-success-soft/40 p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-success">Strengths</p>
+            <ul className="mt-1.5 space-y-1 text-xs text-foreground/85">
+              {h.strengths.map((s, i) => <li key={i}>{s}</li>)}
+            </ul>
+          </div>
+        )}
+        {h.risks.length > 0 && (
+          <div className="rounded-xl bg-warning-soft/40 p-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-warning">Risks</p>
+            <ul className="mt-1.5 space-y-1 text-xs text-foreground/85">
+              {h.risks.map((s, i) => <li key={i}>{s}</li>)}
+            </ul>
+          </div>
+        )}
+      </div>
+      <p className="mt-4 text-xs text-foreground/90"><strong className="font-semibold">Suggested role.</strong> {h.suggestedRole}</p>
+      {h.aiSummary && (
+        <p className="mt-3 flex gap-2 rounded-xl bg-primary-soft/30 p-3 text-xs leading-relaxed text-foreground/85">
+          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          <span>{h.aiSummary}</span>
+        </p>
+      )}
+    </article>
+  );
+}
+
 
 // ─────────────────────────── ATOMS ───────────────────────────
 
@@ -948,174 +950,6 @@ function ScorePill({ score, large }: { score: number; large?: boolean }) {
   return (
     <div className={`rounded-full ${large ? "px-4 py-2 text-lg" : "px-2.5 py-1 text-xs"} font-semibold ${tone}`}>
       {score}/100
-    </div>
-  );
-}
-
-function ScoreDial({ score }: { score: number }) {
-  const s = Math.max(0, Math.min(100, score));
-  const color =
-    s >= 75 ? "var(--color-success, #16a34a)" :
-    s >= 55 ? "var(--color-secondary, #6366f1)" :
-    "var(--color-destructive, #dc2626)";
-  const bg = `conic-gradient(${color} ${s * 3.6}deg, hsl(var(--muted)) 0deg)`;
-  return (
-    <div className="relative flex h-32 w-32 shrink-0 items-center justify-center rounded-full" style={{ background: bg }}>
-      <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-card">
-        <span className="font-display text-3xl leading-none text-foreground">{s}</span>
-        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">/ 100</span>
-      </div>
-    </div>
-  );
-}
-
-const SLICE_COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--secondary))",
-  "hsl(var(--accent))",
-  "#f59e0b",
-  "#0ea5e9",
-  "#a855f7",
-  "#ef4444",
-];
-
-function DonutCard({ title, slices, empty }: { title: string; slices: { label: string; pct: number; value: number }[]; empty?: string }) {
-  const top = slices.slice(0, 6);
-  let acc = 0;
-  const stops = top.map((s, i) => {
-    const start = acc;
-    acc += s.pct;
-    return `${SLICE_COLORS[i % SLICE_COLORS.length]} ${start * 3.6}deg ${acc * 3.6}deg`;
-  }).join(", ");
-  const remainder = Math.max(0, 100 - acc);
-  const bg =
-    top.length === 0
-      ? `conic-gradient(hsl(var(--muted)) 0deg 360deg)`
-      : `conic-gradient(${stops}${remainder > 0 ? `, hsl(var(--muted)) ${acc * 3.6}deg 360deg` : ""})`;
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <h4 className="text-sm font-semibold text-foreground">{title}</h4>
-      {top.length === 0 ? (
-        <p className="mt-3 text-xs text-muted-foreground">{empty ?? "No data yet."}</p>
-      ) : (
-        <div className="mt-3 flex gap-4">
-          <div className="relative h-24 w-24 shrink-0 rounded-full" style={{ background: bg }}>
-            <div className="absolute inset-3 rounded-full bg-card" />
-          </div>
-          <ul className="flex-1 space-y-1 text-[11px]">
-            {top.map((s, i) => (
-              <li key={s.label} className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 truncate text-foreground">
-                  <span className="h-2 w-2 shrink-0 rounded-sm" style={{ background: SLICE_COLORS[i % SLICE_COLORS.length] }} />
-                  <span className="truncate">{s.label}</span>
-                </span>
-                <span className="font-mono text-muted-foreground">{s.pct}%</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function MeterCard({
-  title, icon, label, value, target, valueLabel, targetLabel,
-}: {
-  title: string; icon: React.ReactNode; label: string;
-  value: number; target: number; valueLabel: string; targetLabel: string;
-}) {
-  const v = Math.max(0, Math.min(100, value));
-  const t = Math.max(0, Math.min(100, target));
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-center gap-2">
-        {icon}
-        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
-      </div>
-      <p className="mt-3 font-display text-lg text-foreground">{label}</p>
-      <div className="relative mt-3 h-2 rounded-full bg-muted">
-        <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${v}%` }} />
-        <div className="absolute -top-1 h-4 w-0.5 bg-foreground/70" style={{ left: `${t}%` }} title={targetLabel} />
-      </div>
-      <div className="mt-2 flex justify-between text-[11px] text-muted-foreground">
-        <span>{valueLabel}</span>
-        <span>{targetLabel}</span>
-      </div>
-    </div>
-  );
-}
-
-function ConcentrationCard({ topHoldings }: { topHoldings: { name: string; pct: number }[] }) {
-  const top = topHoldings[0];
-  const topPct = top?.pct ?? 0;
-  const band =
-    topPct >= 25 ? { label: "High concentration", tone: "text-destructive" } :
-    topPct >= 15 ? { label: "Moderate concentration", tone: "text-accent-foreground" } :
-    topPct === 0 ? { label: "No holdings yet", tone: "text-muted-foreground" } :
-    { label: "Well spread", tone: "text-success" };
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-center gap-2">
-        <Layers className="h-4 w-4 text-primary" />
-        <h4 className="text-sm font-semibold text-foreground">Concentration</h4>
-      </div>
-      <p className={`mt-3 font-display text-lg ${band.tone}`}>{band.label}</p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Largest holding {top ? `(${top.name})` : ""} is <span className="font-mono">{topPct}%</span> of the portfolio.
-      </p>
-      <div className="mt-3 h-2 rounded-full bg-muted">
-        <div
-          className={`h-full rounded-full ${topPct >= 25 ? "bg-destructive" : topPct >= 15 ? "bg-accent" : "bg-success"}`}
-          style={{ width: `${Math.min(100, topPct * 2)}%` }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function GoalAlignmentCard({ goal }: { goal: PortfolioReport["goalAlignment"] }) {
-  const tone =
-    goal?.status === "aligned" ? "text-success" :
-    goal?.status === "under_allocated" || goal?.status === "over_allocated" ? "text-accent-foreground" :
-    "text-muted-foreground";
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-center gap-2">
-        <Target className="h-4 w-4 text-primary" />
-        <h4 className="text-sm font-semibold text-foreground">Goal alignment</h4>
-      </div>
-      <p className={`mt-3 font-display text-lg ${tone}`}>{goal?.label ?? "—"}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{goal?.note ?? "Add profile data to assess alignment."}</p>
-    </div>
-  );
-}
-
-function FindingsBlock({
-  title, tone, findings, emptyLabel,
-}: {
-  title: string; tone: "success" | "danger" | "muted";
-  findings: { id: string; title: string; detail: string }[];
-  emptyLabel?: string;
-}) {
-  const badge = tone === "success" ? <CheckCircle2 className="h-4 w-4 text-success" /> :
-    tone === "danger" ? <AlertTriangle className="h-4 w-4 text-destructive" /> :
-    <Info className="h-4 w-4 text-muted-foreground" />;
-  return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-      <div className="flex items-center gap-2">{badge}<h3 className="font-display text-lg text-foreground">{title}</h3></div>
-      {findings.length === 0 ? (
-        <p className="mt-3 text-sm text-muted-foreground">{emptyLabel ?? "Nothing to report here."}</p>
-      ) : (
-        <ul className="mt-3 grid gap-3 md:grid-cols-2">
-          {findings.map((f) => (
-            <li key={f.id} className="rounded-xl border border-border/60 bg-surface p-3">
-              <p className="text-sm font-semibold text-foreground">{f.title}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{f.detail}</p>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }

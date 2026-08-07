@@ -141,27 +141,93 @@ export function Gauge({ title, subtitle, value, label, tone = "primary", footer 
   );
 }
 
-export function AllocationBars({ rows }: { rows: { label: string; you: number; recommended: number }[] }) {
-  const data = rows.map((r) => ({ name: r.label, You: r.you, Recommended: r.recommended }));
+/** Distinct series colours — You / Recommended / Peer average. */
+export const SERIES_COLORS = {
+  you: "#6366f1",
+  recommended: "#14b8a6",
+  peer: "#f59e0b",
+};
+
+export function AllocationBars({ rows }: { rows: { label: string; you: number; recommended: number; peer?: number }[] }) {
+  const hasPeer = rows.some((r) => typeof r.peer === "number");
+  const data = rows.map((r) => ({
+    name: r.label,
+    You: r.you,
+    Recommended: r.recommended,
+    ...(hasPeer ? { "Peer average": r.peer ?? 0 } : {}),
+  }));
   return (
-    <div className="h-[260px] w-full">
+    <div className="h-[320px] w-full">
       <ResponsiveContainer>
-        <BarChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: -8 }}>
+        <BarChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: -8 }} barGap={4}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
           <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }} axisLine={{ stroke: "hsl(var(--border))" }} tickLine={false} />
           <YAxis unit="%" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
           <Tooltip
-            contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+            cursor={{ fill: "hsl(var(--muted))", opacity: 0.35 }}
+            contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }}
             formatter={(v: number, n) => [`${v}%`, n as string]}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Bar dataKey="You" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-          <Bar dataKey="Recommended" fill="hsl(var(--secondary))" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="You" fill={SERIES_COLORS.you} radius={[6, 6, 0, 0]} />
+          <Bar dataKey="Recommended" fill={SERIES_COLORS.recommended} radius={[6, 6, 0, 0]} />
+          {hasPeer && <Bar dataKey="Peer average" fill={SERIES_COLORS.peer} radius={[6, 6, 0, 0]} />}
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 }
+
+/** Horizontal distribution of individual holdings by share of portfolio. */
+export function HoldingsDistribution({ rows }: { rows: { name: string; pct: number }[] }) {
+  const data = rows.slice(0, 10).map((r) => ({ name: r.name.length > 26 ? `${r.name.slice(0, 25)}…` : r.name, Share: r.pct }));
+  if (data.length === 0) return null;
+  return (
+    <div style={{ height: Math.max(200, data.length * 38) }} className="w-full">
+      <ResponsiveContainer>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 24, bottom: 4, left: 8 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+          <XAxis type="number" unit="%" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" width={170} tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+          <Tooltip
+            cursor={{ fill: "hsl(var(--muted))", opacity: 0.35 }}
+            contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }}
+            formatter={(v: number) => [`${v}%`, "Share"]}
+          />
+          <Bar dataKey="Share" radius={[0, 6, 6, 0]}>
+            {data.map((d, i) => (
+              <Cell key={i} fill={d.Share >= 25 ? "hsl(var(--destructive))" : d.Share >= 15 ? SERIES_COLORS.peer : SERIES_COLORS.you} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** Peer benchmark — you vs your cohort, per metric. */
+export function PeerBars({ rows }: { rows: { label: string; you: number; typical: number; unit: string }[] }) {
+  const data = rows.map((r) => ({ name: r.label, You: r.you, "Peer cohort": r.typical }));
+  return (
+    <div style={{ height: Math.max(260, data.length * 46) }} className="w-full">
+      <ResponsiveContainer>
+        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 24, bottom: 4, left: 8 }} barGap={2}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+          <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+          <YAxis type="category" dataKey="name" width={140} tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
+          <Tooltip
+            cursor={{ fill: "hsl(var(--muted))", opacity: 0.35 }}
+            contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }}
+          />
+          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Bar dataKey="You" fill={SERIES_COLORS.you} radius={[0, 5, 5, 0]} />
+          <Bar dataKey="Peer cohort" fill={SERIES_COLORS.peer} radius={[0, 5, 5, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 
 interface HeroScoreProps { score: number; label: string }
 
