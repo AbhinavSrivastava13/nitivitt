@@ -221,35 +221,58 @@ export function AllocationBars({ rows }: { rows: { label: string; you: number; r
   );
 }
 
-/** Horizontal distribution of individual holdings by share of portfolio. */
+/**
+ * Holdings distribution — the largest position is emphasised, the rest recede.
+ * The dashed line is the deterministic 15% concentration reference.
+ */
 export function HoldingsDistribution({ rows }: { rows: { name: string; pct: number }[] }) {
-  const data = rows.slice(0, 10).map((r) => ({ name: r.name.length > 24 ? `${r.name.slice(0, 23)}…` : r.name, Share: r.pct }));
+  const top = rows.slice(0, 10);
+  const data = top.map((r, i) => ({
+    name: r.name.length > 24 ? `${r.name.slice(0, 23)}…` : r.name,
+    fullName: r.name,
+    Share: r.pct,
+    rank: i,
+  }));
   if (data.length === 0) return null;
+  const top5 = Math.round(top.slice(0, 5).reduce((a, r) => a + r.pct, 0) * 10) / 10;
   return (
     <div>
       <div style={{ height: Math.max(200, data.length * 40) }} className="w-full">
         <ResponsiveContainer>
-          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 40, bottom: 4, left: 4 }}>
+          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 46, bottom: 4, left: 4 }}>
             <CartesianGrid strokeDasharray="2 6" stroke="hsl(var(--border))" horizontal={false} />
             <XAxis type="number" unit="%" tick={AXIS_TICK} axisLine={false} tickLine={false} />
             <YAxis type="category" dataKey="name" width={160} tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
-            <ReferenceLine x={15} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
+            <ReferenceLine
+              x={15}
+              stroke="hsl(var(--muted-foreground))"
+              strokeDasharray="4 4"
+              label={{ value: "15% concentration line", position: "top", fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
+            />
             <Tooltip
               cursor={{ fill: "hsl(var(--muted))", opacity: 0.25 }}
               contentStyle={TOOLTIP_STYLE}
-              formatter={(v: number) => [`${v}%`, "Share of portfolio"]}
+              formatter={(v: number, _n, p) => [
+                `${v}% of portfolio${(p?.payload?.rank ?? 9) < 5 ? " · top 5 holding" : ""}`,
+                (p?.payload?.fullName as string) ?? "Holding",
+              ]}
+              labelFormatter={() => ""}
             />
             <Bar dataKey="Share" radius={[0, 7, 7, 0]} maxBarSize={22}>
               {data.map((d, i) => (
-                <Cell key={i} fill={d.Share >= 25 ? "hsl(var(--destructive))" : d.Share >= 15 ? SERIES_COLORS.peer : SERIES_COLORS.you} />
+                <Cell
+                  key={i}
+                  fill={d.Share >= 25 ? "hsl(var(--destructive))" : d.Share >= 15 ? SERIES_COLORS.peer : SERIES_COLORS.you}
+                  fillOpacity={i === 0 ? 1 : i < 5 ? 0.82 : 0.45}
+                />
               ))}
               <LabelList dataKey="Share" position="right" formatter={(v: number) => `${v}%`} style={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <p className="mt-3 text-[11px] text-muted-foreground">
-        Dashed line marks 15% — the point beyond which one position starts to steer the whole portfolio.
+      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+        Largest holding is shown solid; your top five together are {top5}% of the portfolio. Past the dashed 15% line, one position starts to steer the whole outcome.
       </p>
     </div>
   );
