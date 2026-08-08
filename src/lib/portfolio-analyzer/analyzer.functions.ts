@@ -14,7 +14,9 @@ import { getRuntimeEnv } from "@/lib/runtime-env";
 import { callAiChat } from "@/lib/ai-gateway";
 import { evaluateContext, type NitiCoreInput } from "@/lib/niti-core";
 import { analyzePortfolio as runEngine } from "./engine";
+import { classifyUnidentifiedHoldings } from "./classify";
 import { createDefaultRegistry } from "./market-data";
+
 import type {
   Holding,
   PortfolioReport,
@@ -287,7 +289,8 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
       pnlPct: coerceNumber(h.pnlPct),
     })).filter((h) => h.name.length > 0);
 
-    // Enrichment (bounded, best-effort).
+    // Enrichment (bounded, best-effort). Deterministic market data first;
+    // AI classification only fills what those providers could not identify.
     if (data.enrich) {
       const registry = createDefaultRegistry();
       await Promise.all(
@@ -296,9 +299,11 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
           if (enrichment) h.enrichment = enrichment;
         }),
       );
+      await classifyUnidentifiedHoldings(holdings);
     }
 
     const report = runEngine({ holdings, input: nitiInput, context: ctx });
+
     report.isPrimary = data.isPrimary;
 
     if (data.narrate) {
