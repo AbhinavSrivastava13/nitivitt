@@ -146,6 +146,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
         reason: `Your current equity exposure exceeds NitiCore's age- and risk-adjusted target by ${(equityPct - targetEquityClamped).toFixed(0)}%.`,
         expectedBenefit: "Reduces sequence-of-return risk near medium-term goals; smoother portfolio path.",
         tradeOffs: ["Lower expected long-term return.", "Potential capital-gains tax on rebalancing."],
+        nextStep: "Redirect your next few monthly contributions into a debt or hybrid fund before selling any existing equity units.",
       });
     } else {
       gaps.push({
@@ -161,6 +162,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
         reason: "Under-allocation to equity for your horizon slows compounding.",
         expectedBenefit: "Higher expected real return over 10+ years.",
         tradeOffs: ["Higher interim volatility.", "Requires discipline during drawdowns."],
+        nextStep: "Start or increase a monthly SIP into a broad index fund rather than moving a lump sum in one go.",
       });
     }
   }
@@ -186,6 +188,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
       reason: `Concentration risk: one holding = ${topPct}% of total value.`,
       expectedBenefit: "Reduces idiosyncratic risk; a bad year for one name won't devastate the portfolio.",
       tradeOffs: ["Capital-gains tax on exit.", "May miss further upside if the holding continues to outperform."],
+      nextStep: "Point future contributions at your other holdings first; only trim existing units once the tax impact is clear.",
     });
   }
   if (top5Share >= 75 && cleaned.length > 5) {
@@ -268,6 +271,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
       reason: "NitiCore's hierarchy: Emergency > Insurance > Debt > Investments.",
       expectedBenefit: "Prevents forced equity sales at market lows.",
       tradeOffs: ["Slower near-term investment growth."],
+      nextStep: "Park the next few months of surplus in a liquid fund until six months of essentials are covered.",
       crossPillarNote: "This is a Financial Health priority, not a portfolio one.",
     });
   }
@@ -285,6 +289,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
       reason: "Protection sits above investment in NitiCore's hierarchy.",
       expectedBenefit: "Portfolio can compound without doubling as your family's safety net.",
       tradeOffs: ["Additional annual premium."],
+      nextStep: "Run the Insurance Analyzer to size the exact term top-up, then buy before adding new equity risk.",
       crossPillarNote: "Insurance Analyzer will size the exact top-up.",
     });
   }
