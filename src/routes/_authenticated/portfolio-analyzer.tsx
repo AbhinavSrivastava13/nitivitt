@@ -606,6 +606,8 @@ function ReportView({
   const peer = report.peerBenchmark;
   const insights = report.insights ?? [];
   const reviewed = lastReviewedAt ? new Date(lastReviewedAt) : new Date();
+  const equityPct = alloc.find((r) => r.label === "Equity")?.you ?? 0;
+  const debtPct = alloc.find((r) => r.label === "Debt")?.you ?? 0;
 
   return (
     <div className="space-y-10">
