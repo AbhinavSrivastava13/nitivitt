@@ -384,27 +384,112 @@ export function ProjectionChart({
   );
 }
 
-interface HeroScoreProps { score: number; label: string }
-
-export function HeroScore({ score, label }: HeroScoreProps) {
-  const s = Math.max(0, Math.min(100, score));
-  const tone = s >= 75 ? "success" : s >= 55 ? "primary" : "danger";
-  const color = TONE_COLORS[tone];
-  const data = [{ name: "score", value: s, fill: color }];
+/**
+ * You vs NitiCore™ Recommended — an explicit gap reader.
+ * Deliberately not a chart you have to decode: each row states both numbers
+ * and the distance between them in words.
+ */
+export function AllocationCompare({
+  rows,
+}: {
+  rows: { label: string; you: number; recommended: number }[];
+}) {
+  const max = Math.max(100, ...rows.flatMap((r) => [r.you, r.recommended]));
   return (
-    <div className="relative mx-auto h-[300px] w-[300px] md:h-[400px] md:w-[400px]">
-      <ResponsiveContainer>
-        <RadialBarChart innerRadius="82%" outerRadius="100%" data={data} startAngle={225} endAngle={-45}>
-          <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-          <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={24} />
-        </RadialBarChart>
-      </ResponsiveContainer>
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">NitiInvest™</span>
-        <span className="mt-3 font-display text-7xl leading-none text-foreground md:text-8xl">{s}</span>
-        <span className="mt-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">out of 100</span>
-        <span className="mt-4 max-w-[200px] text-center text-[13px] font-semibold text-foreground/90">{label}</span>
-      </div>
+    <div className="space-y-6">
+      <ChartLegend
+        items={[
+          { label: "You", color: SERIES_COLORS.you, hint: "current mix" },
+          { label: "NitiCore™ recommended", color: SERIES_COLORS.recommended, hint: "for your age, horizon & risk" },
+        ]}
+      />
+      <ul className="space-y-5">
+        {rows.map((r) => {
+          const gap = Math.round((r.you - r.recommended) * 10) / 10;
+          const aligned = Math.abs(gap) <= 5;
+          return (
+            <li key={r.label}>
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-[13px] font-semibold text-foreground">{r.label}</span>
+                <span className="font-mono text-[12px] tabular-nums text-foreground">
+                  {r.you}% <span className="px-1 text-muted-foreground">→</span> {r.recommended}%
+                </span>
+              </div>
+              <div className="mt-2 space-y-1.5">
+                <div className="h-3 w-full overflow-hidden rounded-full bg-muted/70">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
+                  />
+                </div>
+                <div className="h-3 w-full overflow-hidden rounded-full border border-dashed border-border bg-transparent">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${(r.recommended / max) * 100}%`,
+                      background: `repeating-linear-gradient(135deg, ${SERIES_COLORS.recommended} 0 6px, ${SERIES_COLORS.recommended}66 6px 12px)`,
+                    }}
+                  />
+                </div>
+              </div>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                {aligned
+                  ? "In line with the recommended band."
+                  : gap > 0
+                    ? `${Math.abs(gap)} percentage points above the recommended level.`
+                    : `${Math.abs(gap)} percentage points below the recommended level.`}
+              </p>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
+
+/** Premium segmented allocation bar — percentage and rupee value, no pie. */
+export function SegmentedAllocation({
+  slices,
+  formatValue,
+  empty,
+}: {
+  slices: Slice[];
+  formatValue: (n: number) => string;
+  empty?: string;
+}) {
+  const data = slices.filter((s) => s.pct > 0);
+  if (data.length === 0) {
+    return (
+      <p className="rounded-2xl border border-dashed border-border bg-surface p-5 text-xs leading-relaxed text-muted-foreground">
+        {empty ?? "Data unavailable."}
+      </p>
+    );
+  }
+  return (
+    <div>
+      <div className="flex h-4 w-full overflow-hidden rounded-full">
+        {data.map((s, i) => (
+          <span
+            key={s.label}
+            title={`${s.label} — ${s.pct}%`}
+            style={{ width: `${s.pct}%`, background: CHART_PALETTE[i % CHART_PALETTE.length] }}
+            className="h-full first:rounded-l-full last:rounded-r-full"
+          />
+        ))}
+      </div>
+      <ul className="mt-5 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+        {data.map((s, i) => (
+          <li key={s.label} className="flex items-baseline gap-2.5 border-b border-border/50 pb-1.5">
+            <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{s.label}</span>
+            <span className="font-mono text-[12px] tabular-nums text-foreground">{s.pct}%</span>
+            {s.value > 0 && (
+              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
