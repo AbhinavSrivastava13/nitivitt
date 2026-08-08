@@ -811,7 +811,138 @@ function ReportView({
   );
 }
 
-function DiagnosticCard({ d }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic }) {
+function SummaryPoint({ tone, label, body }: { tone: "good" | "risk" | "note" | "act"; label: string; body: string }) {
+  const cls = {
+    good: "border-success/30 bg-success-soft/40 text-success",
+    risk: "border-destructive/25 bg-destructive/5 text-destructive",
+    note: "border-border bg-surface text-muted-foreground",
+    act: "border-primary/30 bg-primary-soft/40 text-primary",
+  }[tone];
+  return (
+    <div className={`rounded-2xl border p-4 ${cls}`}>
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em]">{label}</p>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-foreground/90">{body}</p>
+    </div>
+  );
+}
+
+/** Compact diagnostic row — one line by default, reasoning on demand. */
+function DiagnosticRow({ d }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic }) {
+  const map = {
+    good: { chip: "bg-success-soft text-success", bar: "bg-success", word: "Healthy" },
+    watch: { chip: "bg-warning-soft text-warning", bar: "bg-warning", word: "Watch" },
+    action: { chip: "bg-destructive/10 text-destructive", bar: "bg-destructive", word: "Act" },
+  }[d.status];
+  return (
+    <details className="group">
+      <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 hover:bg-muted/40">
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{d.label}</span>
+        <span className="hidden w-40 sm:block">
+          <span className="block h-1.5 overflow-hidden rounded-full bg-muted">
+            <span className={`block h-full rounded-full ${map.bar}`} style={{ width: `${Math.max(4, Math.min(100, d.score))}%` }} />
+          </span>
+        </span>
+        <span className="w-28 shrink-0 text-right font-mono text-xs tabular-nums text-foreground">{d.valueLabel}</span>
+        <span className={`w-16 shrink-0 rounded-full px-2 py-0.5 text-center text-[10px] font-bold uppercase tracking-wider ${map.chip}`}>{map.word}</span>
+        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+      </summary>
+      <div className="space-y-2 border-t border-border/60 bg-surface px-5 py-4 text-xs leading-relaxed">
+        <p><strong className="font-semibold text-foreground/80">Why it matters. </strong><span className="text-muted-foreground">{d.detail}</span></p>
+        <p><strong className="font-semibold text-foreground/80">Target. </strong><span className="text-muted-foreground">{d.targetLabel}</span></p>
+      </div>
+    </details>
+  );
+}
+
+/** Holdings Intelligence Explorer — top five by default, searchable beyond that. */
+function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-analyzer/types").HoldingIntelligence[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const [q, setQ] = useState("");
+  const [openKey, setOpenKey] = useState<string | null>(null);
+  const list = useMemo(() => {
+    const base = showAll ? holdings : holdings.slice(0, 5);
+    const term = q.trim().toLowerCase();
+    return term ? holdings.filter((h) => h.name.toLowerCase().includes(term)) : base;
+  }, [holdings, showAll, q]);
+
+  return (
+    <div className="mt-5">
+      {showAll && (
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search holdings…"
+          className="mb-3 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm"
+        />
+      )}
+      <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
+        {list.map((h) => {
+          const key = `${h.name}-${h.pct}`;
+          const open = openKey === key;
+          return (
+            <div key={key}>
+              <button
+                onClick={() => setOpenKey(open ? null : key)}
+                className="flex w-full items-center gap-4 px-5 py-4 text-left hover:bg-muted/40"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-semibold text-foreground">{h.name}</span>
+                  <span className="mt-0.5 block text-[11px] uppercase tracking-wider text-muted-foreground">
+                    {h.kind === "fund" ? "Mutual fund" : h.kind === "stock" ? "Direct equity" : ASSET_CLASS_LABEL[h.assetClass]}
+                  </span>
+                </span>
+                <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{h.pct}% · {formatInr(h.value)}</span>
+                <ArrowRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform ${open ? "rotate-90" : ""}`} />
+              </button>
+              {open && (
+                <div className="border-t border-border/60 bg-surface px-5 py-5">
+                  <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {h.facts.map((f) => (
+                      <div key={f.label} className="flex items-baseline justify-between gap-3 border-b border-border/60 pb-1.5">
+                        <dt className="text-[11px] uppercase tracking-wider text-muted-foreground">{f.label}</dt>
+                        <dd className="truncate text-xs font-medium text-foreground">{f.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  {h.objective && <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{h.objective}</p>}
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    {h.strengths.length > 0 && (
+                      <div className="rounded-xl bg-success-soft/40 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-success">Strengths</p>
+                        <ul className="mt-1.5 space-y-1 text-xs text-foreground/85">{h.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                      </div>
+                    )}
+                    {h.risks.length > 0 && (
+                      <div className="rounded-xl bg-warning-soft/40 p-3">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-warning">Risks</p>
+                        <ul className="mt-1.5 space-y-1 text-xs text-foreground/85">{h.risks.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-4 text-xs text-foreground/90"><strong className="font-semibold">Suggested role.</strong> {h.suggestedRole}</p>
+                  {h.aiSummary && (
+                    <p className="mt-3 flex gap-2 rounded-xl bg-primary-soft/30 p-3 text-xs leading-relaxed text-foreground/85">
+                      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span>{h.aiSummary}</span>
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {list.length === 0 && <p className="px-5 py-6 text-sm text-muted-foreground">No holdings match that search.</p>}
+      </div>
+      {holdings.length > 5 && (
+        <button onClick={() => { setShowAll((v) => !v); setQ(""); }} className="mt-3 text-[11px] font-semibold text-primary hover:underline">
+          {showAll ? "Show top 5 holdings" : `View all ${holdings.length} holdings`}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function DiagnosticCardUnused({ d }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic }) {
   const map = {
     good: { text: "text-success", bar: "bg-success", chip: "bg-success-soft text-success", word: "Healthy" },
     watch: { text: "text-warning", bar: "bg-warning", chip: "bg-warning-soft text-warning", word: "Watch" },
