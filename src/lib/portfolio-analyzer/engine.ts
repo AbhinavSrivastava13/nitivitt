@@ -733,7 +733,9 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     insights: v2Insights,
     largestRisk,
     biggestStrength,
+    projection,
   };
+
 
 }
 
