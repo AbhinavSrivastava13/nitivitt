@@ -308,7 +308,10 @@ export interface PortfolioReport {
   largestRisk?: string;
   biggestStrength?: string;
   isPrimary?: boolean;
+  /** NitiInvest™ V3 — deterministic projection basis for the what-if simulator. */
+  projection?: ProjectionBasis;
 }
+
 
 
 
