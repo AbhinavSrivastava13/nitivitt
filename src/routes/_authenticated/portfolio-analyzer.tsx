@@ -999,14 +999,13 @@ function SnapCard({ label, value, sub, className }: { label: string; value: stri
   );
 }
 
-function ScorePill({ score, large }: { score: number; large?: boolean }) {
-  const tone =
-    score >= 75 ? "bg-success-soft text-success" :
-    score >= 55 ? "bg-secondary-soft text-secondary" :
-    "bg-destructive/10 text-destructive";
+/** Qualitative rating only — NitiVitt no longer surfaces an "out of 100" score. */
+function RatingPill({ score }: { score: number }) {
+  const r = derivePortfolioRating(score);
+  const t = ratingClasses(r.tone);
   return (
-    <div className={`rounded-full ${large ? "px-4 py-2 text-lg" : "px-2.5 py-1 text-xs"} font-semibold ${tone}`}>
-      {score}/100
+    <div className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${t.bg} ${t.text}`}>
+      {r.label} · Grade {r.grade}
     </div>
   );
 }
