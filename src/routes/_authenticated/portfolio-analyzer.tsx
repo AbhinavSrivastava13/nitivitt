@@ -576,10 +576,12 @@ const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "allocation", label: "Portfolio Allocation" },
   { id: "diagnostics", label: "Portfolio Diagnostics" },
   { id: "holdings", label: "Fund & Stock Intelligence" },
+  { id: "projection", label: "Portfolio Projection" },
   { id: "peers", label: "Peer Benchmark" },
   { id: "actions", label: "Recommended Actions" },
   { id: "guide", label: "NitiGuide™" },
 ];
+
 
 function ReportView({
   report, onBack, title, lastReviewedAt,
