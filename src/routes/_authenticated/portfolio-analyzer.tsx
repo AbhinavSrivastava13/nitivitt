@@ -183,7 +183,7 @@ function Workspace({
                   </p>
                   <h3 className="mt-1 font-display text-lg text-foreground">{a.name}</h3>
                 </div>
-                <ScorePill score={a.portfolioScore} />
+                <RatingPill score={a.portfolioScore} />
                 {a.isPrimary && (
                   <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success">My portfolio</span>
                 )}
