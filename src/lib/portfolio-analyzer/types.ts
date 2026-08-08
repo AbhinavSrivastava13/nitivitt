@@ -127,6 +127,8 @@ export interface PortfolioRecommendation {
   reason: string;
   expectedBenefit: string;
   tradeOffs: string[];
+  /** Deterministic, concrete first move. */
+  nextStep?: string;
   opportunityCost?: string;
   crossPillarNote?: string;
 }
@@ -253,6 +255,7 @@ export interface ProjectionPoint {
   year: number;
   base: number;
   alternative: number;
+  third?: number;
 }
 
 export interface ProjectionBasis {
