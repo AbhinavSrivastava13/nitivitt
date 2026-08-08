@@ -336,23 +336,26 @@ export function PeerLollipop({ rows }: { rows: { label: string; you: number; typ
 }
 
 /**
- * Portfolio Projection — current plan vs one adjustable scenario.
+ * Portfolio Projection — current path vs adjustable scenarios.
  * Illustrative compounding of a stated assumption, never a forecast.
  */
 export function ProjectionChart({
-  data, format, baseLabel, altLabel,
+  data, format, baseLabel, altLabel, thirdLabel,
 }: {
-  data: { year: number; base: number; alternative: number }[];
+  data: { year: number; base: number; alternative: number; third?: number }[];
   format: (n: number) => string;
   baseLabel: string;
   altLabel: string;
+  thirdLabel?: string;
 }) {
+  const hasThird = Boolean(thirdLabel) && data.some((d) => typeof d.third === "number");
   return (
     <div>
       <ChartLegend
         items={[
           { label: baseLabel, color: SERIES_COLORS.you },
           { label: altLabel, color: SERIES_COLORS.recommended },
+          ...(hasThird ? [{ label: thirdLabel as string, color: SERIES_COLORS.peer }] : []),
         ]}
       />
       <div className="mt-5 h-[320px] w-full">
@@ -381,8 +384,22 @@ export function ProjectionChart({
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelFormatter={(v: number) => (v === 0 ? "Today" : `In ${v} years`)}
-              formatter={(v: number, n) => [format(v), n === "alternative" ? altLabel : baseLabel]}
+              formatter={(v: number, n) => [
+                format(v),
+                n === "alternative" ? altLabel : n === "third" ? (thirdLabel ?? "Scenario") : baseLabel,
+              ]}
             />
+            {hasThird && (
+              <Area
+                type="monotone"
+                dataKey="third"
+                stroke={SERIES_COLORS.peer}
+                strokeWidth={1.75}
+                strokeDasharray="2 5"
+                fill="transparent"
+                dot={false}
+              />
+            )}
             <Area
               type="monotone"
               dataKey="alternative"
