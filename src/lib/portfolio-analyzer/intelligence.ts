@@ -311,21 +311,29 @@ export function buildPeerBenchmark(a: IntelligenceInput): PeerBenchmark {
     return { label, you: round1(you), typical: round1(typical), unit, verdict };
   };
 
+  // Deliberately structural — allocation-versus-target lives under Portfolio
+  // Allocation. This section answers "how does my portfolio compare with
+  // people at a similar stage of life?"
+  const typicalHoldings = 8;
+  const typicalLiquidity = typicalDebt + typicalCash;
+  const typicalDefensive = typicalDebt + typicalGold;
+
   const rows: PeerBenchmarkRow[] = [
-    row("Equity allocation", a.equityPct, typicalEquity, "%", "growth exposure differs from what your horizon usually calls for"),
-    row("Debt allocation", a.debtPct, typicalDebt, "%", "the debt sleeve is what steadies the portfolio"),
-    row("Gold allocation", a.goldPct, typicalGold, "%", "gold is the usual hedge against macro stress"),
-    row("Cash allocation", a.cashPct, typicalCash, "%", "idle cash behaves differently from invested capital"),
+    row("Equity participation", a.equityPct, typicalEquity, "%", "growth exposure differs from what your stage of life usually carries"),
     row("Diversification", a.diversificationScore, typicalDiv, "/100", "spread across asset classes"),
     row("Largest holding", a.topPct, typicalConc, "%", "concentration decides how bumpy the ride is"),
-    row("Blended cost", blendedCost, typicalCost, "%", "cost is the one return input you fully control"),
+    row("Number of holdings", a.holdings.length, typicalHoldings, "", "more holdings is not more diversification once funds overlap"),
+    row("Cost efficiency", blendedCost, typicalCost, "%", "cost is the one return input you fully control"),
+    row("Liquidity", round1(a.debtPct + a.cashPct), typicalLiquidity, "%", "what you can access without selling growth assets"),
+    row("Defensive allocation", round1(a.debtPct + a.goldPct), typicalDefensive, "%", "what cushions the portfolio when equity falls"),
   ];
 
   return {
     cohort: `Age ${bandStart}-${bandStart + 4} · ${incomeBand} income · ${risk} risk · ${stage}`,
     rows,
-    note: "Peer values are modelled from NitiCore™ allocation norms for your cohort — an educational reference point, not a ranking. Being different from peers is not automatically worse; it only matters when it conflicts with your own horizon.",
+    note: "Educational reference based on NitiCore™ cohort assumptions — not a ranking, and not observed peer returns. Being different from your cohort only matters when it conflicts with your own horizon.",
   };
+
 
 }
 
