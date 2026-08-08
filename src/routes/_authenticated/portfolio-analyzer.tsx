@@ -727,28 +727,29 @@ function ReportView({
         </section>
       )}
 
-      {/* 6. PEER BENCHMARK */}
+      {/* 6. PORTFOLIO PROJECTION & WHAT-IF */}
+      {report.projection && report.totalValue > 0 && (
+        <section id="pr-projection">
+          <SectionHeading
+            icon={<LineChartIcon className="h-4 w-4 text-primary" />}
+            title="Portfolio projection"
+            subtitle="What could your portfolio look like? Starting from what you actually hold today."
+          />
+          <ProjectionSection basis={report.projection} />
+        </section>
+      )}
+
+      {/* 7. PEER BENCHMARK */}
       {peer && (
         <section id="pr-peers">
           <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Peer benchmark" subtitle={peer.cohort} />
-          <div className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
-            <PeerBars rows={peer.rows} />
-            <ul className="mt-6 divide-y divide-border/70 border-t border-border/70">
-              {peer.rows.map((r) => (
-                <li key={r.label} className="flex flex-wrap items-baseline justify-between gap-2 py-2.5 text-sm">
-                  <span className="font-medium text-foreground">{r.label}</span>
-                  <span className="flex items-center gap-4">
-                    <span className="font-mono text-xs tabular-nums text-foreground">{r.you}{r.unit}</span>
-                    <span className="font-mono text-xs tabular-nums text-muted-foreground">peers {r.typical}{r.unit}</span>
-                    <span className="text-[11px] text-muted-foreground">{r.verdict}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">{peer.note}</p>
+          <div className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-9">
+            <PeerLollipop rows={peer.rows} />
+            <p className="mt-7 border-t border-border/70 pt-4 text-[11px] leading-relaxed text-muted-foreground">{peer.note}</p>
           </div>
         </section>
       )}
+
 
       {/* 7. RECOMMENDED ACTIONS */}
       <section id="pr-actions">
