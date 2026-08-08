@@ -768,6 +768,9 @@ function ReportView({
                 {r.tradeOffs.length > 0 && (
                   <p className="mt-1.5 text-xs text-muted-foreground"><strong className="font-semibold text-foreground/80">Trade-offs:</strong> {r.tradeOffs.join(" ")}</p>
                 )}
+                {r.nextStep && (
+                  <p className="mt-3 text-xs leading-relaxed text-foreground/90"><strong className="font-semibold">Next step:</strong> {r.nextStep}</p>
+                )}
                 {r.crossPillarNote && (
                   <p className="mt-3 rounded-lg bg-accent/10 px-3 py-1.5 text-[11px] text-accent-foreground">{r.crossPillarNote}</p>
                 )}
