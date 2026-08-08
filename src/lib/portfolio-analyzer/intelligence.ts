@@ -190,6 +190,7 @@ export function buildHoldingIntelligence(a: IntelligenceInput): HoldingIntellige
     const facts: { label: string; value: string }[] = [];
     if (kind === "fund") {
       facts.push({ label: "Category", value: e.fundCategory ?? ASSET_CLASS_LABEL[h.assetClass] });
+      if (e.instrumentType) facts.push({ label: "Instrument", value: e.instrumentType });
       if (e.amc ?? e.fundHouse) facts.push({ label: "AMC", value: (e.amc ?? e.fundHouse) as string });
       facts.push({ label: "Expense ratio", value: e.expenseRatio != null ? `${round1(e.expenseRatio)}%` : "Not published" });
       if (e.riskCategory) facts.push({ label: "Risk level", value: e.riskCategory });
@@ -197,16 +198,20 @@ export function buildHoldingIntelligence(a: IntelligenceInput): HoldingIntellige
       if (e.investmentStyle) facts.push({ label: "Style", value: e.investmentStyle });
       if (e.marketCapBias) facts.push({ label: "Cap bias", value: e.marketCapBias });
     } else if (kind === "stock") {
-      facts.push({ label: "Sector", value: e.sector ?? "Not identified" });
+      facts.push({ label: "Sector", value: e.sector ?? "Not available" });
       if (e.industry) facts.push({ label: "Industry", value: e.industry });
+      facts.push({ label: "Instrument", value: e.instrumentType ?? "Listed equity share" });
       facts.push({
         label: "Market cap",
-        value: e.marketCap && e.marketCap !== "unknown" ? `${e.marketCap[0].toUpperCase()}${e.marketCap.slice(1)} cap` : "Not identified",
+        value: e.marketCap && e.marketCap !== "unknown" ? `${e.marketCap[0].toUpperCase()}${e.marketCap.slice(1)} cap` : "Not available",
       });
     } else {
       facts.push({ label: "Asset class", value: ASSET_CLASS_LABEL[h.assetClass] });
+      if (e.instrumentType) facts.push({ label: "Instrument", value: e.instrumentType });
+      if (e.sector) facts.push({ label: "Sector", value: e.sector });
     }
     facts.push({ label: "Share of portfolio", value: `${pct}%` });
+
 
     return {
       name: h.name,
@@ -294,35 +299,34 @@ export function buildPeerBenchmark(a: IntelligenceInput): PeerBenchmark {
         )
       : a.indexShare >= 40 ? 0.6 : a.indexShare >= 20 ? 1.0 : 1.4;
 
-  const row = (label: string, you: number, typical: number, unit: string, betterHigher: boolean, note: string): PeerBenchmarkRow => {
+  const row = (label: string, you: number, typical: number, unit: string, note: string): PeerBenchmarkRow => {
     const gap = you - typical;
-    const close = Math.abs(gap) <= (unit === "%" ? 8 : 5);
-    const favourable = betterHigher ? gap > 0 : gap < 0;
-    return {
-      label,
-      you: round1(you),
-      typical: round1(typical),
-      unit,
-      verdict: close ? "In line with peers" : favourable ? `Ahead of peers — ${note}` : `Behind peers — ${note}`,
-    };
+    const tolerance = unit === "%" ? 8 : 10;
+    const verdict =
+      Math.abs(gap) <= tolerance
+        ? "In line with peers"
+        : gap > 0
+          ? `Above typical range — ${note}`
+          : `Below typical range — ${note}`;
+    return { label, you: round1(you), typical: round1(typical), unit, verdict };
   };
 
   const rows: PeerBenchmarkRow[] = [
-    row("Equity allocation", a.equityPct, typicalEquity, "%", a.equityPct < typicalEquity,
-      a.equityPct < typicalEquity ? "less growth exposure than your horizon supports" : "more market risk than typical for your stage"),
-    row("Debt allocation", a.debtPct, typicalDebt, "%", true, "stability comes from the debt sleeve"),
-    row("Gold allocation", a.goldPct, typicalGold, "%", true, "gold is the usual hedge against macro stress"),
-    row("Cash allocation", a.cashPct, typicalCash, "%", false, "idle cash loses to inflation over time"),
-    row("Diversification", a.diversificationScore, typicalDiv, "/100", true, "spread across asset classes"),
-    row("Largest holding", a.topPct, typicalConc, "%", false, "concentration decides how bumpy the ride is"),
-    row("Blended cost", blendedCost, typicalCost, "%", false, "cost is the one return input you fully control"),
+    row("Equity allocation", a.equityPct, typicalEquity, "%", "growth exposure differs from what your horizon usually calls for"),
+    row("Debt allocation", a.debtPct, typicalDebt, "%", "the debt sleeve is what steadies the portfolio"),
+    row("Gold allocation", a.goldPct, typicalGold, "%", "gold is the usual hedge against macro stress"),
+    row("Cash allocation", a.cashPct, typicalCash, "%", "idle cash behaves differently from invested capital"),
+    row("Diversification", a.diversificationScore, typicalDiv, "/100", "spread across asset classes"),
+    row("Largest holding", a.topPct, typicalConc, "%", "concentration decides how bumpy the ride is"),
+    row("Blended cost", blendedCost, typicalCost, "%", "cost is the one return input you fully control"),
   ];
 
   return {
     cohort: `Age ${bandStart}-${bandStart + 4} · ${incomeBand} income · ${risk} risk · ${stage}`,
     rows,
-    note: "Peer values are modelled from NitiCore™ allocation norms for your cohort. This is an educational reference point, not a ranking or a leaderboard.",
+    note: "Peer values are modelled from NitiCore™ allocation norms for your cohort — an educational reference point, not a ranking. Being different from peers is not automatically worse; it only matters when it conflicts with your own horizon.",
   };
+
 }
 
 /* ─────────────────────────── INSIGHTS ─────────────────────────── */

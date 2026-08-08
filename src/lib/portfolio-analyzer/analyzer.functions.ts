@@ -14,7 +14,9 @@ import { getRuntimeEnv } from "@/lib/runtime-env";
 import { callAiChat } from "@/lib/ai-gateway";
 import { evaluateContext, type NitiCoreInput } from "@/lib/niti-core";
 import { analyzePortfolio as runEngine } from "./engine";
+import { classifyUnidentifiedHoldings } from "./classify";
 import { createDefaultRegistry } from "./market-data";
+
 import type {
   Holding,
   PortfolioReport,
@@ -287,7 +289,8 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
       pnlPct: coerceNumber(h.pnlPct),
     })).filter((h) => h.name.length > 0);
 
-    // Enrichment (bounded, best-effort).
+    // Enrichment (bounded, best-effort). Deterministic market data first;
+    // AI classification only fills what those providers could not identify.
     if (data.enrich) {
       const registry = createDefaultRegistry();
       await Promise.all(
@@ -296,9 +299,11 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
           if (enrichment) h.enrichment = enrichment;
         }),
       );
+      await classifyUnidentifiedHoldings(holdings);
     }
 
     const report = runEngine({ holdings, input: nitiInput, context: ctx });
+
     report.isPrimary = data.isPrimary;
 
     if (data.narrate) {
@@ -400,29 +405,40 @@ async function narrate(
     holdingKinds: (report.holdingIntelligence ?? []).map((h) => ({ kind: h.kind, role: h.suggestedRole })),
     recommendations: report.recommendations.map((r) => r.title),
     peerCohort: report.peerBenchmark?.cohort,
+    projection: report.projection
+      ? {
+          hasRecurringContribution: report.projection.sipSource === "profile",
+          horizonYears: report.projection.defaultHorizonYears,
+          returnBasis: report.projection.returnBasis,
+        }
+      : null,
     context: { lifeStage: ctx.lifeStage, protectionPosture: ctx.protectionPosture, liquidityHealth: ctx.liquidityHealth, hasDependents: ctx.hasDependents },
   };
   const system = `You are NitiGuide, an experienced Indian Certified Financial Planner sitting across from a real client at the end of a portfolio review.
 
 Everything numerical is already on the report above you. Your job is the part a dashboard cannot do: teach.
 
-Hard rules. Never restate a percentage, score, grade, rupee amount or holding count. Never name a specific fund, stock, AMC or insurer. Never predict returns. Never use fear-based language. Avoid em dashes, bullet points, headings and AI-summariser phrasing such as "in conclusion" or "overall".
+Hard rules. Never restate a percentage, score, grade, rupee amount or holding count. Never name a specific fund, stock, AMC or insurer. Never predict returns. Never invent a calculation. Never use fear-based language. Avoid em dashes, bullet points, headings and AI-summariser phrasing such as "in conclusion" or "overall".
+
+Use the client's own vocabulary where it helps: Portfolio Rating, Portfolio Grade, Portfolio Projection, NitiCore, Recommended Actions.
 
 Cover, in your own words and only where relevant to this client:
 - how portfolios are actually constructed: a boring core, a smaller satellite, and something that behaves differently from equity
 - what real diversification is, and why owning many similar funds is not it
-- the trade-offs behind the recommendations they just read, including what they give up by acting and by not acting
+- what the Portfolio Projection genuinely means and does not mean: it compounds an assumption, so contribution and time are the parts they control and the return assumption is the part they cannot
+- the trade-offs behind the Recommended Actions they just read, including what they give up by acting and by not acting
 - the behavioural traps that decide most outcomes: chasing last year's winner, abandoning a plan mid-drawdown, adding funds instead of adding money, confusing activity with progress
 - why cost and asset allocation matter more over a decade than fund selection
 
 Write five short paragraphs, two to three sentences each, separated by a blank line, in this order:
 1. What an experienced planner notices first about how this portfolio is built.
 2. What is genuinely working and why that habit is worth protecting.
-3. The single concept this investor should internalise this year, taught properly rather than asserted.
-4. The behavioural mistake most likely to undo their progress, and how it usually shows up in practice.
-5. What to do next and in what order, separating what is urgent from what can wait a year.
+3. What the Portfolio Projection is really telling this investor, taught properly rather than asserted.
+4. The most important structural risk in this portfolio and the behavioural mistake most likely to compound it.
+5. What to prioritise next and in what order, separating what is urgent from what can wait a year.
 
 Sound like a warm, direct mentor who has done this for twenty years. This should read like a premium wealth-review conversation, not a report summary.`;
+
 
 
   const res = await callAiChat({

@@ -6,12 +6,16 @@ import {
   ArrowLeft, ArrowRight, CheckCircle2, Info, Loader2, Plus,
   RefreshCw, Sparkles, Trash2, TrendingUp, Upload, AlertTriangle,
   ShieldCheck, Target, Layers, PieChart, Gauge as GaugeIcon,
+  LineChart as LineChartIcon,
 } from "lucide-react";
 import { AnalysisSequence } from "@/components/analysis-sequence";
 import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
-import { Donut, AllocationBars, HeroScore, HoldingsDistribution, PeerBars } from "@/components/portfolio/charts";
+import { Donut, AllocationBars, HeroScore, HoldingsDistribution, PeerLollipop, ProjectionChart } from "@/components/portfolio/charts";
+import { buildProjectionSeries, projectValue, projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
+import type { ProjectionBasis } from "@/lib/portfolio-analyzer/types";
+
 
 import {
   extractPortfolioFromScreenshots,
@@ -576,10 +580,12 @@ const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "allocation", label: "Portfolio Allocation" },
   { id: "diagnostics", label: "Portfolio Diagnostics" },
   { id: "holdings", label: "Fund & Stock Intelligence" },
+  { id: "projection", label: "Portfolio Projection" },
   { id: "peers", label: "Peer Benchmark" },
   { id: "actions", label: "Recommended Actions" },
   { id: "guide", label: "NitiGuide™" },
 ];
+
 
 function ReportView({
   report, onBack, title, lastReviewedAt,
@@ -727,28 +733,29 @@ function ReportView({
         </section>
       )}
 
-      {/* 6. PEER BENCHMARK */}
+      {/* 6. PORTFOLIO PROJECTION & WHAT-IF */}
+      {report.projection && report.totalValue > 0 && (
+        <section id="pr-projection">
+          <SectionHeading
+            icon={<LineChartIcon className="h-4 w-4 text-primary" />}
+            title="Portfolio projection"
+            subtitle="What could your portfolio look like? Starting from what you actually hold today."
+          />
+          <ProjectionSection basis={report.projection} />
+        </section>
+      )}
+
+      {/* 7. PEER BENCHMARK */}
       {peer && (
         <section id="pr-peers">
           <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Peer benchmark" subtitle={peer.cohort} />
-          <div className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
-            <PeerBars rows={peer.rows} />
-            <ul className="mt-6 divide-y divide-border/70 border-t border-border/70">
-              {peer.rows.map((r) => (
-                <li key={r.label} className="flex flex-wrap items-baseline justify-between gap-2 py-2.5 text-sm">
-                  <span className="font-medium text-foreground">{r.label}</span>
-                  <span className="flex items-center gap-4">
-                    <span className="font-mono text-xs tabular-nums text-foreground">{r.you}{r.unit}</span>
-                    <span className="font-mono text-xs tabular-nums text-muted-foreground">peers {r.typical}{r.unit}</span>
-                    <span className="text-[11px] text-muted-foreground">{r.verdict}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">{peer.note}</p>
+          <div className="mt-5 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-9">
+            <PeerLollipop rows={peer.rows} />
+            <p className="mt-7 border-t border-border/70 pt-4 text-[11px] leading-relaxed text-muted-foreground">{peer.note}</p>
           </div>
         </section>
       )}
+
 
       {/* 7. RECOMMENDED ACTIONS */}
       <section id="pr-actions">
@@ -954,3 +961,140 @@ function ScorePill({ score, large }: { score: number; large?: boolean }) {
   );
 }
 
+
+// ───────────────────── PORTFOLIO PROJECTION ─────────────────────
+
+function ProjectionSection({ basis }: { basis: ProjectionBasis }) {
+  const [years, setYears] = useState(basis.defaultHorizonYears);
+  const [extraSip, setExtraSip] = useState(basis.suggestedSipUplift);
+  const [returnPct, setReturnPct] = useState(basis.expectedReturnPct);
+
+  const series = useMemo(
+    () =>
+      buildProjectionSeries(
+        { currentValue: basis.currentValue, monthlySip: basis.monthlySip, annualReturnPct: basis.expectedReturnPct, years },
+        { currentValue: basis.currentValue, monthlySip: basis.monthlySip + extraSip, annualReturnPct: returnPct, years },
+      ),
+    [basis, years, extraSip, returnPct],
+  );
+
+  const baseFv = projectValue({ currentValue: basis.currentValue, monthlySip: basis.monthlySip, annualReturnPct: basis.expectedReturnPct, years });
+  const altFv = projectValue({ currentValue: basis.currentValue, monthlySip: basis.monthlySip + extraSip, annualReturnPct: returnPct, years });
+  const guidance = useMemo(() => projectionGuidance(basis, years), [basis, years]);
+  const invested = basis.currentValue + (basis.monthlySip + extraSip) * years * 12;
+  const changed = extraSip !== 0 || returnPct !== basis.expectedReturnPct;
+
+  return (
+    <div className="mt-5 space-y-5">
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-9">
+        <div className="grid gap-6 lg:grid-cols-[1.55fr_1fr] lg:gap-10">
+          <div>
+            <ProjectionChart
+              data={series}
+              format={inrShort}
+              baseLabel="Current plan"
+              altLabel={changed ? "Your scenario" : "Adjusted scenario"}
+            />
+          </div>
+
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-3">
+              <ProjStat label={`In ${years} years — current plan`} value={inrShort(baseFv)} tone="you" />
+              <ProjStat label="With your adjustments" value={inrShort(altFv)} tone="alt" />
+            </div>
+            <p className="text-[12px] leading-relaxed text-muted-foreground">
+              Difference of <span className="font-semibold text-foreground">{inrShort(Math.max(0, altFv - baseFv))}</span>, of which{" "}
+              <span className="font-semibold text-foreground">{inrShort(Math.max(0, invested - basis.currentValue))}</span> is money you contribute. The rest is compounding.
+            </p>
+
+            <div className="space-y-5 border-t border-border/70 pt-5">
+              <Slider
+                label="Time horizon"
+                value={`${years} years`}
+                min={3} max={35} step={1}
+                current={years}
+                onChange={setYears}
+                hint={basis.horizonBasis}
+              />
+              <Slider
+                label="Extra monthly investment"
+                value={`₹${extraSip.toLocaleString("en-IN")}`}
+                min={0} max={Math.max(25000, basis.suggestedSipUplift * 5)} step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
+                current={extraSip}
+                onChange={setExtraSip}
+                hint={basis.sipSource === "profile"
+                  ? `On top of your recorded ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
+                  : "No recurring contribution recorded in your profile yet"}
+              />
+              <Slider
+                label="Assumed annual return"
+                value={`${returnPct}%`}
+                min={5} max={15} step={0.5}
+                current={returnPct}
+                onChange={setReturnPct}
+                hint={basis.returnBasis}
+              />
+            </div>
+
+            {changed && (
+              <button
+                onClick={() => { setExtraSip(basis.suggestedSipUplift); setReturnPct(basis.expectedReturnPct); setYears(basis.defaultHorizonYears); }}
+                className="text-[11px] font-semibold text-primary hover:underline"
+              >
+                Reset to NitiCore™ defaults
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-border bg-surface p-6 md:p-8">
+        <h4 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">What this means</h4>
+        <ul className="mt-4 space-y-3">
+          {guidance.map((g, i) => (
+            <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-foreground/85">
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
+              <span>{g}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-5 border-t border-border/70 pt-4 text-[11px] leading-relaxed text-muted-foreground">
+          Illustrative only. This compounds an assumption you can change above — it is not a forecast, and markets do not deliver a smooth annual return.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function ProjStat({ label, value, tone }: { label: string; value: string; tone: "you" | "alt" }) {
+  return (
+    <div className={`rounded-2xl border p-4 ${tone === "you" ? "border-border bg-surface" : "border-primary/25 bg-primary/[0.04]"}`}>
+      <p className="text-[10px] font-semibold uppercase leading-tight tracking-[0.12em] text-muted-foreground">{label}</p>
+      <p className="mt-2 font-display text-xl text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function Slider({
+  label, value, min, max, step, current, onChange, hint,
+}: {
+  label: string; value: string; min: number; max: number; step: number;
+  current: number; onChange: (n: number) => void; hint?: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-[12px] font-semibold text-foreground">{label}</span>
+        <span className="font-mono text-[12px] tabular-nums text-foreground">{value}</span>
+      </div>
+      <input
+        type="range"
+        min={min} max={max} step={step} value={current}
+        onChange={(e) => onChange(Number(e.target.value))}
+        aria-label={label}
+        className="mt-2.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
+      />
+      {hint && <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">{hint}</p>}
+    </div>
+  );
+}

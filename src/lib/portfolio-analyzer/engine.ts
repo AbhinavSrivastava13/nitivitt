@@ -25,6 +25,8 @@ import {
   buildPeerBenchmark,
   type IntelligenceInput,
 } from "./intelligence";
+import { blendedExpectedReturn, projectionGuidance } from "./projection";
+
 
 
 interface EngineInput {
@@ -671,7 +673,33 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     positives[0]?.title ??
     (bestDiagnostic ? `${bestDiagnostic.label}: ${bestDiagnostic.valueLabel}` : "Portfolio is still being built");
 
+  // ─────────────── V3: Portfolio Projection basis (deterministic) ───────────────
+  const monthlySip = Math.max(0, Math.round(input.monthlyInvestments));
+  const expectedReturnPct = blendedExpectedReturn({
+    equityPct,
+    debtPct,
+    goldPct,
+    cashPct: pct(cash, totalValue),
+  });
+  const yearsToRetirement = Math.max(5, Math.round((input.retirementAge || 60) - input.ageYears));
+  const defaultHorizonYears = yearsToRetirement >= 18 ? 20 : yearsToRetirement >= 13 ? 15 : yearsToRetirement >= 8 ? 10 : 5;
+  const upliftBase = monthlySip > 0 ? monthlySip * 0.25 : Math.max(2500, input.monthlyIncome * 0.05);
+  const suggestedSipUplift = Math.max(1000, Math.round(upliftBase / 500) * 500);
+  const projection: import("./types").ProjectionBasis = {
+    currentValue: totalValue,
+    monthlySip,
+    sipSource: monthlySip > 0 ? "profile" : "none",
+    expectedReturnPct,
+    returnBasis: `Blended from your own mix: ${equityPct}% equity, ${debtPct}% debt, ${goldPct}% gold. Not a forecast.`,
+    defaultHorizonYears,
+    horizonBasis: `You are ${input.ageYears}, targeting retirement around ${input.retirementAge || 60} — about ${yearsToRetirement} years of runway.`,
+    suggestedSipUplift,
+    guidance: [],
+  };
+  projection.guidance = projectionGuidance(projection, defaultHorizonYears);
+
   return {
+
 
     portfolioScore,
     scoreLabel: scoreLabel(portfolioScore),
@@ -705,7 +733,9 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     insights: v2Insights,
     largestRisk,
     biggestStrength,
+    projection,
   };
+
 
 }
 

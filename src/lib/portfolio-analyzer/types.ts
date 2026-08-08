@@ -64,6 +64,9 @@ export interface HoldingEnrichment {
   sector?: string | null;
   industry?: string | null;
   marketCap?: MarketCap;
+  /** e.g. "Listed equity share", "Open-ended equity mutual fund", "Gold ETF". */
+  instrumentType?: string | null;
+
   fundCategory?: string | null;
   fundHouse?: string | null;
   amc?: string | null;
@@ -244,6 +247,32 @@ export interface PortfolioInsight {
   action: string;
 }
 
+/* ─────────────── V3 — Portfolio Projection ─────────────── */
+
+export interface ProjectionPoint {
+  year: number;
+  base: number;
+  alternative: number;
+}
+
+export interface ProjectionBasis {
+  /** Actual portfolio value — the projection always starts here. */
+  currentValue: number;
+  /** Existing monthly contribution from the NitiCore™ profile (0 when unknown). */
+  monthlySip: number;
+  sipSource: "profile" | "none";
+  /** Blended expected return implied by the current asset mix. */
+  expectedReturnPct: number;
+  returnBasis: string;
+  /** Default horizon, derived from age and retirement age where available. */
+  defaultHorizonYears: number;
+  horizonBasis: string;
+  /** A meaningful, round contribution step for the "what-if" scenario. */
+  suggestedSipUplift: number;
+  guidance: string[];
+}
+
+
 export interface PortfolioReport {
   portfolioScore: number; // 0-100 deterministic
   scoreLabel: string;
@@ -282,7 +311,10 @@ export interface PortfolioReport {
   largestRisk?: string;
   biggestStrength?: string;
   isPrimary?: boolean;
+  /** NitiInvest™ V3 — deterministic projection basis for the what-if simulator. */
+  projection?: ProjectionBasis;
 }
+
 
 
 
