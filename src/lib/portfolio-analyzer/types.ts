@@ -64,6 +64,9 @@ export interface HoldingEnrichment {
   sector?: string | null;
   industry?: string | null;
   marketCap?: MarketCap;
+  /** e.g. "Listed equity share", "Open-ended equity mutual fund", "Gold ETF". */
+  instrumentType?: string | null;
+
   fundCategory?: string | null;
   fundHouse?: string | null;
   amc?: string | null;
