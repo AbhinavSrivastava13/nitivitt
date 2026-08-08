@@ -12,7 +12,7 @@ import { AnalysisSequence } from "@/components/analysis-sequence";
 import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
-import { Donut, AllocationBars, HeroScore, HoldingsDistribution, PeerLollipop, ProjectionChart } from "@/components/portfolio/charts";
+import { AllocationCompare, SegmentedAllocation, HoldingsDistribution, PeerLollipop, ProjectionChart } from "@/components/portfolio/charts";
 import { buildProjectionSeries, projectValue, projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
 import type { ProjectionBasis } from "@/lib/portfolio-analyzer/types";
 
