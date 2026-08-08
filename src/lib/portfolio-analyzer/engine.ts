@@ -25,6 +25,8 @@ import {
   buildPeerBenchmark,
   type IntelligenceInput,
 } from "./intelligence";
+import { blendedExpectedReturn, projectionGuidance } from "./projection";
+
 
 
 interface EngineInput {
