@@ -942,27 +942,6 @@ function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-anal
   );
 }
 
-function DiagnosticCardUnused({ d }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic }) {
-  const map = {
-    good: { text: "text-success", bar: "bg-success", chip: "bg-success-soft text-success", word: "Healthy" },
-    watch: { text: "text-warning", bar: "bg-warning", chip: "bg-warning-soft text-warning", word: "Watch" },
-    action: { text: "text-destructive", bar: "bg-destructive", chip: "bg-destructive/10 text-destructive", word: "Act" },
-  }[d.status];
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold text-foreground">{d.label}</h4>
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${map.chip}`}>{map.word}</span>
-      </div>
-      <p className={`mt-3 font-display text-xl ${map.text}`}>{d.valueLabel}</p>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-        <div className={`h-full rounded-full ${map.bar}`} style={{ width: `${Math.max(4, Math.min(100, d.score))}%` }} />
-      </div>
-      <p className="mt-2 text-[11px] text-muted-foreground">{d.targetLabel}</p>
-      <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{d.detail}</p>
-    </div>
-  );
-}
 
 function InsightCard({ insight }: { insight: import("@/lib/portfolio-analyzer/types").PortfolioInsight }) {
   const icon = insight.severity === "risk"
@@ -985,53 +964,6 @@ function InsightCard({ insight }: { insight: import("@/lib/portfolio-analyzer/ty
   );
 }
 
-function HoldingCard({ h }: { h: import("@/lib/portfolio-analyzer/types").HoldingIntelligence }) {
-  return (
-    <article className="rounded-2xl border border-border bg-card p-5 shadow-soft md:p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h4 className="font-display text-lg leading-snug text-foreground">{h.name}</h4>
-        <span className="font-mono text-xs tabular-nums text-muted-foreground">{h.pct}% · {formatInr(h.value)}</span>
-      </div>
-      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-secondary">
-        {h.kind === "fund" ? "Mutual fund" : h.kind === "stock" ? "Direct equity" : ASSET_CLASS_LABEL[h.assetClass]}
-      </p>
-      <dl className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
-        {h.facts.map((f) => (
-          <div key={f.label} className="flex items-baseline justify-between gap-3 border-b border-border/60 pb-1.5">
-            <dt className="text-[11px] uppercase tracking-wider text-muted-foreground">{f.label}</dt>
-            <dd className="truncate text-xs font-medium text-foreground">{f.value}</dd>
-          </div>
-        ))}
-      </dl>
-      {h.objective && <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{h.objective}</p>}
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        {h.strengths.length > 0 && (
-          <div className="rounded-xl bg-success-soft/40 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-success">Strengths</p>
-            <ul className="mt-1.5 space-y-1 text-xs text-foreground/85">
-              {h.strengths.map((s, i) => <li key={i}>{s}</li>)}
-            </ul>
-          </div>
-        )}
-        {h.risks.length > 0 && (
-          <div className="rounded-xl bg-warning-soft/40 p-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-warning">Risks</p>
-            <ul className="mt-1.5 space-y-1 text-xs text-foreground/85">
-              {h.risks.map((s, i) => <li key={i}>{s}</li>)}
-            </ul>
-          </div>
-        )}
-      </div>
-      <p className="mt-4 text-xs text-foreground/90"><strong className="font-semibold">Suggested role.</strong> {h.suggestedRole}</p>
-      {h.aiSummary && (
-        <p className="mt-3 flex gap-2 rounded-xl bg-primary-soft/30 p-3 text-xs leading-relaxed text-foreground/85">
-          <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-          <span>{h.aiSummary}</span>
-        </p>
-      )}
-    </article>
-  );
-}
 
 
 // ─────────────────────────── ATOMS ───────────────────────────
