@@ -190,6 +190,7 @@ export function buildHoldingIntelligence(a: IntelligenceInput): HoldingIntellige
     const facts: { label: string; value: string }[] = [];
     if (kind === "fund") {
       facts.push({ label: "Category", value: e.fundCategory ?? ASSET_CLASS_LABEL[h.assetClass] });
+      if (e.instrumentType) facts.push({ label: "Instrument", value: e.instrumentType });
       if (e.amc ?? e.fundHouse) facts.push({ label: "AMC", value: (e.amc ?? e.fundHouse) as string });
       facts.push({ label: "Expense ratio", value: e.expenseRatio != null ? `${round1(e.expenseRatio)}%` : "Not published" });
       if (e.riskCategory) facts.push({ label: "Risk level", value: e.riskCategory });
@@ -197,16 +198,20 @@ export function buildHoldingIntelligence(a: IntelligenceInput): HoldingIntellige
       if (e.investmentStyle) facts.push({ label: "Style", value: e.investmentStyle });
       if (e.marketCapBias) facts.push({ label: "Cap bias", value: e.marketCapBias });
     } else if (kind === "stock") {
-      facts.push({ label: "Sector", value: e.sector ?? "Not identified" });
+      facts.push({ label: "Sector", value: e.sector ?? "Not available" });
       if (e.industry) facts.push({ label: "Industry", value: e.industry });
+      facts.push({ label: "Instrument", value: e.instrumentType ?? "Listed equity share" });
       facts.push({
         label: "Market cap",
-        value: e.marketCap && e.marketCap !== "unknown" ? `${e.marketCap[0].toUpperCase()}${e.marketCap.slice(1)} cap` : "Not identified",
+        value: e.marketCap && e.marketCap !== "unknown" ? `${e.marketCap[0].toUpperCase()}${e.marketCap.slice(1)} cap` : "Not available",
       });
     } else {
       facts.push({ label: "Asset class", value: ASSET_CLASS_LABEL[h.assetClass] });
+      if (e.instrumentType) facts.push({ label: "Instrument", value: e.instrumentType });
+      if (e.sector) facts.push({ label: "Sector", value: e.sector });
     }
     facts.push({ label: "Share of portfolio", value: `${pct}%` });
+
 
     return {
       name: h.name,
