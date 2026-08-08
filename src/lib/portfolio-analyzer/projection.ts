@@ -15,35 +15,47 @@ export interface ProjectionArgs {
   monthlySip: number;
   annualReturnPct: number;
   years: number;
+  /** Annual step-up applied to the monthly contribution (e.g. 10 = +10% a year). */
+  annualStepUpPct?: number;
 }
 
 /** Future value of a lump sum plus a monthly contribution (SIP due at month start). */
-export function projectValue({ currentValue, monthlySip, annualReturnPct, years }: ProjectionArgs): number {
+export function projectValue({ currentValue, monthlySip, annualReturnPct, years, annualStepUpPct = 0 }: ProjectionArgs): number {
   const r = annualReturnPct / 100;
   const m = r / 12;
-  const months = Math.max(0, Math.round(years * 12));
+  const wholeYears = Math.max(0, Math.round(years));
   const lump = currentValue * Math.pow(1 + r, years);
-  const sip =
-    monthlySip <= 0
-      ? 0
-      : m === 0
-        ? monthlySip * months
-        : monthlySip * ((Math.pow(1 + m, months) - 1) / m) * (1 + m);
-  return Math.round(lump + sip);
+
+  if (monthlySip <= 0) return Math.round(lump);
+
+  // Year-by-year so an annual step-up compounds exactly, with no step-up
+  // reducing to the standard SIP-due formula.
+  let sipValue = 0;
+  for (let y = 0; y < wholeYears; y++) {
+    const contribution = monthlySip * Math.pow(1 + annualStepUpPct / 100, y);
+    const yearEnd =
+      m === 0
+        ? contribution * 12
+        : contribution * ((Math.pow(1 + m, 12) - 1) / m) * (1 + m);
+    sipValue = sipValue * (1 + r) + yearEnd;
+  }
+  return Math.round(lump + sipValue);
 }
 
-/** Year-by-year series for two scenarios so the chart can be drawn smoothly. */
+/** Year-by-year series for two or three scenarios so the chart draws smoothly. */
 export function buildProjectionSeries(
   base: ProjectionArgs,
   alternative: ProjectionArgs,
+  third?: ProjectionArgs,
 ): ProjectionPoint[] {
-  const years = Math.max(base.years, alternative.years);
+  const years = Math.max(base.years, alternative.years, third?.years ?? 0);
   const out: ProjectionPoint[] = [];
   for (let y = 0; y <= years; y++) {
     out.push({
       year: y,
       base: projectValue({ ...base, years: y }),
       alternative: projectValue({ ...alternative, years: y }),
+      ...(third ? { third: projectValue({ ...third, years: y }) } : {}),
     });
   }
   return out;
