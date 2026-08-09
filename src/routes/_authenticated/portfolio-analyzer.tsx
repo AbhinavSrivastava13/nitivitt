@@ -945,15 +945,13 @@ function DiagnosticCard({ d, variant }: { d: import("@/lib/portfolio-analyzer/ty
 
 /* ─────────── holdings ─────────── */
 
-const ROLE_WORD: Record<string, string> = {};
-
 function shortRole(role: string): string {
   const r = role.toLowerCase();
   if (r.includes("core")) return "Core";
   if (r.includes("stabilis") || r.includes("stabiliz") || r.includes("debt")) return "Stabiliser";
   if (r.includes("satellite")) return "Satellite";
   if (r.includes("support")) return "Supporting";
-  return ROLE_WORD[r] ?? "Supporting";
+  return "Supporting";
 }
 
 function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-analyzer/types").HoldingIntelligence[] }) {
