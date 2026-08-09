@@ -1,53 +1,71 @@
 /**
- * NitiInvest™ chart primitives — powered by recharts.
+ * NitiInvest™ visualization system — powered by recharts.
  *
- * Editorial, analytical treatments rather than generic dashboard charts.
- * Every chart answers one financial question, and comparison series
- * (You / Recommended / Peer) are always visually distinct.
+ * Design principle: different question → different visualisation.
+ *   Comparison    → grouped horizontal bars
+ *   Composition   → donut / stacked bar
+ *   Concentration → ranked bars + threshold line
+ *   Sector        → treemap
+ *   Diagnostics   → rings, meters, threshold markers
+ *   Projection    → interactive line chart
+ *
+ * Colour is semantic and used sparingly. Charts communicate through position,
+ * shape, typography and labels first.
  */
+import { useState } from "react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
-  RadialBarChart, RadialBar, PolarAngleAxis,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  AreaChart, Area, LabelList, ReferenceLine,
+  LineChart, Line, LabelList, ReferenceLine, Treemap,
 } from "recharts";
 
-// Softer, INDmoney/Apple-Health inspired palette — muted jewel tones, high contrast in both themes.
+/** Semantic series colours — one meaning per colour, used sparingly. */
+export const SERIES_COLORS = {
+  you: "#3f4d75",          // current user position — calm slate-indigo
+  recommended: "#0d9488",  // NitiCore™ recommendation — teal
+  positive: "#15803d",
+  attention: "#b45309",
+  action: "#b91c1c",
+  peer: "#8b7f5e",
+};
+
+/** Restrained composition palette — differentiated without being loud. */
 export const CHART_PALETTE = [
-  "#6366f1", // indigo
-  "#14b8a6", // teal
-  "#f59e0b", // amber
-  "#8b5cf6", // violet
-  "#0ea5e9", // sky
-  "#ec4899", // pink
-  "#22c55e", // emerald
-  "#f97316", // orange
+  "#3f4d75",
+  "#0d9488",
+  "#6b7fb3",
+  "#4c8fa8",
+  "#8b7f5e",
+  "#9a6b8e",
+  "#5f7a5c",
+  "#a8a29e",
 ];
 
-/** Distinct series treatments — You (solid), Recommended (teal), Peer (muted amber). */
-export const SERIES_COLORS = {
-  you: "#4f46e5",
-  recommended: "#0d9488",
-  peer: "#c99a2e",
-};
-
 const TOOLTIP_STYLE: React.CSSProperties = {
-  background: "hsl(var(--card))",
-  border: "1px solid hsl(var(--border))",
+  background: "var(--card)",
+  border: "1px solid var(--border)",
   borderRadius: 12,
   fontSize: 12,
-  padding: "10px 12px",
-  boxShadow: "0 12px 32px -12px rgba(0,0,0,0.28)",
+  padding: "8px 12px",
+  color: "var(--foreground)",
+  boxShadow: "0 12px 32px -14px rgba(0,0,0,0.3)",
 };
 
-const AXIS_TICK = { fill: "hsl(var(--muted-foreground))", fontSize: 11 };
+const AXIS_TICK = { fill: "var(--muted-foreground)", fontSize: 11 };
 
-export function ChartLegend({ items }: { items: { label: string; color: string; hint?: string }[] }) {
+export function ChartLegend({ items }: { items: { label: string; color: string; hint?: string; dashed?: boolean }[] }) {
   return (
     <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
       {items.map((i) => (
         <li key={i.label} className="flex items-baseline gap-2">
-          <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: i.color }} />
+          <span
+            className="mt-1 h-2.5 w-4 shrink-0 rounded-[2px]"
+            style={
+              i.dashed
+                ? { background: `repeating-linear-gradient(135deg, ${i.color} 0 4px, transparent 4px 7px)`, border: `1px solid ${i.color}` }
+                : { background: i.color }
+            }
+          />
           <span className="text-[12px] font-semibold text-foreground">{i.label}</span>
           {i.hint && <span className="text-[11px] text-muted-foreground">{i.hint}</span>}
         </li>
@@ -58,427 +76,70 @@ export function ChartLegend({ items }: { items: { label: string; color: string; 
 
 export interface Slice { label: string; pct: number; value: number }
 
-interface DonutProps {
-  title: string;
-  subtitle?: string;
-  slices: Slice[];
-  empty?: string;
-  centerLabel?: string;
-  centerValue?: string;
-}
-
-export function Donut({ title, subtitle, slices, empty, centerLabel, centerValue }: DonutProps) {
-  const data = slices.slice(0, 7);
-  const total = data.reduce((a, s) => a + s.pct, 0);
+export function NoData({ children }: { children?: React.ReactNode }) {
   return (
-    <div className="rounded-3xl border border-border/70 bg-card p-7 shadow-soft md:p-9">
-      <div>
-        <h4 className="font-display text-lg font-semibold tracking-tight text-foreground">{title}</h4>
-        {subtitle && <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">{subtitle}</p>}
-      </div>
-      {data.length === 0 ? (
-        <p className="mt-8 rounded-2xl border border-dashed border-border bg-surface p-5 text-xs leading-relaxed text-muted-foreground">
-          {empty ?? "No data yet."}
-        </p>
-      ) : (
-        <div className="mt-8 grid gap-8 sm:grid-cols-[minmax(0,260px)_1fr] sm:items-center">
-          <div className="relative mx-auto aspect-square w-full max-w-[260px]">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={data}
-                  dataKey="pct"
-                  nameKey="label"
-                  innerRadius="66%"
-                  outerRadius="98%"
-                  paddingAngle={1.5}
-                  stroke="hsl(var(--card))"
-                  strokeWidth={3}
-                >
-                  {data.map((_, i) => <Cell key={i} fill={CHART_PALETTE[i % CHART_PALETTE.length]} />)}
-                </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number, n) => [`${v}%`, n as string]} />
-              </PieChart>
-            </ResponsiveContainer>
-            {(centerValue || centerLabel) && (
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                {centerValue && <span className="font-display text-2xl text-foreground">{centerValue}</span>}
-                {centerLabel && <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{centerLabel}</span>}
-              </div>
-            )}
-          </div>
-          <ul className="space-y-1.5 text-[13px]">
-            {data.map((s, i) => (
-              <li key={s.label} className="flex items-center gap-3 rounded-xl px-2.5 py-2 transition-colors hover:bg-surface/70">
-                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-                <span className="min-w-0 flex-1 truncate font-medium text-foreground">{s.label}</span>
-                <span className="h-1 w-14 shrink-0 overflow-hidden rounded-full bg-muted">
-                  <span className="block h-full rounded-full" style={{ width: `${Math.min(100, s.pct)}%`, background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-                </span>
-                <span className="w-11 shrink-0 text-right font-mono text-[12px] tabular-nums text-muted-foreground">{s.pct}%</span>
-              </li>
-            ))}
-            {total < 99.5 && (
-              <li className="pt-2 text-[10px] italic text-muted-foreground">Shown: {total.toFixed(0)}% of tracked value</li>
-            )}
-          </ul>
-        </div>
-      )}
-    </div>
+    <p className="rounded-2xl border border-dashed border-border bg-surface px-5 py-6 text-xs leading-relaxed text-muted-foreground">
+      {children ?? "Data not available."}
+    </p>
   );
 }
 
-interface GaugeProps {
-  title: string;
-  subtitle?: string;
-  value: number; // 0..100
-  label: string;
-  tone?: "primary" | "success" | "warning" | "danger";
-  footer?: React.ReactNode;
-}
+/* ───────────────── COMPARISON — You vs NitiCore™ ───────────────── */
 
-const TONE_COLORS = {
-  primary: "hsl(var(--primary))",
-  success: "hsl(var(--success, 142 71% 45%))",
-  warning: "#f59e0b",
-  danger: "hsl(var(--destructive))",
-};
-
-export function Gauge({ title, subtitle, value, label, tone = "primary", footer }: GaugeProps) {
-  const clamped = Math.max(0, Math.min(100, value));
-  const data = [{ name: title, value: clamped, fill: TONE_COLORS[tone] }];
-  return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <div>
-        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
-        {subtitle && <p className="mt-0.5 text-[11px] text-muted-foreground">{subtitle}</p>}
-      </div>
-      <div className="relative mt-3 h-[160px]">
-        <ResponsiveContainer>
-          <RadialBarChart innerRadius="72%" outerRadius="100%" data={data} startAngle={210} endAngle={-30}>
-            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-            <RadialBar background={{ fill: "hsl(var(--muted))" }} dataKey="value" cornerRadius={10} />
-          </RadialBarChart>
-        </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center pt-4">
-          <span className="font-display text-3xl leading-none text-foreground">{clamped}</span>
-          <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">/ 100</span>
-        </div>
-      </div>
-      <p className="mt-2 text-center text-sm font-semibold text-foreground">{label}</p>
-      {footer && <div className="mt-2 text-center text-[11px] text-muted-foreground">{footer}</div>}
-    </div>
-  );
-}
-
-/**
- * You vs Recommended vs Peer — grouped columns with in-chart value labels so
- * the reader never has to decode a legend twice.
- */
-export function AllocationBars({ rows }: { rows: { label: string; you: number; recommended: number; peer?: number }[] }) {
-  const hasPeer = rows.some((r) => typeof r.peer === "number");
-  const data = rows.map((r) => ({
-    name: r.label,
-    You: r.you,
-    Recommended: r.recommended,
-    ...(hasPeer ? { Peer: r.peer ?? 0 } : {}),
-  }));
-  return (
-    <div>
-      <ChartLegend
-        items={[
-          { label: "You", color: SERIES_COLORS.you, hint: "current mix" },
-          { label: "Recommended", color: SERIES_COLORS.recommended, hint: "NitiCore™ target" },
-          ...(hasPeer ? [{ label: "Peer", color: SERIES_COLORS.peer, hint: "typical for your cohort" }] : []),
-        ]}
-      />
-      <div className="mt-5 h-[300px] w-full">
-        <ResponsiveContainer>
-          <BarChart data={data} margin={{ top: 22, right: 8, bottom: 4, left: -14 }} barGap={6} barCategoryGap="26%">
-            <CartesianGrid strokeDasharray="2 6" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis
-              dataKey="name"
-              tick={{ fill: "hsl(var(--foreground))", fontSize: 12, fontWeight: 600 }}
-              axisLine={{ stroke: "hsl(var(--border))" }}
-              tickLine={false}
-              dy={6}
-            />
-            <YAxis unit="%" tick={AXIS_TICK} axisLine={false} tickLine={false} width={46} />
-            <Tooltip
-              cursor={{ fill: "hsl(var(--muted))", opacity: 0.25 }}
-              contentStyle={TOOLTIP_STYLE}
-              formatter={(v: number, n) => [`${v}%`, n as string]}
-            />
-            <Bar dataKey="You" fill={SERIES_COLORS.you} radius={[7, 7, 0, 0]} maxBarSize={38}>
-              <LabelList dataKey="You" position="top" formatter={(v: number) => `${v}%`} style={{ fill: "hsl(var(--foreground))", fontSize: 11, fontWeight: 600 }} />
-            </Bar>
-            <Bar dataKey="Recommended" fill={SERIES_COLORS.recommended} fillOpacity={0.85} radius={[7, 7, 0, 0]} maxBarSize={38} />
-            {hasPeer && <Bar dataKey="Peer" fill={SERIES_COLORS.peer} fillOpacity={0.5} radius={[7, 7, 0, 0]} maxBarSize={38} />}
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Holdings distribution — the largest position is emphasised, the rest recede.
- * The dashed line is the deterministic 15% concentration reference.
- */
-export function HoldingsDistribution({ rows }: { rows: { name: string; pct: number }[] }) {
-  const top = rows.slice(0, 10);
-  const data = top.map((r, i) => ({
-    name: r.name.length > 24 ? `${r.name.slice(0, 23)}…` : r.name,
-    fullName: r.name,
-    Share: r.pct,
-    rank: i,
-  }));
-  if (data.length === 0) return null;
-  const top5 = Math.round(top.slice(0, 5).reduce((a, r) => a + r.pct, 0) * 10) / 10;
-  return (
-    <div>
-      <div style={{ height: Math.max(200, data.length * 40) }} className="w-full">
-        <ResponsiveContainer>
-          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 46, bottom: 4, left: 4 }}>
-            <CartesianGrid strokeDasharray="2 6" stroke="hsl(var(--border))" horizontal={false} />
-            <XAxis type="number" unit="%" tick={AXIS_TICK} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="name" width={160} tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }} axisLine={false} tickLine={false} />
-            <ReferenceLine
-              x={15}
-              stroke="hsl(var(--muted-foreground))"
-              strokeDasharray="4 4"
-              label={{ value: "15% concentration line", position: "top", fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
-            />
-            <Tooltip
-              cursor={{ fill: "hsl(var(--muted))", opacity: 0.25 }}
-              contentStyle={TOOLTIP_STYLE}
-              formatter={(v: number, _n, p) => [
-                `${v}% of portfolio${(p?.payload?.rank ?? 9) < 5 ? " · top 5 holding" : ""}`,
-                (p?.payload?.fullName as string) ?? "Holding",
-              ]}
-              labelFormatter={() => ""}
-            />
-            <Bar dataKey="Share" radius={[0, 7, 7, 0]} maxBarSize={22}>
-              {data.map((d, i) => (
-                <Cell
-                  key={i}
-                  fill={d.Share >= 25 ? "hsl(var(--destructive))" : d.Share >= 15 ? SERIES_COLORS.peer : SERIES_COLORS.you}
-                  fillOpacity={i === 0 ? 1 : i < 5 ? 0.82 : 0.45}
-                />
-              ))}
-              <LabelList dataKey="Share" position="right" formatter={(v: number) => `${v}%`} style={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-        Largest holding is shown solid; your top five together are {top5}% of the portfolio. Past the dashed 15% line, one position starts to steer the whole outcome.
-      </p>
-    </div>
-  );
-}
-
-/**
- * Peer benchmark — a lollipop comparison. You is a filled dot, the cohort is
- * a hollow marker, and the connector shows the distance between them.
- */
-export function PeerLollipop({ rows }: { rows: { label: string; you: number; typical: number; unit: string; verdict: string }[] }) {
-  const max = Math.max(...rows.map((r) => Math.max(r.you, r.typical)), 10);
-  return (
-    <div className="space-y-5">
-      <ChartLegend
-        items={[
-          { label: "You", color: SERIES_COLORS.you },
-          { label: "Typical for your cohort", color: SERIES_COLORS.peer },
-        ]}
-      />
-      <ul className="space-y-4">
-        {rows.map((r) => {
-          const youPos = Math.min(100, (r.you / max) * 100);
-          const peerPos = Math.min(100, (r.typical / max) * 100);
-          const inLine = r.verdict.startsWith("In line");
-          return (
-            <li key={r.label}>
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-[13px] font-semibold text-foreground">{r.label}</span>
-                <span className="flex items-baseline gap-3 font-mono text-[11px] tabular-nums">
-                  <span className="text-foreground">{r.you}{r.unit}</span>
-                  <span className="text-muted-foreground">cohort {r.typical}{r.unit}</span>
-                </span>
-              </div>
-              <div className="relative mt-2.5 h-6">
-                <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border" />
-                <div
-                  className="absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full"
-                  style={{
-                    left: `${Math.min(youPos, peerPos)}%`,
-                    width: `${Math.abs(youPos - peerPos)}%`,
-                    background: inLine ? "hsl(var(--border))" : SERIES_COLORS.you,
-                    opacity: inLine ? 1 : 0.35,
-                  }}
-                />
-                <span
-                  className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 bg-card"
-                  style={{ left: `${peerPos}%`, borderColor: SERIES_COLORS.peer }}
-                />
-                <span
-                  className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-card"
-                  style={{ left: `${youPos}%`, background: SERIES_COLORS.you }}
-                />
-              </div>
-              <p className={`mt-1.5 text-[11px] ${inLine ? "text-muted-foreground" : "text-foreground/80"}`}>{r.verdict}</p>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
-/**
- * Portfolio Projection — current path vs adjustable scenarios.
- * Illustrative compounding of a stated assumption, never a forecast.
- */
-export function ProjectionChart({
-  data, format, baseLabel, altLabel, thirdLabel,
-}: {
-  data: { year: number; base: number; alternative: number; third?: number }[];
-  format: (n: number) => string;
-  baseLabel: string;
-  altLabel: string;
-  thirdLabel?: string;
-}) {
-  const hasThird = Boolean(thirdLabel) && data.some((d) => typeof d.third === "number");
-  return (
-    <div>
-      <ChartLegend
-        items={[
-          { label: baseLabel, color: SERIES_COLORS.you },
-          { label: altLabel, color: SERIES_COLORS.recommended },
-          ...(hasThird ? [{ label: thirdLabel as string, color: SERIES_COLORS.peer }] : []),
-        ]}
-      />
-      <div className="mt-5 h-[320px] w-full">
-        <ResponsiveContainer>
-          <AreaChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
-            <defs>
-              <linearGradient id="np-base" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={SERIES_COLORS.you} stopOpacity={0.28} />
-                <stop offset="100%" stopColor={SERIES_COLORS.you} stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="np-alt" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={SERIES_COLORS.recommended} stopOpacity={0.22} />
-                <stop offset="100%" stopColor={SERIES_COLORS.recommended} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="2 6" stroke="hsl(var(--border))" vertical={false} />
-            <XAxis
-              dataKey="year"
-              tickFormatter={(v: number) => (v === 0 ? "Today" : `${v}y`)}
-              tick={AXIS_TICK}
-              axisLine={{ stroke: "hsl(var(--border))" }}
-              tickLine={false}
-              dy={6}
-            />
-            <YAxis tickFormatter={(v: number) => format(v)} tick={AXIS_TICK} axisLine={false} tickLine={false} width={64} />
-            <Tooltip
-              contentStyle={TOOLTIP_STYLE}
-              labelFormatter={(v: number) => (v === 0 ? "Today" : `In ${v} years`)}
-              formatter={(v: number, n) => [
-                format(v),
-                n === "alternative" ? altLabel : n === "third" ? (thirdLabel ?? "Scenario") : baseLabel,
-              ]}
-            />
-            {hasThird && (
-              <Area
-                type="monotone"
-                dataKey="third"
-                stroke={SERIES_COLORS.peer}
-                strokeWidth={1.75}
-                strokeDasharray="2 5"
-                fill="transparent"
-                dot={false}
-              />
-            )}
-            <Area
-              type="monotone"
-              dataKey="alternative"
-              stroke={SERIES_COLORS.recommended}
-              strokeWidth={2}
-              strokeDasharray="6 4"
-              fill="url(#np-alt)"
-              dot={false}
-            />
-            <Area
-              type="monotone"
-              dataKey="base"
-              stroke={SERIES_COLORS.you}
-              strokeWidth={2.5}
-              fill="url(#np-base)"
-              dot={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-}
-
-/**
- * You vs NitiCore™ Recommended — an explicit gap reader.
- * Deliberately not a chart you have to decode: each row states both numbers
- * and the distance between them in words.
- */
-export function AllocationCompare({
-  rows,
-}: {
-  rows: { label: string; you: number; recommended: number }[];
-}) {
+export function ComparisonBars({ rows }: { rows: { label: string; you: number; recommended: number }[] }) {
   const max = Math.max(100, ...rows.flatMap((r) => [r.you, r.recommended]));
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <ChartLegend
         items={[
           { label: "You", color: SERIES_COLORS.you, hint: "current mix" },
-          { label: "NitiCore™ recommended", color: SERIES_COLORS.recommended, hint: "for your age, horizon & risk" },
+          { label: "NitiCore™ recommended", color: SERIES_COLORS.recommended, hint: "your age, horizon & risk", dashed: true },
         ]}
       />
-      <ul className="space-y-5">
+      <ul className="space-y-6">
         {rows.map((r) => {
           const gap = Math.round((r.you - r.recommended) * 10) / 10;
           const aligned = Math.abs(gap) <= 5;
           return (
-            <li key={r.label}>
+            <li key={r.label} className="group">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="text-[13px] font-semibold text-foreground">{r.label}</span>
-                <span className="font-mono text-[12px] tabular-nums text-foreground">
-                  {r.you}% <span className="px-1 text-muted-foreground">→</span> {r.recommended}%
+                <span className="font-mono text-[12px] tabular-nums text-muted-foreground">
+                  <span className="text-foreground">{r.you}%</span>
+                  <span className="px-1.5">→</span>
+                  {r.recommended}%
                 </span>
               </div>
-              <div className="mt-2 space-y-1.5">
-                <div className="h-3 w-full overflow-hidden rounded-full bg-muted/70">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
-                  />
+              <div className="mt-2.5 space-y-1.5">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-[74px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">You</span>
+                  <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted/70">
+                    <span
+                      className="block h-full rounded-full transition-[width] duration-500"
+                      style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
+                    />
+                  </span>
                 </div>
-                <div className="h-3 w-full overflow-hidden rounded-full border border-dashed border-border bg-transparent">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${(r.recommended / max) * 100}%`,
-                      background: `repeating-linear-gradient(135deg, ${SERIES_COLORS.recommended} 0 6px, ${SERIES_COLORS.recommended}66 6px 12px)`,
-                    }}
-                  />
+                <div className="flex items-center gap-2.5">
+                  <span className="w-[74px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Target</span>
+                  <span className="h-2.5 flex-1 overflow-hidden rounded-full border border-dashed border-border">
+                    <span
+                      className="block h-full rounded-full transition-[width] duration-500"
+                      style={{
+                        width: `${(r.recommended / max) * 100}%`,
+                        background: `repeating-linear-gradient(135deg, ${SERIES_COLORS.recommended} 0 5px, ${SERIES_COLORS.recommended}55 5px 10px)`,
+                      }}
+                    />
+                  </span>
                 </div>
               </div>
-              <p className="mt-1.5 text-[11px] text-muted-foreground">
-                {aligned
-                  ? "In line with the recommended band."
-                  : gap > 0
-                    ? `${Math.abs(gap)} percentage points above the recommended level.`
-                    : `${Math.abs(gap)} percentage points below the recommended level.`}
-              </p>
+              {!aligned && (
+                <p className="mt-2 text-[11px] text-foreground/75">
+                  <span className="font-mono tabular-nums font-semibold">{gap > 0 ? "+" : "−"}{Math.abs(gap)}</span>{" "}
+                  percentage points {gap > 0 ? "above" : "below"} the recommended level.
+                </p>
+              )}
+              {aligned && <p className="mt-2 text-[11px] text-muted-foreground">In line with the recommended band.</p>}
             </li>
           );
         })}
@@ -487,45 +148,71 @@ export function AllocationCompare({
   );
 }
 
-/** Premium segmented allocation bar — percentage and rupee value, no pie. */
-export function SegmentedAllocation({
-  slices,
-  formatValue,
-  empty,
+/* ───────────────── COMPOSITION — donut ───────────────── */
+
+export function AllocationDonut({
+  slices, formatValue, centerLabel, centerValue, empty,
 }: {
   slices: Slice[];
   formatValue: (n: number) => string;
+  centerLabel: string;
+  centerValue: string;
   empty?: string;
 }) {
-  const data = slices.filter((s) => s.pct > 0);
-  if (data.length === 0) {
-    return (
-      <p className="rounded-2xl border border-dashed border-border bg-surface p-5 text-xs leading-relaxed text-muted-foreground">
-        {empty ?? "Data unavailable."}
-      </p>
-    );
-  }
+  const data = slices.filter((s) => s.pct > 0).slice(0, 8);
+  const [active, setActive] = useState<number | null>(null);
+  if (data.length === 0) return <NoData>{empty}</NoData>;
+
   return (
-    <div>
-      <div className="flex h-4 w-full overflow-hidden rounded-full">
-        {data.map((s, i) => (
-          <span
-            key={s.label}
-            title={`${s.label} — ${s.pct}%`}
-            style={{ width: `${s.pct}%`, background: CHART_PALETTE[i % CHART_PALETTE.length] }}
-            className="h-full first:rounded-l-full last:rounded-r-full"
-          />
-        ))}
+    <div className="grid gap-8 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
+      <div className="relative mx-auto aspect-square w-full max-w-[240px]">
+        <ResponsiveContainer>
+          <PieChart>
+            <Pie
+              data={data}
+              dataKey="pct"
+              nameKey="label"
+              innerRadius="68%"
+              outerRadius="99%"
+              paddingAngle={1.5}
+              stroke="var(--card)"
+              strokeWidth={3}
+              onMouseEnter={(_, i) => setActive(i)}
+              onMouseLeave={() => setActive(null)}
+              isAnimationActive={false}
+            >
+              {data.map((_, i) => (
+                <Cell
+                  key={i}
+                  fill={CHART_PALETTE[i % CHART_PALETTE.length]}
+                  fillOpacity={active === null || active === i ? 1 : 0.28}
+                />
+              ))}
+            </Pie>
+            <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number, n) => [`${v}%`, n as string]} />
+          </PieChart>
+        </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="font-display text-2xl text-foreground">
+            {active === null ? centerValue : `${data[active].pct}%`}
+          </span>
+          <span className="mt-1 max-w-[70%] text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            {active === null ? centerLabel : data[active].label}
+          </span>
+        </div>
       </div>
-      <ul className="mt-5 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+      <ul className="space-y-0.5">
         {data.map((s, i) => (
-          <li key={s.label} className="flex items-baseline gap-2.5 border-b border-border/50 pb-1.5">
+          <li
+            key={s.label}
+            onMouseEnter={() => setActive(i)}
+            onMouseLeave={() => setActive(null)}
+            className={`flex items-baseline gap-3 rounded-lg px-2.5 py-2 transition-colors ${active === i ? "bg-muted/60" : ""}`}
+          >
             <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{s.label}</span>
+            <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">{s.label}</span>
             <span className="font-mono text-[12px] tabular-nums text-foreground">{s.pct}%</span>
-            {s.value > 0 && (
-              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>
-            )}
+            {s.value > 0 && <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>}
           </li>
         ))}
       </ul>
@@ -533,3 +220,278 @@ export function SegmentedAllocation({
   );
 }
 
+/* ───────────────── CONCENTRATION — ranked bars ───────────────── */
+
+export function ConcentrationBars({
+  rows, formatValue, threshold = 15,
+}: {
+  rows: { name: string; pct: number; value?: number }[];
+  formatValue: (n: number) => string;
+  threshold?: number;
+}) {
+  const top = rows.slice(0, 10);
+  if (top.length === 0) return <NoData />;
+  const data = top.map((r, i) => ({
+    name: r.name.length > 22 ? `${r.name.slice(0, 21)}…` : r.name,
+    fullName: r.name,
+    Share: r.pct,
+    rank: i,
+  }));
+  const top5 = Math.round(top.slice(0, 5).reduce((a, r) => a + r.pct, 0) * 10) / 10;
+  const largest = top[0];
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border/70 pb-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Largest position</p>
+          <p className="mt-1 font-display text-xl leading-tight text-foreground">{largest.name}</p>
+        </div>
+        <p className="font-mono text-[13px] tabular-nums text-foreground">
+          {largest.pct}%{largest.value ? ` · ${formatValue(largest.value)}` : ""}
+        </p>
+      </div>
+      <div style={{ height: Math.max(190, data.length * 38) }} className="mt-5 w-full">
+        <ResponsiveContainer>
+          <BarChart data={data} layout="vertical" margin={{ top: 16, right: 48, bottom: 4, left: 4 }}>
+            <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" horizontal={false} />
+            <XAxis type="number" unit="%" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+            <YAxis type="category" dataKey="name" width={150} tick={{ fill: "var(--foreground)", fontSize: 12 }} axisLine={false} tickLine={false} />
+            <ReferenceLine
+              x={threshold}
+              stroke={SERIES_COLORS.attention}
+              strokeDasharray="5 4"
+              label={{ value: `${threshold}% concentration line`, position: "top", fill: SERIES_COLORS.attention, fontSize: 10 }}
+            />
+            <Tooltip
+              cursor={{ fill: "var(--muted)", opacity: 0.25 }}
+              contentStyle={TOOLTIP_STYLE}
+              formatter={(v: number, _n, p) => [
+                `${v}% of portfolio${(p?.payload?.rank ?? 9) < 5 ? " · top 5 holding" : ""}`,
+                (p?.payload?.fullName as string) ?? "Holding",
+              ]}
+              labelFormatter={() => ""}
+            />
+            <Bar dataKey="Share" radius={[0, 6, 6, 0]} maxBarSize={20} isAnimationActive={false}>
+              {data.map((d, i) => (
+                <Cell
+                  key={i}
+                  fill={d.Share >= 25 ? SERIES_COLORS.action : d.Share >= threshold ? SERIES_COLORS.attention : SERIES_COLORS.you}
+                  fillOpacity={i === 0 ? 1 : i < 5 ? 0.75 : 0.4}
+                />
+              ))}
+              <LabelList dataKey="Share" position="right" formatter={(v: number) => `${v}%`} style={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <p className="mt-4 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">
+        Your top five holdings are <span className="font-semibold text-foreground">{top5}%</span> of the portfolio. Past the {threshold}% line, a single position starts to steer the whole outcome.
+      </p>
+    </div>
+  );
+}
+
+/* ───────────────── STACKED COMPOSITION — market cap ───────────────── */
+
+export function StackedComposition({
+  slices, formatValue, caption, empty,
+}: {
+  slices: Slice[];
+  formatValue: (n: number) => string;
+  caption?: React.ReactNode;
+  empty?: string;
+}) {
+  const data = slices.filter((s) => s.pct > 0);
+  const [active, setActive] = useState<string | null>(null);
+  if (data.length === 0) return <NoData>{empty}</NoData>;
+  return (
+    <div>
+      {caption}
+      <div className="mt-5 flex h-9 w-full overflow-hidden rounded-lg">
+        {data.map((s, i) => (
+          <span
+            key={s.label}
+            onMouseEnter={() => setActive(s.label)}
+            onMouseLeave={() => setActive(null)}
+            title={`${s.label} — ${s.pct}%`}
+            style={{
+              width: `${s.pct}%`,
+              background: CHART_PALETTE[i % CHART_PALETTE.length],
+              opacity: active === null || active === s.label ? 1 : 0.35,
+            }}
+            className="flex h-full items-center justify-center transition-opacity"
+          >
+            {s.pct >= 12 && <span className="px-1 font-mono text-[11px] tabular-nums text-white/95">{s.pct}%</span>}
+          </span>
+        ))}
+      </div>
+      <ul className="mt-5 space-y-1">
+        {data.map((s, i) => (
+          <li
+            key={s.label}
+            onMouseEnter={() => setActive(s.label)}
+            onMouseLeave={() => setActive(null)}
+            className={`flex items-baseline gap-3 rounded-lg px-2 py-1.5 transition-colors ${active === s.label ? "bg-muted/60" : ""}`}
+          >
+            <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{s.label}</span>
+            <span className="font-mono text-[12px] tabular-nums text-foreground">{s.pct}%</span>
+            {s.value > 0 && <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ───────────────── SECTOR — treemap ───────────────── */
+
+interface TreemapNodeProps {
+  x?: number; y?: number; width?: number; height?: number; index?: number;
+  name?: string; pct?: number;
+}
+
+function SectorTile(props: TreemapNodeProps) {
+  const { x = 0, y = 0, width = 0, height = 0, index = 0, name = "", pct = 0 } = props;
+  const color = CHART_PALETTE[index % CHART_PALETTE.length];
+  const showLabel = width > 66 && height > 34;
+  return (
+    <g>
+      <rect x={x} y={y} width={width} height={height} rx={8} fill={color} stroke="var(--card)" strokeWidth={3} />
+      {showLabel && (
+        <>
+          <text x={x + 10} y={y + 20} fill="#fff" fontSize={11} fontWeight={600}>
+            {name.length > Math.floor(width / 7) ? `${name.slice(0, Math.max(3, Math.floor(width / 7) - 1))}…` : name}
+          </text>
+          <text x={x + 10} y={y + 36} fill="rgba(255,255,255,0.85)" fontSize={11}>{pct}%</text>
+        </>
+      )}
+    </g>
+  );
+}
+
+export function SectorTreemap({
+  slices, formatValue, empty,
+}: {
+  slices: Slice[];
+  formatValue: (n: number) => string;
+  empty?: string;
+}) {
+  const data = slices.filter((s) => s.pct > 0).map((s) => ({ name: s.label, size: s.pct, pct: s.pct, value: s.value }));
+  if (data.length === 0) return <NoData>{empty}</NoData>;
+  return (
+    <div>
+      <div className="h-[260px] w-full">
+        <ResponsiveContainer>
+          <Treemap data={data} dataKey="size" stroke="var(--card)" isAnimationActive={false} content={<SectorTile />}>
+            <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number, _n, p) => [`${v}%`, (p?.payload?.name as string) ?? "Sector"]} />
+          </Treemap>
+        </ResponsiveContainer>
+      </div>
+      <ul className="mt-5 grid gap-x-8 gap-y-1.5 sm:grid-cols-2">
+        {data.slice(0, 8).map((s, i) => (
+          <li key={s.name} className="flex items-baseline gap-2.5 border-b border-border/50 pb-1.5">
+            <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{s.name}</span>
+            <span className="font-mono text-[12px] tabular-nums text-foreground">{s.pct}%</span>
+            {s.value > 0 && <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* ───────────────── DIAGNOSTIC INDICATORS ───────────────── */
+
+export function ScoreRing({ value, color, size = 44 }: { value: number; color: string; size?: number }) {
+  const v = Math.max(0, Math.min(100, value));
+  const r = (size - 6) / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 -rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--muted)" strokeWidth={5} />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={5} strokeLinecap="round"
+        strokeDasharray={`${(v / 100) * c} ${c}`}
+      />
+    </svg>
+  );
+}
+
+export function MiniMeter({ value, color }: { value: number; color: string }) {
+  const v = Math.max(0, Math.min(100, value));
+  return (
+    <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted">
+      <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${Math.max(3, v)}%`, background: color }} />
+    </span>
+  );
+}
+
+export function ThresholdMarker({ value, threshold, color }: { value: number; threshold: number; color: string }) {
+  const scale = Math.max(100, value * 1.2, threshold * 1.6);
+  return (
+    <span className="relative block h-5 w-full">
+      <span className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
+        <span className="block h-full rounded-full" style={{ width: `${(Math.min(value, scale) / scale) * 100}%`, background: color }} />
+      </span>
+      <span
+        className="absolute top-0 h-5 border-l border-dashed"
+        style={{ left: `${(threshold / scale) * 100}%`, borderColor: "var(--muted-foreground)" }}
+      />
+    </span>
+  );
+}
+
+/* ───────────────── PROJECTION — interactive line chart ───────────────── */
+
+export function ProjectionChart({
+  data, format, series,
+}: {
+  data: { year: number; base: number; alternative: number; third?: number }[];
+  format: (n: number) => string;
+  series: { key: "base" | "alternative" | "third"; label: string; color: string; dash?: string }[];
+}) {
+  const labelOf = (k: string) => series.find((s) => s.key === k)?.label ?? k;
+  return (
+    <div>
+      <ChartLegend items={series.map((s) => ({ label: s.label, color: s.color, dashed: Boolean(s.dash) }))} />
+      <div className="mt-5 h-[320px] w-full">
+        <ResponsiveContainer>
+          <LineChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
+            <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
+            <XAxis
+              dataKey="year"
+              tickFormatter={(v: number) => (v === 0 ? "Today" : `${v}y`)}
+              tick={AXIS_TICK}
+              axisLine={{ stroke: "var(--border)" }}
+              tickLine={false}
+              dy={6}
+              minTickGap={16}
+            />
+            <YAxis tickFormatter={(v: number) => format(v)} tick={AXIS_TICK} axisLine={false} tickLine={false} width={62} />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              labelFormatter={(v: number) => (v === 0 ? "Today" : `In ${v} years`)}
+              formatter={(v: number, n) => [format(v), labelOf(n as string)]}
+            />
+            {series.map((s) => (
+              <Line
+                key={s.key}
+                type="monotone"
+                dataKey={s.key}
+                name={s.key}
+                stroke={s.color}
+                strokeWidth={s.key === "base" ? 2.5 : 2}
+                strokeDasharray={s.dash}
+                dot={false}
+                isAnimationActive={false}
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
