@@ -36,17 +36,30 @@ export interface FinancialServicesSectionProps {
   stats?: ServiceStats;
   headerAction?: React.ReactNode;
   className?: string;
-  /** Layout variant. `minimal` is for the homepage; `full` is for the dashboard. */
-  variant?: "full" | "minimal";
+  /** Layout variant. `minimal` = homepage, `compact` = dashboard, `full` = legacy grid. */
+  variant?: "full" | "minimal" | "compact";
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Locale-independent formatting so SSR and client output always match. */
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const d = new Date(iso);
+  return `${String(d.getUTCDate()).padStart(2, "0")} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
+
+function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  return `${String(d.getUTCDate()).padStart(2, "0")} ${MONTHS[d.getUTCMonth()]}`;
+}
+
+/** Short dashboard labels — the marketing names stay on the public surfaces. */
+const SHORT_NAMES: Record<string, string> = {
+  "insurance-analyzer": "Insurance",
+  "portfolio-analyzer": "Portfolio",
+  "loan-analyzer": "Loans",
+  "tax-planner": "Tax",
+};
 
 export function FinancialServicesSection({
   authenticated = false,
@@ -58,6 +71,11 @@ export function FinancialServicesSection({
   if (variant === "minimal") {
     return <MinimalServicesSection className={className} authenticated={authenticated} />;
   }
+
+  if (variant === "compact") {
+    return <CompactServicesSection className={className} stats={stats} />;
+  }
+
 
   return (
     <section className={className}>
