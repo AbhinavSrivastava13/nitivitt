@@ -415,16 +415,13 @@ function Dashboard() {
           <NitiSimLauncher />
         </section>
 
-        {/* ── Services (shared with the homepage) ──────────────────── */}
+        {/* ── Services (compact dashboard control panel) ───────────── */}
         <FinancialServicesSection
-          className="mt-14"
+          className="mt-10"
           authenticated
-          headerAction={
-            <Link to="/services" className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary hover:underline">
-              All services <ArrowRight className="h-3 w-3" />
-            </Link>
-          }
+          variant="compact"
           stats={{
+
             "insurance-analyzer": {
               hasData: insurancePolicyCount > 0,
               scoreLabel: "NitiSure™",

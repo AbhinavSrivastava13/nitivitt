@@ -36,17 +36,30 @@ export interface FinancialServicesSectionProps {
   stats?: ServiceStats;
   headerAction?: React.ReactNode;
   className?: string;
-  /** Layout variant. `minimal` is for the homepage; `full` is for the dashboard. */
-  variant?: "full" | "minimal";
+  /** Layout variant. `minimal` = homepage, `compact` = dashboard, `full` = legacy grid. */
+  variant?: "full" | "minimal" | "compact";
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Locale-independent formatting so SSR and client output always match. */
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const d = new Date(iso);
+  return `${String(d.getUTCDate()).padStart(2, "0")} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
+
+function formatShortDate(iso: string): string {
+  const d = new Date(iso);
+  return `${String(d.getUTCDate()).padStart(2, "0")} ${MONTHS[d.getUTCMonth()]}`;
+}
+
+/** Short dashboard labels — the marketing names stay on the public surfaces. */
+const SHORT_NAMES: Record<string, string> = {
+  "insurance-analyzer": "Insurance",
+  "portfolio-analyzer": "Portfolio",
+  "loan-analyzer": "Loans",
+  "tax-planner": "Tax",
+};
 
 export function FinancialServicesSection({
   authenticated = false,
@@ -58,6 +71,11 @@ export function FinancialServicesSection({
   if (variant === "minimal") {
     return <MinimalServicesSection className={className} authenticated={authenticated} />;
   }
+
+  if (variant === "compact") {
+    return <CompactServicesSection className={className} stats={stats} />;
+  }
+
 
   return (
     <section className={className}>
@@ -402,4 +420,137 @@ function AnalyzerCard({
     default:
       return <Link to="/financial-advisor" className={cls}>{inner}</Link>;
   }
+}
+
+/* ─────────────── Compact dashboard section ─────────────── */
+
+function AnalyzerLink({
+  service,
+  className,
+  children,
+  ariaLabel,
+}: {
+  service: Service;
+  className: string;
+  children: React.ReactNode;
+  ariaLabel?: string;
+}) {
+  const props = { className, "aria-label": ariaLabel };
+  switch (service.appRoute) {
+    case "/insurance-analyzer":
+      return <Link to="/insurance-analyzer" {...props}>{children}</Link>;
+    case "/portfolio-analyzer":
+      return <Link to="/portfolio-analyzer" {...props}>{children}</Link>;
+    case "/loan-analyzer":
+      return <Link to="/loan-analyzer" {...props}>{children}</Link>;
+    case "/tax-planner":
+      return <Link to="/tax-planner" {...props}>{children}</Link>;
+    default:
+      return <Link to="/financial-advisor" {...props}>{children}</Link>;
+  }
+}
+
+function CompactServicesSection({
+  stats,
+  className = "",
+}: {
+  stats: ServiceStats;
+  className?: string;
+}) {
+  const advisor = ADVISOR_SERVICE;
+  const AdvisorIcon = advisor.icon;
+
+  return (
+    <section className={className}>
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 sm:flex sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">
+            Financial services
+          </p>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+            Your financial analyses, advisor access and latest status — in one place.
+          </p>
+        </div>
+        <Link
+          to="/services"
+          className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary hover:underline"
+        >
+          View all <ArrowRight className="h-3 w-3" />
+        </Link>
+      </div>
+
+      <div className="mt-4 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-soft">
+        {/* Advisor row */}
+        <Link
+          to="/financial-advisor"
+          className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 bg-primary-soft/60 px-5 py-4 transition-colors hover:bg-primary-soft"
+        >
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <AdvisorIcon className="h-4 w-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-foreground">Financial Advisor</p>
+              <p className="truncate text-[12px] text-muted-foreground">
+                Talk to an advisor with your NitiVitt financial context already prepared.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground">
+            <span className="hidden sm:inline">Talk to an Advisor</span>
+            <span className="sm:hidden">Talk</span>
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+
+        {/* Analyzer status strip */}
+        <div className="grid divide-y divide-border/70 border-t border-border/70 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
+          {ANALYZER_SERVICES.map((s, i) => {
+            const stat = stats[s.slug];
+            const hasData = Boolean(stat?.hasData);
+            const state = hasData
+              ? stat?.ratingText ?? (stat?.score != null ? `${stat.score} / 100` : "Reviewed")
+              : "Not reviewed";
+            const tone = hasData && stat?.ratingTone ? ratingClasses(stat.ratingTone).text : "text-foreground";
+
+            return (
+              <AnalyzerLink
+                key={s.slug}
+                service={s}
+                ariaLabel={`${SHORT_NAMES[s.slug] ?? s.name} — ${state}`}
+                className={`group flex flex-col gap-1 px-5 py-4 transition-colors hover:bg-muted/40 sm:border-t sm:border-border/70 ${
+                  i % 2 === 1 ? "sm:border-l" : ""
+                } lg:border-l lg:first:border-l-0 lg:[&:nth-child(3)]:border-l`}
+              >
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="truncate text-[12px] font-semibold text-foreground">
+                    {SHORT_NAMES[s.slug] ?? s.name}
+                  </p>
+                  <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                    {s.tag}
+                  </span>
+                </div>
+                <p
+                  className={`font-display text-lg font-semibold leading-tight ${
+                    hasData ? tone : "text-muted-foreground"
+                  }`}
+                >
+                  {state}
+                </p>
+                <div className="mt-1 flex items-center justify-between gap-2">
+                  <span className="truncate text-[11px] text-muted-foreground">
+                    {hasData && stat?.lastReviewed ? formatShortDate(stat.lastReviewed) : "—"}
+                  </span>
+                  <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-primary">
+                    {hasData ? "Open" : "Start"}
+                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </div>
+              </AnalyzerLink>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
 }
