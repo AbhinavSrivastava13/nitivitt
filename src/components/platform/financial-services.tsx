@@ -112,7 +112,7 @@ function MinimalServicesSection({
 }) {
   const s = ADVISOR_SERVICE;
   const Icon = s.icon;
-  const cta = authenticated ? s.ctaActive : GUEST_CTA;
+  const cta = s.ctaActive;
 
   const advisorLink = authenticated ? "/financial-advisor" : "/services/$slug";
   const advisorParams = authenticated ? undefined : { slug: s.slug };
