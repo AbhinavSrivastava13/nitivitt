@@ -1,11 +1,12 @@
 /**
- * Financial Services section — ONE implementation, used by both the public
- * homepage and the signed-in dashboard so the two are pixel-identical.
+ * Financial Services section — shared implementation for the public homepage and
+ * the signed-in dashboard.
  *
  * All copy, icons, statuses and CTA wording come from `@/content/services`
- * (the single source of truth). The only difference between contexts is:
- *   - signed out → cards open the premium service overview page
- *   - signed in  → cards open the live service, and may show live stats
+ * (the single source of truth). The component supports two layouts:
+ *   - `full` (default) → dashboard-style service grid with optional live stats
+ *   - `minimal`        → compact homepage feature block with the flagship
+ *                        Financial Advisor card and an "Explore all services" link
  */
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
@@ -30,6 +31,15 @@ export interface ServiceStat {
 
 export type ServiceStats = Partial<Record<string, ServiceStat>>;
 
+export interface FinancialServicesSectionProps {
+  authenticated?: boolean;
+  stats?: ServiceStats;
+  headerAction?: React.ReactNode;
+  className?: string;
+  /** Layout variant. `minimal` is for the homepage; `full` is for the dashboard. */
+  variant?: "full" | "minimal";
+}
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -43,12 +53,12 @@ export function FinancialServicesSection({
   stats = {},
   headerAction,
   className = "",
-}: {
-  authenticated?: boolean;
-  stats?: ServiceStats;
-  headerAction?: React.ReactNode;
-  className?: string;
-}) {
+  variant = "full",
+}: FinancialServicesSectionProps) {
+  if (variant === "minimal") {
+    return <MinimalServicesSection className={className} authenticated={authenticated} />;
+  }
+
   return (
     <section className={className}>
       {/* Header — heading and description sit on the same top line */}
@@ -86,6 +96,127 @@ export function FinancialServicesSection({
             />
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────── Minimal homepage section ─────────────── */
+
+function MinimalServicesSection({
+  authenticated,
+  className = "",
+}: {
+  authenticated: boolean;
+  className?: string;
+}) {
+  const s = ADVISOR_SERVICE;
+  const Icon = s.icon;
+  const cta = s.ctaActive;
+
+  const advisorLink = authenticated ? "/financial-advisor" : "/services/$slug";
+  const advisorParams = authenticated ? undefined : { slug: s.slug };
+
+  return (
+    <section className={className}>
+      <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+        <div className="max-w-2xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
+            Financial services
+          </p>
+          <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground md:text-4xl lg:text-5xl">
+            One flagship advisor.{" "}
+            <span className="font-editorial italic font-normal text-primary">Deeper</span> financial intelligence behind it.
+          </h2>
+        </div>
+        <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground lg:pb-1">
+          AI analyzes your financial picture across the areas that matter. When you need to act, a
+          Financial Advisor can work from that context — so the conversation starts with your
+          situation, not a product pitch.
+        </p>
+      </div>
+
+      <div className="mt-10 md:mt-12">
+        <Link
+          to={advisorLink}
+          params={advisorParams}
+          className="group relative flex flex-col overflow-hidden rounded-[28px] p-7 text-primary-foreground shadow-elevated ring-1 ring-primary/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-glow md:p-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10"
+          style={{
+            background:
+              "radial-gradient(120% 100% at 0% 0%, oklch(0.42 0.14 258) 0%, oklch(0.28 0.10 258) 55%, oklch(0.22 0.08 258) 100%)",
+          }}
+          aria-label={authenticated ? s.ctaActive : `${s.name} — ${GUEST_CTA}`}
+        >
+          {/* Soft ambient glow */}
+          <div
+            className="pointer-events-none absolute -right-28 -top-28 h-80 w-80 rounded-full bg-accent/20 blur-3xl transition-opacity duration-700 group-hover:opacity-100"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-secondary/10 blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.05]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+              maskImage: "radial-gradient(ellipse 70% 60% at 30% 20%, black 20%, transparent 75%)",
+            }}
+            aria-hidden
+          />
+
+          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-10">
+            <div className="flex items-center gap-4">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-foreground/10 ring-1 ring-primary-foreground/20 backdrop-blur-sm">
+                <Icon className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent">
+                  {s.tag}
+                </p>
+                <h3 className="font-display text-2xl font-semibold leading-tight tracking-tight md:text-3xl">
+                  {s.name}
+                </h3>
+              </div>
+            </div>
+
+            <div className="max-w-lg">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] ring-1 ring-primary-foreground/15 backdrop-blur-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  Flagship service
+                </span>
+                <span className="rounded-full bg-primary-foreground/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] ring-1 ring-primary-foreground/15">
+                  {s.status}
+                </span>
+              </div>
+              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-primary-foreground/85">
+                1:1 sessions with fee-only advisors, supported by your NitiVitt financial context.
+              </p>
+            </div>
+          </div>
+
+          <span className="relative mt-6 inline-flex w-fit shrink-0 items-center gap-2 rounded-xl bg-primary-foreground px-4 py-2.5 text-sm font-semibold text-primary transition-all duration-300 group-hover:translate-x-0.5 lg:mt-0">
+            {cta}
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+          </span>
+        </Link>
+      </div>
+
+      <div className="mt-8 flex flex-col items-start justify-between gap-4 border-t border-border/70 pt-6 md:flex-row md:items-center md:gap-8">
+        <p className="text-sm text-muted-foreground">
+          Multiple analyzers. One connected financial picture.
+        </p>
+        <Link
+          to="/services"
+          className="group inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+          aria-label="Explore all services"
+        >
+          Explore all services
+          <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+        </Link>
       </div>
     </section>
   );
