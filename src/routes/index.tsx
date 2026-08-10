@@ -511,7 +511,7 @@ function SuiteCard({
 
 function FinancialServices() {
   return (
-    <FinancialServicesSection className="container-page py-20 md:py-28" />
+    <FinancialServicesSection className="container-page py-16 md:py-20" variant="minimal" />
   );
 }
 
