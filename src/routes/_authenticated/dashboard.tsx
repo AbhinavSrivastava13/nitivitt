@@ -45,6 +45,8 @@ function ageFromDob(dob: string | null): number {
   if (!dob) return 30;
   const diff = Date.now() - new Date(dob).getTime();
   return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
+}
+
 function formatDateUTC(date: Date): string {
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${String(date.getUTCDate()).padStart(2, "0")} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
