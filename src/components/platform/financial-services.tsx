@@ -483,35 +483,35 @@ function CompactServicesSection({
       <div className="mt-4 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-soft">
         <Link
           to="/financial-advisor"
-          className="group relative flex flex-col justify-between gap-4 bg-gradient-to-br from-primary-soft/80 via-primary-soft/40 to-card px-5 py-4 transition-all duration-300 hover:from-primary-soft hover:shadow-elevated sm:flex-row sm:items-center"
+          className="group relative flex flex-col justify-between gap-4 bg-gradient-to-br from-primary-soft/80 via-primary-soft/40 to-card px-5 py-3.5 transition-all duration-300 hover:from-primary-soft hover:shadow-elevated sm:flex-row sm:items-center"
         >
-          <div className="flex min-w-0 items-start gap-4">
-            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
+          <div className="flex min-w-0 items-start gap-3.5">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
               <AdvisorIcon className="h-4 w-4" />
             </span>
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary">
-                NitiVitt Advisory
-              </p>
-              <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
-                Financial Advisor
-              </h3>
-              <p className="mt-0.5 max-w-md text-[13px] leading-relaxed text-muted-foreground">
-                Turn your NitiVitt financial picture into a conversation with a human advisor.
-              </p>
-              <p className="mt-0.5 max-w-md text-[11px] leading-relaxed text-muted-foreground/75">
-                Your NitiVitt analysis is already prepared, including the areas that need attention, so the conversation can focus on decisions, questions and practical next steps.
-              </p>
-              <div className="mt-2 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <span className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-2 py-0.5 ring-1 ring-secondary/20">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary">
+                  NitiVitt Advisory
+                </p>
+                <span className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-1.5 py-0.5 text-[10px] text-muted-foreground ring-1 ring-secondary/20">
                   <span className="h-1 w-1 rounded-full bg-secondary" />
                   Human guidance
                 </span>
               </div>
+              <h3 className="font-display text-base font-semibold tracking-tight text-foreground">
+                Financial Advisor
+              </h3>
+              <p className="mt-0.5 max-w-md text-[12px] leading-relaxed text-muted-foreground">
+                Turn your NitiVitt financial picture into a conversation with a human advisor.
+              </p>
+              <p className="mt-0.5 max-w-md text-[11px] leading-relaxed text-muted-foreground/75">
+                Your analysis is already prepared, so the conversation can focus on decisions and next steps.
+              </p>
             </div>
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end sm:pl-4">
-            <span className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-all duration-300 group-hover:translate-x-0.5">
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition-all duration-300 group-hover:translate-x-0.5">
               Talk to an Advisor
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
             </span>
@@ -523,7 +523,7 @@ function CompactServicesSection({
       </div>
 
       {/* Analyzer status panel */}
-      <div className="mt-3">
+      <div className="mt-2">
         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary/80">
           Your financial intelligence
         </p>
@@ -542,7 +542,7 @@ function CompactServicesSection({
                   key={s.slug}
                   service={s}
                   ariaLabel={`${SHORT_NAMES[s.slug] ?? s.name} — ${state}`}
-                  className={`group flex flex-col gap-0.5 px-5 py-3.5 transition-colors hover:bg-muted/40 sm:border-t sm:border-border/70 ${
+                  className={`group flex flex-col gap-0.5 px-5 py-3 transition-colors hover:bg-muted/40 sm:border-t sm:border-border/70 ${
                     i % 2 === 1 ? "sm:border-l" : ""
                   } lg:border-l lg:first:border-l-0 lg:[&:nth-child(3)]:border-l`}
                 >
