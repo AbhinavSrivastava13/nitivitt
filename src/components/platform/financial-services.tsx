@@ -479,76 +479,101 @@ function CompactServicesSection({
         </Link>
       </div>
 
+      {/* Flagship advisor block */}
       <div className="mt-4 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-soft">
-        {/* Advisor row */}
         <Link
           to="/financial-advisor"
-          className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 bg-primary-soft/60 px-5 py-4 transition-colors hover:bg-primary-soft"
+          className="group relative flex flex-col justify-between gap-4 bg-gradient-to-br from-primary-soft/80 via-primary-soft/40 to-card px-5 py-3.5 transition-all duration-300 hover:from-primary-soft hover:shadow-elevated sm:flex-row sm:items-center"
         >
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+          <div className="flex min-w-0 items-start gap-3.5">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
               <AdvisorIcon className="h-4 w-4" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">Financial Advisor</p>
-              <p className="truncate text-[12px] text-muted-foreground">
-                Talk to an advisor with your NitiVitt financial context already prepared.
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-secondary">
+                  NitiVitt Advisory
+                </p>
+                <span className="inline-flex items-center gap-1 rounded-full bg-secondary/10 px-1.5 py-0.5 text-[10px] text-muted-foreground ring-1 ring-secondary/20">
+                  <span className="h-1 w-1 rounded-full bg-secondary" />
+                  Human guidance
+                </span>
+              </div>
+              <h3 className="font-display text-base font-semibold tracking-tight text-foreground">
+                Financial Advisor
+              </h3>
+              <p className="mt-0.5 max-w-md text-[12px] leading-relaxed text-muted-foreground">
+                Turn your NitiVitt financial picture into a conversation with a human advisor.
+              </p>
+              <p className="mt-0.5 max-w-md text-[11px] leading-relaxed text-muted-foreground/75">
+                Your analysis is already prepared, so the conversation can focus on decisions and next steps.
               </p>
             </div>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground">
-            <span className="hidden sm:inline">Talk to an Advisor</span>
-            <span className="sm:hidden">Talk</span>
-            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-          </span>
+          <div className="flex flex-col items-start gap-2 sm:items-end sm:pl-4">
+            <span className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft transition-all duration-300 group-hover:translate-x-0.5">
+              Talk to an Advisor
+              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              Fee-only · No commissions · No product pitches
+            </span>
+          </div>
         </Link>
+      </div>
 
-        {/* Analyzer status strip */}
-        <div className="grid divide-y divide-border/70 border-t border-border/70 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
-          {ANALYZER_SERVICES.map((s, i) => {
-            const stat = stats[s.slug];
-            const hasData = Boolean(stat?.hasData);
-            const state = hasData
-              ? stat?.ratingText ?? (stat?.score != null ? `${stat.score} / 100` : "Reviewed")
-              : "Not reviewed";
-            const tone = hasData && stat?.ratingTone ? ratingClasses(stat.ratingTone).text : "text-foreground";
+      {/* Analyzer status panel */}
+      <div className="mt-2">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary/80">
+          Your financial intelligence
+        </p>
+        <div className="mt-2 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-soft">
+          <div className="grid divide-y divide-border/70 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
+            {ANALYZER_SERVICES.map((s, i) => {
+              const stat = stats[s.slug];
+              const hasData = Boolean(stat?.hasData);
+              const state = hasData
+                ? stat?.ratingText ?? (stat?.score != null ? `${stat.score} / 100` : "Reviewed")
+                : "Not reviewed";
+              const tone = hasData && stat?.ratingTone ? ratingClasses(stat.ratingTone).text : "text-foreground";
 
-            return (
-              <AnalyzerLink
-                key={s.slug}
-                service={s}
-                ariaLabel={`${SHORT_NAMES[s.slug] ?? s.name} — ${state}`}
-                className={`group flex flex-col gap-1 px-5 py-4 transition-colors hover:bg-muted/40 sm:border-t sm:border-border/70 ${
-                  i % 2 === 1 ? "sm:border-l" : ""
-                } lg:border-l lg:first:border-l-0 lg:[&:nth-child(3)]:border-l`}
-              >
-                <div className="flex items-baseline justify-between gap-2">
-                  <p className="truncate text-[12px] font-semibold text-foreground">
-                    {SHORT_NAMES[s.slug] ?? s.name}
-                  </p>
-                  <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                    {s.tag}
-                  </span>
-                </div>
-                <p
-                  className={`font-display text-lg font-semibold leading-tight ${
-                    hasData ? tone : "text-muted-foreground"
-                  }`}
+              return (
+                <AnalyzerLink
+                  key={s.slug}
+                  service={s}
+                  ariaLabel={`${SHORT_NAMES[s.slug] ?? s.name} — ${state}`}
+                  className={`group flex flex-col gap-0.5 px-5 py-3 transition-colors hover:bg-muted/40 sm:border-t sm:border-border/70 ${
+                    i % 2 === 1 ? "sm:border-l" : ""
+                  } lg:border-l lg:first:border-l-0 lg:[&:nth-child(3)]:border-l`}
                 >
-                  {state}
-                </p>
-                <div className="mt-1 flex items-center justify-between gap-2">
-                  <span className="truncate text-[11px] text-muted-foreground">
-                    {hasData && stat?.lastReviewed ? formatShortDate(stat.lastReviewed) : "—"}
-                  </span>
-                  <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-primary">
-                    {hasData ? "Open" : "Start"}
-                    <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                </div>
-              </AnalyzerLink>
-            );
-          })}
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="truncate text-[12px] font-semibold text-foreground">
+                      {SHORT_NAMES[s.slug] ?? s.name}
+                    </p>
+                    <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {s.tag}
+                    </span>
+                  </div>
+                  <p
+                    className={`font-display text-xl font-semibold leading-tight ${
+                      hasData ? tone : "text-muted-foreground"
+                    }`}
+                  >
+                    {state}
+                  </p>
+                  <div className="mt-1 flex items-center justify-between gap-2">
+                    <span className="truncate text-[11px] text-muted-foreground">
+                      {hasData && stat?.lastReviewed ? `Last reviewed · ${formatShortDate(stat.lastReviewed)}` : "—"}
+                    </span>
+                    <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-primary">
+                      {hasData ? "Open" : "Start"}
+                      <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                    </span>
+                  </div>
+                </AnalyzerLink>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

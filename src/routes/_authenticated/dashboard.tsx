@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import {
   Target, Shield, PiggyBank, Wallet, TrendingUp, FlaskConical, GraduationCap,
@@ -47,6 +47,13 @@ function ageFromDob(dob: string | null): number {
   return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
 }
 
+function formatDateUTC(date: Date): string {
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${String(date.getUTCDate()).padStart(2, "0")} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
+}
+
+
+
 function useDashboardData() {
   return useQuery({
     queryKey: ["dashboard"],
@@ -69,6 +76,18 @@ function Dashboard() {
   const { data, isLoading } = useDashboardData();
   const [openMetric, setOpenMetric] = useState<MetricKind | null>(null);
   const [openRec, setOpenRec] = useState<Recommendation | null>(null);
+  const [greeting, setGreeting] = useState({ tod: "Welcome back", sub: "Here's your NitiVitt dashboard." });
+  useEffect(() => {
+    const hr = new Date().getHours();
+    const tod = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
+    const sub =
+      hr < 12
+        ? "Welcome back to NitiVitt."
+        : hr < 17
+          ? "Here's your latest financial snapshot."
+          : "Here's where your finances stand today.";
+    setGreeting({ tod, sub });
+  }, []);
   const listInsFn = useServerFn(listInsuranceAnalyses);
   const insQ = useQuery({ queryKey: ["insurance-analyses"], queryFn: () => listInsFn() });
   const insSummaryFn = useServerFn(getPortfolioProtectionSummary);
@@ -181,28 +200,16 @@ function Dashboard() {
         {/* ── Top header ────────────────────────────────────────────── */}
         <header className="flex flex-col gap-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div className="min-w-0">
-            {(() => {
-              const hr = new Date().getHours();
-              const tod = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
-              const sub =
-                hr < 12
-                  ? "Welcome back to NitiVitt."
-                  : hr < 17
-                    ? "Here's your latest financial snapshot."
-                    : "Here's where your finances stand today.";
-              return (
-                <>
-                  <h1 className="font-display text-2xl leading-tight text-foreground md:text-3xl">
-                    {tod},{" "}
-                    <span className="break-words">{first}</span>.
-                  </h1>
-                  <p className="mt-1 text-sm text-muted-foreground">{sub}</p>
-                </>
-              );
-            })()}
+            <>
+              <h1 className="font-display text-2xl leading-tight text-foreground md:text-3xl">
+                {greeting.tod},{" "}
+                <span className="break-words">{first}</span>.
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">{greeting.sub}</p>
+            </>
             {lastUpdated && (
               <p className="mt-2 text-[11px] uppercase tracking-wider text-muted-foreground">
-                Last updated {lastUpdated.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                Last updated {formatDateUTC(lastUpdated)}
               </p>
             )}
           </div>
