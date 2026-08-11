@@ -149,7 +149,7 @@ function MinimalServicesSection({
         </div>
         <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground lg:pb-1">
           AI analyzes your financial picture across the areas that matter. When you need to act, a
-          Financial Advisor can work from that context — so the conversation starts with your
+          Financial Advisor can work from that context - so the conversation starts with your
           situation, not a product pitch.
         </p>
       </div>
