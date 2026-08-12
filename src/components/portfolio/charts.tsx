@@ -95,7 +95,7 @@ export function ComparisonBars({ rows }: { rows: { label: string; you: number; r
       <ChartLegend
         items={[
           { label: "You", color: SERIES_COLORS.you, hint: "current mix" },
-          { label: "NitiCore™ recommended", color: SERIES_COLORS.recommended, hint: "your age, horizon & risk", dashed: true },
+          { label: "NitiCore™ recommended", color: SERIES_COLORS.nitiCore, hint: "your age, horizon & risk", dashed: true },
         ]}
       />
       <ul className="space-y-6">
@@ -129,7 +129,7 @@ export function ComparisonBars({ rows }: { rows: { label: string; you: number; r
                       className="block h-full rounded-full transition-[width] duration-500"
                       style={{
                         width: `${(r.recommended / max) * 100}%`,
-                        background: `repeating-linear-gradient(135deg, ${SERIES_COLORS.recommended} 0 5px, ${SERIES_COLORS.recommended}55 5px 10px)`,
+                        background: `repeating-linear-gradient(135deg, ${SERIES_COLORS.nitiCore} 0 5px, ${SERIES_COLORS.nitiCore}55 5px 10px)`,
                       }}
                     />
                   </span>
