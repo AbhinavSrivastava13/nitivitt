@@ -635,7 +635,7 @@ function ReportView({
   const activeSection = useActiveSection(sectionIds);
 
   return (
-    <div className="space-y-14">
+    <div className="space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
