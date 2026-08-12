@@ -13,7 +13,7 @@ import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
 import {
-  ComparisonBars, AllocationDonut, ConcentrationBars, StackedComposition, SectorTreemap,
+  ComparisonBars, AllocationDonut, ConcentrationLadder, StackedComposition, SectorTreemap,
   ScoreRing, MiniMeter, ThresholdMarker, ProjectionChart, NoData, SERIES_COLORS,
 } from "@/components/portfolio/charts";
 import { buildProjectionSeries, projectValue, projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
@@ -584,7 +584,7 @@ const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "diagnostics", label: "Diagnostics" },
   { id: "holdings", label: "Fund & Stock Intelligence" },
   { id: "projection", label: "Projection" },
-  { id: "peers", label: "Peer Benchmark" },
+  { id: "peers", label: "Investor Profile" },
   { id: "actions", label: "Actions" },
   { id: "guide", label: "NitiGuide™" },
 ];
@@ -738,7 +738,7 @@ function ReportView({
         </ChartCard>
 
         <ChartCard title="Holdings distribution" note="How much of the outcome rests on a single position.">
-          <ConcentrationBars
+          <ConcentrationLadder
             rows={report.topHoldings.map((h) => ({
               name: h.name,
               pct: h.pct,
@@ -767,7 +767,7 @@ function ReportView({
             <SectorTreemap
               slices={report.allocation.bySector}
               formatValue={formatInr}
-              empty="Sector data not available — none of these holdings matched a verified listed security. NitiInvest™ shows nothing rather than estimating."
+              empty="Sector exposure is shown only for holdings NitiInvest™ could identify. None of these holdings resolved to an identifiable security or index."
             />
           </ChartCard>
         </div>
@@ -811,8 +811,8 @@ function ReportView({
       {/* 7. PEER BENCHMARK */}
       {peer && (
         <section id="pr-peers" className="scroll-mt-24">
-          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Peer benchmark" subtitle="How your portfolio compares with investors at a similar stage." />
-          <PeerMatrix peer={peer} />
+          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your investor profile" subtitle="How your investing behaviour compares with people at a similar life stage." />
+          <InvestorProfile peer={peer} report={report} />
         </section>
       )}
 
