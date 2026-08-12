@@ -22,12 +22,14 @@ import {
 /** Semantic series colours — one meaning per colour, used sparingly. */
 export const SERIES_COLORS = {
   you: "#3f4d75",          // current user position — calm slate-indigo
-  recommended: "#0d9488",  // NitiCore™ recommendation — teal
+  recommended: "#0d9488",  // scenario / alternative series — teal
+  nitiCore: "#9c8355",     // NitiCore™ recommendation — muted champagne
   positive: "#15803d",
   attention: "#b45309",
   action: "#b91c1c",
   peer: "#8b7f5e",
 };
+
 
 /** Restrained composition palette — differentiated without being loud. */
 export const CHART_PALETTE = [
