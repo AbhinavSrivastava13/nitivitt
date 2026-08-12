@@ -497,3 +497,98 @@ export function ProjectionChart({
     </div>
   );
 }
+
+/* ───────────────── CONCENTRATION — editorial ladder ───────────────── */
+
+/**
+ * Holdings distribution, presented as an editorial ranked ladder rather than a
+ * chart. The largest position is stated in full; every other holding is a thin
+ * measured rule against a shared scale, with the concentration threshold drawn
+ * once as a quiet vertical guide.
+ */
+export function ConcentrationLadder({
+  rows, formatValue, threshold = 15,
+}: {
+  rows: { name: string; pct: number; value?: number }[];
+  formatValue: (n: number) => string;
+  threshold?: number;
+}) {
+  const top = rows.slice(0, 10);
+  if (top.length === 0) return <NoData />;
+  const scale = Math.max(threshold * 1.6, ...top.map((r) => r.pct)) * 1.08;
+  const lead = top[0];
+  const rest = top.slice(1);
+  const top5 = Math.round(top.slice(0, 5).reduce((a, r) => a + r.pct, 0) * 10) / 10;
+  const guide = (threshold / scale) * 100;
+  const toneOf = (p: number) =>
+    p >= 25 ? SERIES_COLORS.action : p >= threshold ? SERIES_COLORS.attention : SERIES_COLORS.you;
+
+  return (
+    <div>
+      {/* Lead position */}
+      <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-surface/60 px-5 py-4">
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Largest position</p>
+            <p className="mt-1 truncate font-display text-xl leading-tight text-foreground">{lead.name}</p>
+          </div>
+          <div className="text-right">
+            <p className="font-display text-3xl leading-none tracking-tight" style={{ color: toneOf(lead.pct) }}>
+              {lead.pct}%
+            </p>
+            {lead.value ? (
+              <p className="mt-1 font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(lead.value)}</p>
+            ) : null}
+          </div>
+        </div>
+        <div className="relative mt-3.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <span className="block h-full rounded-full" style={{ width: `${(lead.pct / scale) * 100}%`, background: toneOf(lead.pct) }} />
+        </div>
+      </div>
+
+      {/* Ranked ladder */}
+      {rest.length > 0 && (
+        <div className="relative mt-3">
+          <span
+            className="pointer-events-none absolute inset-y-0 hidden border-l border-dashed border-border sm:block"
+            style={{ left: `calc(46% + ${guide}% * 0.42)` }}
+            aria-hidden
+          />
+          <ul>
+            {rest.map((r, i) => (
+              <li
+                key={`${r.name}-${i}`}
+                className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-x-3 border-b border-border/50 py-2 last:border-0 sm:grid-cols-[1.5rem_minmax(0,44%)_1fr_auto]"
+              >
+                <span className="font-mono text-[11px] tabular-nums text-muted-foreground/70">{String(i + 2).padStart(2, "0")}</span>
+                <span className="truncate text-[13px] font-medium text-foreground">{r.name}</span>
+                <span className="col-span-2 mt-1 flex items-center gap-3 sm:col-span-1 sm:mt-0">
+                  <span className="h-[5px] flex-1 overflow-hidden rounded-full bg-muted/70">
+                    <span
+                      className="block h-full rounded-full"
+                      style={{ width: `${(r.pct / scale) * 100}%`, background: toneOf(r.pct), opacity: 0.85 }}
+                    />
+                  </span>
+                  <span className="w-11 shrink-0 text-right font-mono text-[12px] tabular-nums text-foreground">{r.pct}%</span>
+                </span>
+                <span className="hidden w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground sm:block">
+                  {r.value ? formatValue(r.value) : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p className="mt-3 flex flex-wrap items-baseline gap-x-2 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">
+        <span>
+          Top five holdings hold <span className="font-semibold text-foreground">{top5}%</span> of the portfolio.
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-3 w-0 border-l border-dashed border-muted-foreground" />
+          {threshold}% concentration line
+        </span>
+      </p>
+    </div>
+  );
+}
