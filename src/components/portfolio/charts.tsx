@@ -592,3 +592,134 @@ export function ConcentrationLadder({
     </div>
   );
 }
+
+/* ───────────────── COMPARISON — paired allocation tracks ───────────────── */
+
+/**
+ * Allocation comparison as paired horizontal tracks on a single rail: the
+ * filled bar is the user's current weight, the champagne marker is the
+ * NitiCore™ recommended weight. One rail per asset class keeps the section
+ * compact and avoids repeating the two-bar comparison pattern.
+ */
+export function ComparisonTracks({
+  rows, peerNote,
+}: {
+  rows: { label: string; you: number; recommended: number }[];
+  peerNote?: React.ReactNode;
+}) {
+  const max = Math.max(20, ...rows.flatMap((r) => [r.you, r.recommended])) * 1.12;
+  return (
+    <div>
+      <ChartLegend
+        items={[
+          { label: "You", color: SERIES_COLORS.you, hint: "current mix" },
+          { label: "NitiCore™", color: SERIES_COLORS.nitiCore, hint: "recommended for your profile" },
+        ]}
+      />
+      <ul className="mt-4 space-y-3.5">
+        {rows.map((r) => {
+          const gap = Math.round((r.you - r.recommended) * 10) / 10;
+          const aligned = Math.abs(gap) <= 5;
+          return (
+            <li key={r.label} className="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-x-3">
+              <span className="truncate text-[12.5px] font-semibold text-foreground">{r.label}</span>
+              <span className="relative block h-3.5">
+                <span className="absolute inset-x-0 top-1/2 h-[7px] -translate-y-1/2 overflow-hidden rounded-full bg-muted/70">
+                  <span
+                    className="block h-full rounded-full transition-[width] duration-500"
+                    style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
+                  />
+                </span>
+                <span
+                  className="absolute top-0 h-3.5 w-[2px] rounded-full"
+                  style={{ left: `${(r.recommended / max) * 100}%`, background: SERIES_COLORS.nitiCore }}
+                  title={`NitiCore™ recommended ${r.recommended}%`}
+                />
+              </span>
+              <span className="whitespace-nowrap font-mono text-[11.5px] tabular-nums text-muted-foreground">
+                <span className="font-semibold text-foreground">{r.you}%</span>
+                <span className="px-1">→</span>
+                <span style={{ color: SERIES_COLORS.nitiCore }}>{r.recommended}%</span>
+                {!aligned && (
+                  <span className="ml-2 text-[10.5px] text-foreground/60">
+                    {gap > 0 ? "+" : "−"}{Math.abs(gap)}pp
+                  </span>
+                )}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      {peerNote && <div className="mt-4 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">{peerNote}</div>}
+    </div>
+  );
+}
+
+/* ───────────────── EXPOSURE — overlap composition ───────────────── */
+
+export interface ExposureGroup {
+  label: string;
+  pct: number;
+  value: number;
+  members: { name: string; pct: number }[];
+}
+
+/**
+ * What actually drives the portfolio: holdings collapsed into the exposure
+ * they share. A single composition rail plus the contributing positions —
+ * deliberately not another bar chart.
+ */
+export function ExposureOverlap({
+  groups, formatValue, empty,
+}: {
+  groups: ExposureGroup[];
+  formatValue: (n: number) => string;
+  empty?: string;
+}) {
+  const data = groups.filter((g) => g.pct > 0);
+  const [active, setActive] = useState<string | null>(null);
+  if (data.length === 0) return <NoData>{empty}</NoData>;
+  return (
+    <div>
+      <div className="flex h-10 w-full overflow-hidden rounded-xl">
+        {data.map((g, i) => (
+          <span
+            key={g.label}
+            onMouseEnter={() => setActive(g.label)}
+            onMouseLeave={() => setActive(null)}
+            title={`${g.label} — ${g.pct}%`}
+            style={{
+              width: `${g.pct}%`,
+              background: CHART_PALETTE[i % CHART_PALETTE.length],
+              opacity: active === null || active === g.label ? 1 : 0.32,
+            }}
+            className="flex h-full items-center justify-center transition-opacity"
+          >
+            {g.pct >= 10 && <span className="px-1 font-mono text-[11px] tabular-nums text-white/95">{g.pct}%</span>}
+          </span>
+        ))}
+      </div>
+      <ul className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2">
+        {data.map((g, i) => (
+          <li
+            key={g.label}
+            onMouseEnter={() => setActive(g.label)}
+            onMouseLeave={() => setActive(null)}
+            className={`rounded-xl px-2.5 py-2 transition-colors ${active === g.label ? "bg-muted/50" : ""}`}
+          >
+            <div className="flex items-baseline gap-2.5">
+              <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
+              <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-foreground">{g.label}</span>
+              <span className="font-mono text-[12px] tabular-nums text-foreground">{g.pct}%</span>
+              {g.value > 0 && <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(g.value)}</span>}
+            </div>
+            <p className="mt-1 pl-5 text-[11px] leading-relaxed text-muted-foreground">
+              {g.members.slice(0, 4).map((m) => `${m.name} ${m.pct}%`).join(" · ")}
+              {g.members.length > 4 ? ` · +${g.members.length - 4} more` : ""}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
