@@ -13,8 +13,8 @@ import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
 import {
-  ComparisonBars, AllocationDonut, ConcentrationLadder, StackedComposition, SectorTreemap,
-  ScoreRing, MiniMeter, ThresholdMarker, ProjectionChart, NoData, SERIES_COLORS,
+  ComparisonTracks, ExposureOverlap, AllocationDonut, ConcentrationLadder, StackedComposition, SectorTreemap,
+  MiniMeter, ProjectionChart, SERIES_COLORS, type ExposureGroup,
 } from "@/components/portfolio/charts";
 import { buildProjectionSeries, projectValue, projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
 import type { ProjectionBasis } from "@/lib/portfolio-analyzer/types";
@@ -1168,113 +1168,6 @@ function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-anal
           {showAll ? "Show top 5 holdings" : `View all ${holdings.length} holdings`}
         </button>
       )}
-    </div>
-  );
-}
-
-/* ─────────── investor profile ─────────── */
-
-/**
- * Cohort comparison of investing *behaviour*. Asset-allocation-versus-target
- * lives under Allocation, so those rows are deliberately excluded here — this
- * section never repeats the You → NitiCore™ comparison.
- */
-const BEHAVIOUR_METRICS: Record<string, { title: string; lower_is_better?: boolean; hint: string }> = {
-  "Largest holding": { title: "Portfolio concentration", hint: "Share of the portfolio in your single biggest position.", lower_is_better: true },
-  "Number of holdings": { title: "Number of holdings", hint: "How many positions you are tracking." },
-  Diversification: { title: "Diversification", hint: "Spread across asset classes and holdings." },
-  "Cost efficiency": { title: "Portfolio cost", hint: "Blended expense you pay each year.", lower_is_better: true },
-};
-
-function InvestorProfile({
-  peer, report,
-}: {
-  peer: import("@/lib/portfolio-analyzer/types").PeerBenchmark;
-  report: PortfolioReport;
-}) {
-  const metrics = peer.rows
-    .filter((r) => BEHAVIOUR_METRICS[r.label])
-    .filter((r) => Number.isFinite(r.you) && Number.isFinite(r.typical));
-
-  const passive = report.allocation.byAssetClass
-    .filter((s) => /index fund|etf/i.test(s.label))
-    .reduce((a, s) => a + s.pct, 0);
-  const passivePct = Math.round(passive * 10) / 10;
-
-  return (
-    <div className="mt-5">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-border/70 bg-surface px-4 py-2 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        {peer.cohort.split("·").map((chip, i) => (
-          <span key={i} className="after:ml-2 after:text-border after:content-['·'] last:after:content-['']">{chip.trim()}</span>
-        ))}
-      </div>
-
-      <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        {metrics.map((r) => {
-          const meta = BEHAVIOUR_METRICS[r.label];
-          const gap = r.you - r.typical;
-          const tol = r.unit === "%" ? Math.max(2, r.typical * 0.15) : Math.max(1, r.typical * 0.2);
-          const inLine = Math.abs(gap) <= tol;
-          const favourable = inLine ? null : meta.lower_is_better ? gap < 0 : gap > 0;
-          const verdict = inLine
-            ? "In line with cohort"
-            : `${gap > 0 ? "Higher" : "Lower"} than cohort`;
-          const scale = Math.max(r.you, r.typical) * 1.25 || 1;
-          const tone = inLine ? SERIES_COLORS.you : favourable ? SERIES_COLORS.positive : SERIES_COLORS.attention;
-          return (
-            <div key={r.label} className="rounded-2xl border border-border bg-card px-5 py-4 shadow-soft">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[12.5px] font-semibold text-foreground">{meta.title}</p>
-                <span
-                  className="shrink-0 text-[10px] font-bold uppercase tracking-[0.12em]"
-                  style={{ color: tone }}
-                >
-                  {verdict}
-                </span>
-              </div>
-              <p className="mt-1.5 font-mono text-[12px] tabular-nums text-muted-foreground">
-                You <span className="font-semibold text-foreground">{r.you}{r.unit}</span>
-                <span className="px-1.5 text-border">·</span>
-                Cohort {r.typical}{r.unit}
-              </p>
-              <div className="mt-2.5 space-y-1">
-                <span className="block h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <span className="block h-full rounded-full" style={{ width: `${Math.min(100, (r.you / scale) * 100)}%`, background: tone }} />
-                </span>
-                <span className="relative block h-2 w-full overflow-hidden rounded-full border border-dashed border-border">
-                  <span
-                    className="block h-full rounded-full"
-                    style={{
-                      width: `${Math.min(100, (r.typical / scale) * 100)}%`,
-                      background: `repeating-linear-gradient(135deg, ${SERIES_COLORS.peer} 0 5px, ${SERIES_COLORS.peer}44 5px 10px)`,
-                    }}
-                  />
-                </span>
-              </div>
-              <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{meta.hint}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      <dl className="mt-3 grid gap-x-8 gap-y-3 rounded-2xl border border-border bg-surface/60 px-5 py-4 sm:grid-cols-3">
-        <div>
-          <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Portfolio value</dt>
-          <dd className="mt-1 font-mono text-[13px] tabular-nums font-semibold text-foreground">{formatInr(report.totalValue)}</dd>
-        </div>
-        <div>
-          <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Holdings tracked</dt>
-          <dd className="mt-1 font-mono text-[13px] tabular-nums font-semibold text-foreground">{report.holdingCount}</dd>
-        </div>
-        {passivePct > 0 && (
-          <div>
-            <dt className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Passive allocation</dt>
-            <dd className="mt-1 font-mono text-[13px] tabular-nums font-semibold text-foreground">{passivePct}%</dd>
-          </div>
-        )}
-      </dl>
-
-      <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">{peer.note}</p>
     </div>
   );
 }
