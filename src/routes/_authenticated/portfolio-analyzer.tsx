@@ -1024,45 +1024,38 @@ function SnapItem({ label, value, sub }: { label: string; value: string; sub?: s
 
 /* ─────────── diagnostics ─────────── */
 
-type IndicatorVariant = "ring" | "meter" | "threshold";
-
-function indicatorFor(id: string, index: number): IndicatorVariant {
-  const key = id.toLowerCase();
-  if (key.includes("concentration") || key.includes("liquid")) return "threshold";
-  if (key.includes("diversif") || key.includes("cost")) return "ring";
-  if (key.includes("alloc") || key.includes("goal")) return "meter";
-  return (["ring", "meter", "threshold"] as const)[index % 3];
-}
-
-function DiagnosticCard({ d, variant }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic; variant: IndicatorVariant }) {
+/**
+ * Compact health chip. Status + measured value are glanceable; the reasoning
+ * expands only on interaction so the matrix stays a strip, not six blocks.
+ */
+function DiagnosticChip({ d }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic }) {
   const map = {
-    good: { chip: "bg-success-soft text-success", color: SERIES_COLORS.positive, word: "Healthy" },
-    watch: { chip: "bg-warning-soft text-warning", color: SERIES_COLORS.attention, word: "Watch" },
-    action: { chip: "bg-destructive/10 text-destructive", color: SERIES_COLORS.action, word: "Act" },
+    good: { dot: SERIES_COLORS.positive, chip: "text-success", word: "Healthy" },
+    watch: { dot: SERIES_COLORS.attention, chip: "text-warning", word: "Watch" },
+    action: { dot: SERIES_COLORS.action, chip: "text-destructive", word: "Act" },
   }[d.status];
   return (
-    <details className="group rounded-2xl border border-border bg-card p-5 shadow-soft transition-colors open:bg-surface/60">
-      <summary className="flex cursor-pointer list-none items-center gap-4">
-        {variant === "ring" && <ScoreRing value={d.score} color={map.color} />}
+    <details className="group rounded-2xl border border-border bg-card px-4 py-3 shadow-soft transition-colors open:bg-surface/60">
+      <summary className="flex cursor-pointer list-none items-center gap-2.5">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: map.dot }} />
         <span className="min-w-0 flex-1">
-          <span className="flex items-baseline justify-between gap-3">
-            <span className="truncate text-sm font-semibold text-foreground">{d.label}</span>
-            <span className="font-mono text-xs tabular-nums text-foreground">{d.valueLabel}</span>
+          <span className="flex items-baseline justify-between gap-2">
+            <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
+            <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-foreground">{d.valueLabel}</span>
           </span>
-          {variant === "meter" && <span className="mt-2.5 block"><MiniMeter value={d.score} color={map.color} /></span>}
-          {variant === "threshold" && <span className="mt-2 block"><ThresholdMarker value={d.score} threshold={60} color={map.color} /></span>}
-          {variant === "ring" && <span className="mt-1 block text-[11px] text-muted-foreground">{d.targetLabel}</span>}
+          <span className="mt-1.5 block"><MiniMeter value={d.score} color={map.dot} /></span>
         </span>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${map.chip}`}>{map.word}</span>
-        <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}>{map.word}</span>
+        <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
       </summary>
-      <div className="mt-4 space-y-2 border-t border-border/60 pt-4 text-xs leading-relaxed">
+      <div className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed">
         <p><strong className="font-semibold text-foreground/80">Why it matters. </strong><span className="text-muted-foreground">{d.detail}</span></p>
         <p><strong className="font-semibold text-foreground/80">Target. </strong><span className="text-muted-foreground">{d.targetLabel}</span></p>
       </div>
     </details>
   );
 }
+
 
 /* ─────────── holdings ─────────── */
 
