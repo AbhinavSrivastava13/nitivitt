@@ -578,14 +578,14 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
 // ─────────────────────────── REPORT ───────────────────────────
 
 const SECTION_STEPS: { id: string; label: string }[] = [
-  { id: "summary", label: "Executive Summary" },
-  { id: "snapshot", label: "Snapshot" },
+  { id: "verdict", label: "Verdict" },
+  { id: "profile", label: "You vs profile" },
+  { id: "drivers", label: "What's driving it" },
   { id: "allocation", label: "Allocation" },
-  { id: "diagnostics", label: "Diagnostics" },
-  { id: "holdings", label: "Fund & Stock Intelligence" },
+  { id: "holdings", label: "Holdings" },
   { id: "projection", label: "Projection" },
-  { id: "peers", label: "Investor Profile" },
-  { id: "actions", label: "Actions" },
+  { id: "diagnostics", label: "Health" },
+  { id: "actions", label: "Next moves" },
   { id: "guide", label: "NitiGuide™" },
 ];
 
@@ -608,6 +608,73 @@ function useActiveSection(ids: string[]) {
   return active;
 }
 
+/* ─────────── exposure grouping (deterministic, no invented data) ─────────── */
+
+function factValue(facts: { label: string; value: string }[] | undefined, re: RegExp): string | null {
+  const f = facts?.find((x) => re.test(x.label));
+  const v = f?.value?.trim();
+  if (!v || /^(not available|unknown|n\/a|—)$/i.test(v)) return null;
+  return v;
+}
+
+function exposureFamily(
+  name: string,
+  assetClass: AssetClass,
+  facts?: { label: string; value: string }[],
+): string {
+  const n = name.toLowerCase();
+  if (assetClass === "gold_etf" || assetClass === "sgb" || /gold|sgb/.test(n)) return "Gold";
+  if (/nifty\s?50|nifty50|niftybees|sensex|nifty bees/.test(n)) return "Nifty 50 / large-cap index";
+  if (/(next\s?50|junior|midcap|mid cap|smallcap|small cap)/.test(n) && /(index|etf|bees|fund)/.test(n)) {
+    return "Mid & small-cap index";
+  }
+  if (/bank\s?bees|nifty bank|banking index/.test(n)) return "Banking index";
+  if (assetClass === "index_fund" || assetClass === "etf") return "Other index exposure";
+  if (assetClass === "debt_mf" || assetClass === "bond" || assetClass === "fd" || assetClass === "cash") {
+    return "Debt & cash";
+  }
+  if (assetClass === "hybrid_mf") return "Hybrid funds";
+  if (assetClass === "reit" || assetClass === "invit") return "Real assets";
+  if (assetClass === "equity_stock") {
+    const sector = factValue(facts, /sector/i);
+    return sector ? `Direct equity · ${sector}` : "Direct equity";
+  }
+  if (assetClass === "equity_mf") {
+    const cat = factValue(facts, /categor/i);
+    return cat ? `Active equity · ${cat}` : "Active equity funds";
+  }
+  return "Other exposure";
+}
+
+function buildExposureGroups(report: PortfolioReport): ExposureGroup[] {
+  const intel = report.holdingIntelligence ?? [];
+  const rows = intel.length
+    ? intel.map((h) => ({ name: h.name, pct: h.pct, value: h.value, assetClass: h.assetClass, facts: h.facts }))
+    : report.topHoldings.map((h) => ({
+        name: h.name,
+        pct: h.pct,
+        value: Math.round((h.pct / 100) * report.totalValue),
+        assetClass: h.assetClass,
+        facts: undefined as { label: string; value: string }[] | undefined,
+      }));
+  const map = new Map<string, ExposureGroup>();
+  for (const r of rows) {
+    const label = exposureFamily(r.name, r.assetClass, r.facts);
+    const g = map.get(label) ?? { label, pct: 0, value: 0, members: [] };
+    g.pct += r.pct;
+    g.value += r.value;
+    g.members.push({ name: r.name, pct: Math.round(r.pct * 10) / 10 });
+    map.set(label, g);
+  }
+  return [...map.values()]
+    .map((g) => ({
+      ...g,
+      pct: Math.round(g.pct * 10) / 10,
+      members: g.members.sort((a, b) => b.pct - a.pct),
+    }))
+    .sort((a, b) => b.pct - a.pct);
+}
+
 function ReportView({
   report, onBack, title, lastReviewedAt,
 }: {
@@ -627,19 +694,24 @@ function ReportView({
   const peer = report.peerBenchmark;
   const insights = report.insights ?? [];
   const reviewed = lastReviewedAt ? new Date(lastReviewedAt) : new Date();
-  const equityPct = alloc.find((r) => r.label === "Equity")?.you ?? 0;
-  const debtPct = alloc.find((r) => r.label === "Debt")?.you ?? 0;
   const equitySleeve = report.allocation.byMarketCap.reduce((a, s) => a + s.value, 0);
+  const exposure = useMemo(() => buildExposureGroups(report), [report]);
+  const largest = report.topHoldings[0];
+  const peerLargest = peer?.rows.find((r) => /largest holding/i.test(r.label));
+  const peerHoldings = peer?.rows.find((r) => /number of holdings/i.test(r.label));
 
   const sectionIds = useMemo(() => SECTION_STEPS.map((s) => s.id), []);
   const activeSection = useActiveSection(sectionIds);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
         </button>
+        <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
+          {title ? `${title} · ` : ""}Reviewed {reviewed.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+        </p>
       </div>
 
       <nav className="sticky top-2 z-20 -mx-1 overflow-x-auto rounded-full border border-border/70 bg-card/85 px-3 py-2 backdrop-blur">
@@ -659,194 +731,219 @@ function ReportView({
         </ul>
       </nav>
 
-      {/* 1. EXECUTIVE SUMMARY */}
-      <section id="pr-summary" className="scroll-mt-24">
-        <div className="grid gap-8 border-b border-border pb-10 md:grid-cols-[minmax(0,300px)_1fr] md:gap-14">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Executive summary</p>
-            <p className="mt-4 font-display text-[2.5rem] leading-[1.05] tracking-tight text-foreground">{rating.label}</p>
-            <p className={`mt-3 inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${tone.bg} ${tone.text}`}>
-              Grade {rating.grade}
-            </p>
-            {report.isPrimary && (
-              <p className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-success">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Linked to your NitiCore™ profile
+      {/* 1. VERDICT */}
+      <section id="pr-verdict" className="scroll-mt-24">
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
+          <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:gap-10">
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Portfolio verdict</p>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <h2 className="font-display text-[2rem] leading-none tracking-tight text-foreground">{rating.label}</h2>
+                <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${tone.bg} ${tone.text}`}>
+                  Grade {rating.grade}
+                </span>
+                {report.isPrimary && (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-success">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Linked to NitiCore™
+                  </span>
+                )}
+              </div>
+              <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-foreground/90">
+                {hero?.verdict ?? execSummary}
               </p>
-            )}
-            {title && <p className="mt-4 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{title}</p>}
-          </div>
-          <div className="flex flex-col justify-center">
-            <p className="max-w-2xl font-display text-xl leading-[1.5] text-foreground md:text-2xl md:leading-[1.45]">
-              {hero?.verdict ?? execSummary}
-            </p>
-          </div>
-        </div>
-        <div className="mt-8 grid gap-x-12 gap-y-7 sm:grid-cols-2">
-          <SummaryPoint tone="good" label="Biggest strength" body={report.biggestStrength ?? report.strengths[0]?.title ?? "Being established."} />
-          <SummaryPoint tone="risk" label="Biggest risk" body={report.largestRisk ?? report.gaps[0]?.title ?? "Nothing material flagged."} />
-          <SummaryPoint tone="note" label="Most important observation" body={hero?.keyInsights?.[0] ?? insights[0]?.title ?? execSummary} />
-          <SummaryPoint tone="act" label="One immediate priority" body={report.recommendations[0]?.title ?? "Keep contributing and review in six months."} />
-        </div>
-      </section>
-
-      {/* 2. PORTFOLIO SNAPSHOT */}
-      <section id="pr-snapshot" className="scroll-mt-24">
-        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="Portfolio snapshot" subtitle="The facts that frame everything below." />
-        <div className="mt-5 rounded-3xl border border-border bg-card p-7 shadow-soft md:p-9">
-          <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
-            <div>
-              <p className="font-display text-[2.6rem] leading-none tracking-tight text-foreground">
-                {snapshot?.valueLabel ?? formatInr(report.totalValue)}
-              </p>
-              <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Portfolio value</p>
             </div>
-            <p className="pb-1 font-mono text-[13px] tabular-nums text-muted-foreground">
-              {report.holdingCount} holdings · {equityPct}% equity · {debtPct}% debt
-            </p>
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 self-start rounded-2xl bg-surface/70 px-5 py-4 md:grid-cols-1 md:gap-y-3.5">
+              <div>
+                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Portfolio value</dt>
+                <dd className="mt-1 font-display text-2xl leading-none text-foreground">{snapshot?.valueLabel ?? formatInr(report.totalValue)}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Holdings · style</dt>
+                <dd className="mt-1 text-[13px] font-medium text-foreground">
+                  {report.holdingCount} holdings{snapshot?.style ? ` · ${snapshot.style}` : ""}
+                </dd>
+              </div>
+              <div className="col-span-2 md:col-span-1">
+                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Largest position</dt>
+                <dd className="mt-1 truncate text-[13px] font-medium text-foreground">
+                  {largest ? `${largest.name} · ${largest.pct}%` : "—"}
+                </dd>
+              </div>
+            </dl>
           </div>
-          <dl className="mt-8 grid gap-x-10 gap-y-5 border-t border-border/70 pt-6 sm:grid-cols-2 lg:grid-cols-4">
-            <SnapItem
-              label="Largest holding"
-              value={report.topHoldings[0]?.name ?? "—"}
-              sub={report.topHoldings[0] ? `${report.topHoldings[0].pct}% of portfolio` : undefined}
-            />
-            <SnapItem label="Style" value={snapshot?.style ?? "Not available"} />
-            <SnapItem label="Diversification" value={snapshot?.diversificationBand ?? "Not available"} />
-            <SnapItem label="Last reviewed" value={reviewed.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} />
-          </dl>
+
+          <div className="mt-6 grid gap-3 border-t border-border/70 pt-5 sm:grid-cols-3">
+            <InsightTile tone="good" label="Strength" body={report.biggestStrength ?? report.strengths[0]?.title ?? "Being invested and consistent."} />
+            <InsightTile tone="risk" label="Risk" body={report.largestRisk ?? report.gaps[0]?.title ?? "Nothing material flagged."} />
+            <InsightTile tone="act" label="Priority" body={report.recommendations[0]?.title ?? "Keep contributing and review in six months."} />
+          </div>
         </div>
       </section>
 
-      {/* 3. PORTFOLIO ALLOCATION */}
-      <section id="pr-allocation" className="scroll-mt-24 space-y-6">
-        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Portfolio allocation" subtitle="Where your money sits — and where NitiCore™ would place it." />
+      {/* 2. YOU VS YOUR PROFILE */}
+      {alloc.length > 0 && (
+        <section id="pr-profile" className="scroll-mt-24">
+          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your portfolio vs your financial profile" subtitle="Where your money sits today, against what NitiCore™ would hold for your age, horizon and risk profile." />
+          <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
+            <ComparisonTracks
+              rows={alloc.map((r) => ({ label: r.label, you: r.you, recommended: r.recommended }))}
+              peerNote={
+                <span className="flex flex-wrap gap-x-5 gap-y-1">
+                  {largest && peerLargest && (
+                    <span>Largest holding <span className="font-semibold text-foreground">{largest.pct}%</span> · typical cohort {peerLargest.typical}%</span>
+                  )}
+                  {peerHoldings && (
+                    <span>Holdings <span className="font-semibold text-foreground">{report.holdingCount}</span> · typical cohort {peerHoldings.typical}</span>
+                  )}
+                  <span>A gap only matters when it conflicts with your horizon.</span>
+                </span>
+              }
+            />
+          </div>
+        </section>
+      )}
 
-        {alloc.length > 0 && (
-          <ChartCard title="You → NitiCore™ recommended" note="Recommended reflects your age, risk profile and life stage. A gap only matters when it conflicts with your horizon.">
-            <ComparisonBars rows={alloc.map((r) => ({ label: r.label, you: r.you, recommended: r.recommended }))} />
+      {/* 3. WHAT'S DRIVING THE PORTFOLIO */}
+      <section id="pr-drivers" className="scroll-mt-24">
+        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="What&rsquo;s really driving your portfolio?" subtitle="Holdings collapsed into the exposure they actually share — because holdings and diversification are not the same thing." />
+        <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
+          <ExposureOverlap
+            groups={exposure}
+            formatValue={formatInr}
+            empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
+          />
+          {exposure.length > 0 && (
+            <p className="mt-4 border-t border-border/70 pt-3 text-[12px] leading-relaxed text-foreground/85">
+              {report.holdingCount} holdings resolve into{" "}
+              <span className="font-semibold">{exposure.length} distinct exposure {exposure.length === 1 ? "family" : "families"}</span>
+              {exposure[0].members.length > 1
+                ? `, and ${exposure[0].members.length} of them sit inside ${exposure[0].label.toLowerCase()} — together ${exposure[0].pct}% of the portfolio.`
+                : `, led by ${exposure[0].label.toLowerCase()} at ${exposure[0].pct}%.`}{" "}
+              More positions do not automatically mean more independent sources of return.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* 4. ALLOCATION */}
+      <section id="pr-allocation" className="scroll-mt-24">
+        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Allocation" subtitle="Structure of the portfolio — asset class, equity sleeve, sector and position size." />
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <ChartCard title="Asset allocation" note="Share and rupee value of each asset class.">
+            <AllocationDonut
+              slices={report.allocation.byAssetClass}
+              formatValue={formatInr}
+              centerLabel="Total portfolio"
+              centerValue={inrShort(report.totalValue)}
+              empty="Asset class data not available for these holdings."
+            />
           </ChartCard>
-        )}
-
-        <ChartCard title="Asset allocation" note="Every asset class with its share and rupee value. Hover a segment to isolate it.">
-          <AllocationDonut
-            slices={report.allocation.byAssetClass}
-            formatValue={formatInr}
-            centerLabel="Total portfolio"
-            centerValue={inrShort(report.totalValue)}
-            empty="Asset class data not available for these holdings."
-          />
-        </ChartCard>
-
-        <ChartCard title="Holdings distribution" note="How much of the outcome rests on a single position.">
-          <ConcentrationLadder
-            rows={report.topHoldings.map((h) => ({
-              name: h.name,
-              pct: h.pct,
-              value: Math.round((h.pct / 100) * report.totalValue),
-            }))}
-            formatValue={formatInr}
-          />
-        </ChartCard>
-
-        <div className="grid gap-6 xl:grid-cols-2">
-          <ChartCard title="Market cap mix" note="Structure of the equity sleeve. Categories are shown exactly as identified — never renamed.">
+          <ChartCard title="Market cap mix" note="Structure of the equity sleeve, shown exactly as identified.">
             <StackedComposition
               slices={report.allocation.byMarketCap}
               formatValue={formatInr}
               caption={
                 equitySleeve > 0 ? (
-                  <p className="font-mono text-[13px] tabular-nums text-foreground">
+                  <p className="font-mono text-[12px] tabular-nums text-foreground">
                     Equity sleeve · <span className="font-semibold">{formatInr(equitySleeve)}</span>
                   </p>
                 ) : undefined
               }
-              empty="Market cap not available — these holdings could not be identified against a listed security."
+              empty="Market cap could not be identified for these holdings."
             />
           </ChartCard>
-          <ChartCard title="Sector mix" note="Sector exposure across holdings that matched verified security data.">
+          <ChartCard title="Sector mix" note="Sector exposure across holdings matched to verified security data.">
             <SectorTreemap
               slices={report.allocation.bySector}
               formatValue={formatInr}
-              empty="Sector exposure is shown only for holdings NitiInvest™ could identify. None of these holdings resolved to an identifiable security or index."
+              empty="Sector exposure appears once a holding is matched to a listed security. These positions are held through instruments that do not publish a single sector."
+            />
+          </ChartCard>
+          <ChartCard title="Holdings distribution" note="How much of the outcome rests on a single position.">
+            <ConcentrationLadder
+              rows={report.topHoldings.map((h) => ({
+                name: h.name,
+                pct: h.pct,
+                value: Math.round((h.pct / 100) * report.totalValue),
+              }))}
+              formatValue={formatInr}
             />
           </ChartCard>
         </div>
       </section>
 
-      {/* 4. PORTFOLIO DIAGNOSTICS */}
-      {diagnostics.length > 0 && (
-        <section id="pr-diagnostics" className="scroll-mt-24">
-          <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Portfolio diagnostics" subtitle="Structural checks scored deterministically by NitiCore™. Open one for the reasoning." />
-          <div className="mt-5 grid gap-3 lg:grid-cols-2">
-            {diagnostics.map((d, i) => <DiagnosticCard key={d.id} d={d} variant={indicatorFor(d.id, i)} />)}
-          </div>
-          {insights.length > 0 && (
-            <ul className="mt-6 grid gap-3 lg:grid-cols-2">
-              {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
-            </ul>
-          )}
-        </section>
-      )}
-
       {/* 5. FUND & STOCK INTELLIGENCE */}
       {holdings.length > 0 && (
         <section id="pr-holdings" className="scroll-mt-24">
-          <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Fund & stock intelligence" subtitle="Scan every holding. Open one only when you want the detail." />
+          <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Fund & stock intelligence" subtitle="Holding · role · allocation · value. Open one only when you want the detail." />
           <HoldingsExplorer holdings={holdings} />
         </section>
       )}
 
-      {/* 6. PORTFOLIO PROJECTION */}
+      {/* 6. PROJECTION */}
       {report.projection && report.totalValue > 0 && (
         <section id="pr-projection" className="scroll-mt-24">
           <SectionHeading
             icon={<LineChartIcon className="h-4 w-4 text-primary" />}
-            title="Portfolio projection"
-            subtitle="Illustrative scenario exploration — not a forecast or guarantee."
+            title="Where could this portfolio take you?"
+            subtitle="Change any assumption and the projection updates instantly. Illustrative scenario — not a forecast."
           />
           <ProjectionSection basis={report.projection} />
         </section>
       )}
 
-      {/* 7. PEER BENCHMARK */}
-      {peer && (
-        <section id="pr-peers" className="scroll-mt-24">
-          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your investor profile" subtitle="How your investing behaviour compares with people at a similar life stage." />
-          <InvestorProfile peer={peer} report={report} />
+      {/* 7. PORTFOLIO HEALTH */}
+      {diagnostics.length > 0 && (
+        <section id="pr-diagnostics" className="scroll-mt-24">
+          <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Portfolio health" subtitle="Structural checks scored deterministically. Open one for the reasoning." />
+          <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
+            {diagnostics.map((d) => <DiagnosticChip key={d.id} d={d} />)}
+          </div>
+          {insights.length > 0 && (
+            <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+                What could hurt you — {insights.length} structural {insights.length === 1 ? "observation" : "observations"}
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+              </summary>
+              <ul className="mt-4 grid gap-3 lg:grid-cols-2">
+                {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
+              </ul>
+            </details>
+          )}
         </section>
       )}
 
-      {/* 8. RECOMMENDED ACTIONS */}
+      {/* 8. NEXT MOVES */}
       <section id="pr-actions" className="scroll-mt-24">
-        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Recommended actions" subtitle="Ordered by what matters most, given your whole financial context." />
+        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your next 3 moves" subtitle="Ordered by what matters most, given your whole financial context." />
         {report.recommendations.length === 0 ? (
-          <div className="mt-5 rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
+          <div className="mt-4 rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
             No priority actions right now. Revisit after any material change to income, goals or life stage.
           </div>
         ) : (
-          <ol className="mt-5 space-y-4">
-            {report.recommendations.map((r, i) => <ActionRow key={r.id} r={r} index={i} />)}
-          </ol>
+          <>
+            <ol className="mt-4 space-y-3">
+              {report.recommendations.slice(0, 3).map((r, i) => <ActionRow key={r.id} r={r} index={i} />)}
+            </ol>
+            {report.recommendations.length > 3 && (
+              <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+                  {report.recommendations.length - 3} secondary {report.recommendations.length - 3 === 1 ? "action" : "actions"}
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+                </summary>
+                <ol className="mt-4 space-y-3">
+                  {report.recommendations.slice(3).map((r, i) => <ActionRow key={r.id} r={r} index={i + 3} />)}
+                </ol>
+              </details>
+            )}
+          </>
         )}
       </section>
 
       {/* 9. NITIGUIDE */}
       <section id="pr-guide" className="scroll-mt-24">
         {report.mentorSummary ? (
-          <div className="rounded-3xl border border-primary/25 bg-primary-soft/20 p-7 md:p-10">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">NitiGuide™ · portfolio mentor</p>
-            </div>
-            <div className="mt-6 max-w-3xl space-y-4 text-[15px] leading-[1.75] text-foreground/90">
-              {report.mentorSummary.split(/\n{2,}/).filter(Boolean).map((para, i) => (
-                <p key={i} className="whitespace-pre-wrap">{para}</p>
-              ))}
-            </div>
-            <p className="mt-7 border-t border-primary/15 pt-4 text-[11px] text-muted-foreground">
-              NitiGuide teaches and explains. Every number and recommendation above is calculated deterministically by NitiCore™.
-            </p>
-          </div>
+          <GuideBriefing text={report.mentorSummary} />
         ) : (
           <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm text-muted-foreground">
             NitiGuide briefing not available for this analysis.
@@ -866,27 +963,51 @@ function ReportView({
   );
 }
 
-function ChartCard({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
+function GuideBriefing({ text }: { text: string }) {
+  const paras = text.split(/\n{2,}/).filter(Boolean);
+  const [open, setOpen] = useState(false);
+  const shown = open ? paras : paras.slice(0, 1);
   return (
-    <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
-      <h4 className="font-display text-lg tracking-tight text-foreground">{title}</h4>
-      {note && <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-muted-foreground">{note}</p>}
-      <div className="mt-7">{children}</div>
+    <div className="rounded-3xl border border-primary/25 bg-primary-soft/20 p-6 md:p-8">
+      <div className="flex items-center gap-2">
+        <Sparkles className="h-4 w-4 text-primary" />
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">NitiGuide™ · portfolio mentor</p>
+      </div>
+      <div className="mt-4 max-w-3xl space-y-3.5 text-[14.5px] leading-[1.7] text-foreground/90">
+        {shown.map((para, i) => <p key={i} className="whitespace-pre-wrap">{para}</p>)}
+      </div>
+      {paras.length > 1 && (
+        <button onClick={() => setOpen((v) => !v)} className="mt-4 text-[11px] font-semibold text-primary hover:underline">
+          {open ? "Show less" : "Read the full explanation"}
+        </button>
+      )}
+      <p className="mt-5 border-t border-primary/15 pt-3 text-[11px] text-muted-foreground">
+        NitiGuide teaches and explains. Every number and recommendation above is calculated deterministically by NitiCore™.
+      </p>
     </div>
   );
 }
 
-function SummaryPoint({ tone, label, body }: { tone: "good" | "risk" | "note" | "act"; label: string; body: string }) {
+function ChartCard({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+      <h4 className="font-display text-base tracking-tight text-foreground">{title}</h4>
+      {note && <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>}
+      <div className="mt-5">{children}</div>
+    </div>
+  );
+}
+
+function InsightTile({ tone, label, body }: { tone: "good" | "risk" | "act"; label: string; body: string }) {
   const accent = {
     good: "border-success/60",
     risk: "border-destructive/50",
-    note: "border-border",
     act: "border-primary/60",
   }[tone];
   return (
-    <div className={`border-l-2 pl-4 ${accent}`}>
+    <div className={`border-l-2 pl-3.5 ${accent}`}>
       <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
-      <p className="mt-1.5 text-[14px] leading-relaxed text-foreground/90">{body}</p>
+      <p className="mt-1 text-[13px] leading-relaxed text-foreground/90">{body}</p>
     </div>
   );
 }
