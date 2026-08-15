@@ -546,21 +546,30 @@ function CompactServicesSection({
                     i % 2 === 1 ? "sm:border-l" : ""
                   } lg:border-l lg:first:border-l-0 lg:[&:nth-child(3)]:border-l`}
                 >
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate text-[12px] font-semibold text-foreground">
-                      {SHORT_NAMES[s.slug] ?? s.name}
-                    </p>
-                    <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary ring-1 ring-primary/10 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
+                      <p className="truncate text-[12px] font-semibold text-foreground">
+                        {SHORT_NAMES[s.slug] ?? s.name}
+                      </p>
+                    </div>
+                    <span className="shrink-0 pt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                       {s.tag}
                     </span>
                   </div>
+                  <p className="truncate text-[11px] leading-relaxed text-muted-foreground/85">
+                    {ANALYZER_PURPOSE[s.slug] ?? s.cardDescription}
+                  </p>
                   <p
-                    className={`font-display text-xl font-semibold leading-tight ${
+                    className={`mt-0.5 font-display text-xl font-semibold leading-tight ${
                       hasData ? tone : "text-muted-foreground"
                     }`}
                   >
                     {state}
                   </p>
+
                   <div className="mt-1 flex items-center justify-between gap-2">
                     <span className="truncate text-[11px] text-muted-foreground">
                       {hasData && stat?.lastReviewed ? `Last reviewed · ${formatShortDate(stat.lastReviewed)}` : "—"}
