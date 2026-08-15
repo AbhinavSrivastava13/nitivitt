@@ -61,6 +61,15 @@ const SHORT_NAMES: Record<string, string> = {
   "tax-planner": "Tax",
 };
 
+/** One-line purpose shown under each analyzer in the dashboard strip. */
+const ANALYZER_PURPOSE: Record<string, string> = {
+  "insurance-analyzer": "Understand your protection gaps.",
+  "portfolio-analyzer": "See what your portfolio is really doing.",
+  "loan-analyzer": "Understand your debt and payoff path.",
+  "tax-planner": "Plan your taxes before year-end.",
+};
+
+
 export function FinancialServicesSection({
   authenticated = false,
   stats = {},
