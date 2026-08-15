@@ -61,6 +61,15 @@ const SHORT_NAMES: Record<string, string> = {
   "tax-planner": "Tax",
 };
 
+/** One-line purpose shown under each analyzer in the dashboard strip. */
+const ANALYZER_PURPOSE: Record<string, string> = {
+  "insurance-analyzer": "Understand your protection gaps.",
+  "portfolio-analyzer": "See what your portfolio is really doing.",
+  "loan-analyzer": "Understand your debt and payoff path.",
+  "tax-planner": "Plan your taxes before year-end.",
+};
+
+
 export function FinancialServicesSection({
   authenticated = false,
   stats = {},
@@ -531,11 +540,13 @@ function CompactServicesSection({
           <div className="grid divide-y divide-border/70 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
             {ANALYZER_SERVICES.map((s, i) => {
               const stat = stats[s.slug];
+              const Icon = s.icon;
               const hasData = Boolean(stat?.hasData);
               const state = hasData
                 ? stat?.ratingText ?? (stat?.score != null ? `${stat.score} / 100` : "Reviewed")
                 : "Not reviewed";
               const tone = hasData && stat?.ratingTone ? ratingClasses(stat.ratingTone).text : "text-foreground";
+
 
               return (
                 <AnalyzerLink
@@ -546,21 +557,30 @@ function CompactServicesSection({
                     i % 2 === 1 ? "sm:border-l" : ""
                   } lg:border-l lg:first:border-l-0 lg:[&:nth-child(3)]:border-l`}
                 >
-                  <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate text-[12px] font-semibold text-foreground">
-                      {SHORT_NAMES[s.slug] ?? s.name}
-                    </p>
-                    <span className="shrink-0 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary ring-1 ring-primary/10 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                        <Icon className="h-3.5 w-3.5" />
+                      </span>
+                      <p className="truncate text-[12px] font-semibold text-foreground">
+                        {SHORT_NAMES[s.slug] ?? s.name}
+                      </p>
+                    </div>
+                    <span className="shrink-0 pt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                       {s.tag}
                     </span>
                   </div>
+                  <p className="truncate text-[11px] leading-relaxed text-muted-foreground/85">
+                    {ANALYZER_PURPOSE[s.slug] ?? s.cardDescription}
+                  </p>
                   <p
-                    className={`font-display text-xl font-semibold leading-tight ${
+                    className={`mt-0.5 font-display text-xl font-semibold leading-tight ${
                       hasData ? tone : "text-muted-foreground"
                     }`}
                   >
                     {state}
                   </p>
+
                   <div className="mt-1 flex items-center justify-between gap-2">
                     <span className="truncate text-[11px] text-muted-foreground">
                       {hasData && stat?.lastReviewed ? `Last reviewed · ${formatShortDate(stat.lastReviewed)}` : "—"}
