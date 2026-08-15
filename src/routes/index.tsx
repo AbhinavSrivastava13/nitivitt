@@ -34,13 +34,14 @@ import { FinancialServicesSection } from "@/components/platform/financial-servic
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NitiVitt — Wise Wealth, for every Indian" },
+      { title: "NitiVitt - Wise Wealth, for every Indian" },
       {
         name: "description",
         content:
           "NitiVitt is India's financial intelligence platform. Know your NitiScore, plan with NitiPath, and learn the math behind every recommendation. Zero commissions. Total transparency.",
       },
-      { property: "og:title", content: "NitiVitt — Wise Wealth, for every Indian" },
+      { property: "og:title", content: "NitiVitt - Wise Wealth, for every Indian" },
+      { name: "twitter:title", content: "NitiVitt - Wise Wealth, for every Indian" },
       {
         property: "og:description",
         content:
