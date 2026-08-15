@@ -19,6 +19,7 @@ import {
 } from "@/lib/services/profile.service";
 import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
+  calculateSavingsRate, calculateDebtRatio,
   generateRecommendations,
 } from "@/lib/niti-core";
 import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
@@ -738,33 +739,8 @@ function MetricDialog({
           </>
         )}
 
-        {kind === "age" && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="font-display text-2xl">NitiAge™ — {nitiAge.value} yrs</DialogTitle>
-              <DialogDescription>Your financial maturity translated into an age.</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-3 text-sm">
-              {(() => {
-                const p = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
-                const dir = p?.direction ?? "on_track";
-                const dy = p?.deltaYears ?? 0;
-                const verdict = dir === "ahead" ? `Ahead by ${dy} year${dy === 1 ? "" : "s"}` : dir === "behind" ? `Behind by ${dy} year${dy === 1 ? "" : "s"}` : "On par";
-                return (
-                  <>
-                    <p><span className="font-semibold text-foreground">Actual age:</span> {input.ageYears} yrs</p>
-                    <p><span className="font-semibold text-foreground">Financial age:</span> {nitiAge.value} yrs</p>
-                    <p><span className="font-semibold text-foreground">Status:</span> <span className={dir === "ahead" ? "text-secondary" : dir === "behind" ? "text-warning" : "text-muted-foreground"}>{verdict}</span></p>
-                    <p className="text-muted-foreground">{p?.interpretation}</p>
-                    <p className="text-muted-foreground text-xs">Financial Age = your actual age adjusted for savings rate, emergency buffer, debt load, insurance and investing habits. Lower is healthier.</p>
-                    <p className="text-muted-foreground text-xs">{nitiAge.calculationSummary}</p>
-                    <p className="text-muted-foreground">{nitiAge.suggestedNextStep}</p>
-                  </>
-                );
-              })()}
-            </div>
-          </>
-        )}
+        {kind === "age" && <NitiAgeDetail nitiAge={nitiAge} input={input} />}
+
 
         {kind === "networth" && (
           <>
@@ -1020,5 +996,170 @@ function DashboardSkeleton() {
         <SkelBlock className="h-44" />
       </div>
     </div>
+  );
+}
+
+/* ─────────────── NitiAge™ — actionable detail ─────────────── */
+
+/**
+ * Presentation-only interpretation of NitiAge. No calculation is changed:
+ * the drivers below are read straight from the same NitiCore™ services the
+ * NitiAge service uses, purely to explain *which* habits moved the number.
+ */
+function NitiAgeDetail({
+  nitiAge, input,
+}: {
+  nitiAge: ReturnType<typeof calculateNitiAge>;
+  input: NitiCoreInput;
+}) {
+  const p = nitiAge.aiPayload as
+    | { direction: "ahead" | "behind" | "on_track"; deltaYears: number }
+    | undefined;
+  const dir = p?.direction ?? "on_track";
+  const dy = p?.deltaYears ?? 0;
+
+  const sr = Math.round(Number(calculateSavingsRate(input).value));
+  const ef = Math.round(Number(calculateEmergencyFund(input).value) * 10) / 10;
+  const dr = Math.round(Number(calculateDebtRatio(input).value));
+  const bothCover = input.hasTermInsurance && input.hasHealthInsurance;
+  const invPct = input.monthlyIncome > 0
+    ? Math.round((input.monthlyInvestments / input.monthlyIncome) * 100)
+    : 0;
+
+  type Driver = { label: string; detail: string; years: number };
+  const drivers: Driver[] = [
+    { label: "Savings rate", detail: `${sr}% of income`, years: sr >= 30 ? -3 : sr < 10 ? 3 : 0 },
+    { label: "Emergency buffer", detail: `${ef} months of expenses`, years: ef >= 6 ? -3 : ef < 1 ? 3 : 0 },
+    { label: "Debt load", detail: `EMIs are ${dr}% of income`, years: dr <= 20 ? -2 : dr > 40 ? 3 : 0 },
+    {
+      label: "Protection",
+      detail: bothCover
+        ? "Term and health cover in place"
+        : !input.hasTermInsurance && !input.hasHealthInsurance
+          ? "No term or health cover"
+          : input.hasTermInsurance ? "Health cover missing" : "Term cover missing",
+      years: bothCover ? -1 : 2,
+    },
+    { label: "Investing", detail: `${invPct}% of income invested monthly`, years: invPct > 15 ? -1 : 0 },
+  ];
+  const dragging = drivers.filter((d) => d.years > 0).sort((a, b) => b.years - a.years);
+  const helping = drivers.filter((d) => d.years < 0).sort((a, b) => a.years - b.years);
+  const worstLever = dragging[0];
+
+  // Highest-impact fix, specific to the driver that costs the most years.
+  const fixCopy: Record<string, { what: string; unlock: string }> = {
+    "Emergency buffer": {
+      what: `Park ${formatINR(Math.max(0, input.monthlyExpenses * 3 - input.liquidAssets))} in a liquid fund or sweep-in FD until you hold at least 3 months of expenses (${formatINR(input.monthlyExpenses * 3)}).`,
+      unlock: "A funded buffer removes the need to break investments or borrow when income pauses — and is worth up to 3 years off your NitiAge.",
+    },
+    "Savings rate": {
+      what: `Automate a further ${formatINR(Math.max(0, Math.round(input.monthlyIncome * 0.2 - (input.monthlyIncome - input.monthlyExpenses))))} a month on salary day to lift your savings rate past 20%.`,
+      unlock: "Each percentage point of savings rate buys back time — it shortens every goal timeline without touching your lifestyle later.",
+    },
+    "Debt load": {
+      what: `Prepay the highest-rate loan until EMIs fall below ${formatINR(Math.round(input.monthlyIncome * 0.3))} a month (30% of income).`,
+      unlock: "Freed-up EMI turns into investable surplus and restores the flexibility to change jobs, cities or income levels.",
+    },
+    Protection: {
+      what: bothCover
+        ? "Review sum assured against your current income."
+        : `Buy the missing cover — ${!input.hasTermInsurance ? `term cover of about ${formatINR(input.monthlyIncome * 12 * 12)}` : ""}${!input.hasTermInsurance && !input.hasHealthInsurance ? " and " : ""}${!input.hasHealthInsurance ? "a family floater health policy" : ""}.`,
+      unlock: "Protection stops one hospital bill or income shock from undoing years of saving — the cheapest 2 years you will ever take off your NitiAge.",
+    },
+  };
+  const fix = worstLever ? fixCopy[worstLever.label] : undefined;
+
+  const surplus = Math.max(0, input.monthlyIncome - input.monthlyExpenses - input.monthlyInvestments);
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle className="font-display text-2xl">
+          NitiAge™ — {nitiAge.value} yrs
+          <span className={`ml-2 align-middle text-xs font-semibold uppercase tracking-[0.14em] ${dir === "ahead" ? "text-secondary" : dir === "behind" ? "text-warning" : "text-muted-foreground"}`}>
+            {dir === "ahead" ? `${dy} yr${dy === 1 ? "" : "s"} ahead` : dir === "behind" ? `${dy} yr${dy === 1 ? "" : "s"} behind` : "on par"}
+          </span>
+        </DialogTitle>
+        <DialogDescription>
+          You are {input.ageYears}. Your money behaves like someone {nitiAge.value}.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-4 text-sm">
+        {/* What it means */}
+        <section className="rounded-xl border border-border bg-surface/60 p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">What it means</p>
+          <p className="mt-1.5 leading-relaxed text-foreground">
+            {dir === "ahead"
+              ? `Your finances are behaving like someone younger than you. You carry more flexibility than a typical ${input.ageYears}-year-old — but this is a licence to choose, not to save less.`
+              : dir === "behind"
+                ? `Your habits are running ${dy} year${dy === 1 ? "" : "s"} behind where you are in life, so your financial flexibility today is lower than it should be${worstLever ? ` — mostly ${worstLever.label.toLowerCase()}` : ""}.`
+                : "Your habits sit exactly where they should for your age — steady, with no built-in cushion yet."}
+          </p>
+        </section>
+
+        {/* Drivers */}
+        <section>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            {dir === "behind" ? "What is pushing it higher" : "What is driving it"}
+          </p>
+          <ul className="mt-2 divide-y divide-border/60 rounded-xl border border-border">
+            {[...dragging, ...helping].map((d) => (
+              <li key={d.label} className="flex items-center justify-between gap-3 px-3.5 py-2">
+                <span className="min-w-0">
+                  <span className="text-[12.5px] font-semibold text-foreground">{d.label}</span>
+                  <span className="ml-2 text-[11.5px] text-muted-foreground">{d.detail}</span>
+                </span>
+                <span className={`shrink-0 font-mono text-[11.5px] tabular-nums ${d.years > 0 ? "text-warning" : "text-secondary"}`}>
+                  {d.years > 0 ? "+" : "−"}{Math.abs(d.years)} yr{Math.abs(d.years) === 1 ? "" : "s"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Enables / limits */}
+        <section className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-border bg-card p-3.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              {dir === "behind" ? "What it limits" : "What it enables"}
+            </p>
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
+              {dir === "behind"
+                ? "Big-ticket decisions — a home, a career break, a business — need more notice and cost more, because there is little buffer between income and obligations."
+                : surplus > 0
+                  ? `Roughly ${formatINR(surplus)} a month is genuinely discretionary. You can point it at a goal, a home down payment or lifestyle without weakening the base.`
+                  : "You have room to bring goals forward or take measured equity risk, because your buffer and protection are already carrying the downside."}
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-3.5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">What to watch</p>
+            <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
+              {dir === "behind"
+                ? "Any new EMI added before the buffer is rebuilt widens the gap faster than a pay rise closes it."
+                : `Lifestyle inflation is the only real threat — if expenses rise faster than income, your savings rate slips below 30% and this ${dy || ""}-year lead disappears within a year.`}
+            </p>
+          </div>
+        </section>
+
+        {/* Next move */}
+        <section className="rounded-xl border border-primary/25 bg-primary-soft/40 p-3.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">What to do next</p>
+          <p className="mt-1.5 leading-relaxed text-foreground">
+            {dir === "behind" && fix
+              ? fix.what
+              : `Lock the advantage in: raise your monthly investment by the same percentage as your next salary revision, so the surplus is committed before it becomes spending.`}
+          </p>
+          <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted-foreground">
+            {dir === "behind" && fix
+              ? fix.unlock
+              : "This keeps your savings rate flat as income rises — the single habit that holds a NitiAge below actual age over a decade."}
+          </p>
+          <Link to="/recommendations" className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+            See the full NitiPath™ plan <ArrowRight className="h-3 w-3" />
+          </Link>
+        </section>
+      </div>
+    </>
   );
 }
