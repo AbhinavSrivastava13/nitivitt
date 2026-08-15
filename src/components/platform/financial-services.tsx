@@ -531,11 +531,13 @@ function CompactServicesSection({
           <div className="grid divide-y divide-border/70 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
             {ANALYZER_SERVICES.map((s, i) => {
               const stat = stats[s.slug];
+              const Icon = s.icon;
               const hasData = Boolean(stat?.hasData);
               const state = hasData
                 ? stat?.ratingText ?? (stat?.score != null ? `${stat.score} / 100` : "Reviewed")
                 : "Not reviewed";
               const tone = hasData && stat?.ratingTone ? ratingClasses(stat.ratingTone).text : "text-foreground";
+
 
               return (
                 <AnalyzerLink
