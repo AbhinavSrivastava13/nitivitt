@@ -107,7 +107,7 @@ export function effectivenessGrid(
   const out: HeatCell[] = [];
   for (const stepUp of STEP_UP_ROWS) {
     for (const s of SCENARIOS) {
-      const r = computeEffectiveness(basis, diagnostics, { ...plan, stepUp: 0, stepUpPct: stepUp, scenario: s.key } as PlanInput);
+      const r = computeEffectiveness(basis, diagnostics, { ...plan, stepUpPct: stepUp, scenario: s.key });
       out.push({ stepUp, scenario: s.key, score: r.score, projected: r.projected });
     }
   }
