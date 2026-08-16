@@ -723,3 +723,181 @@ export function ExposureOverlap({
     </div>
   );
 }
+
+/* ───────────────── EFFECTIVENESS — dial ───────────────── */
+
+/**
+ * A single large deterministic score. Deliberately typographic: one arc, one
+ * number, no gauge needle theatre.
+ */
+export function EffectivenessDial({
+  score, delta, caption,
+}: {
+  score: number;
+  delta?: number;
+  caption?: string;
+}) {
+  const v = Math.max(0, Math.min(100, score));
+  const size = 168;
+  const r = (size - 14) / 2;
+  const c = Math.PI * r; // half circle
+  const color = v >= 80 ? SERIES_COLORS.positive : v >= 60 ? SERIES_COLORS.you : SERIES_COLORS.attention;
+  return (
+    <div className="flex flex-col items-center">
+      <div className="relative" style={{ width: size, height: size / 2 + 18 }}>
+        <svg width={size} height={size / 2 + 10} viewBox={`0 0 ${size} ${size / 2 + 10}`}>
+          <path
+            d={`M 7 ${size / 2} A ${r} ${r} 0 0 1 ${size - 7} ${size / 2}`}
+            fill="none" stroke="var(--muted)" strokeWidth={9} strokeLinecap="round"
+          />
+          <path
+            d={`M 7 ${size / 2} A ${r} ${r} 0 0 1 ${size - 7} ${size / 2}`}
+            fill="none" stroke={color} strokeWidth={9} strokeLinecap="round"
+            strokeDasharray={`${(v / 100) * c} ${c}`}
+            style={{ transition: "stroke-dasharray 400ms ease" }}
+          />
+        </svg>
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
+          <span className="font-display text-[2.75rem] leading-none tracking-tight text-foreground tabular-nums">{v}</span>
+          <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">out of 100</span>
+        </div>
+      </div>
+      {typeof delta === "number" && delta !== 0 && (
+        <p className="mt-3 font-mono text-[12px] tabular-nums" style={{ color: delta > 0 ? SERIES_COLORS.positive : SERIES_COLORS.attention }}>
+          {delta > 0 ? "+" : "−"}{Math.abs(delta)} vs your current plan
+        </p>
+      )}
+      {caption && <p className="mt-2 text-center text-[11px] text-muted-foreground">{caption}</p>}
+    </div>
+  );
+}
+
+/* ───────────────── EFFECTIVENESS — heatmap ───────────────── */
+
+export function EffectivenessHeatmap({
+  cells, columns, rows, activeStepUp, activeScenario, onSelect,
+}: {
+  cells: { stepUp: number; scenario: string; score: number }[];
+  columns: { key: string; label: string }[];
+  rows: number[];
+  activeStepUp: number;
+  activeScenario: string;
+  onSelect?: (stepUp: number, scenario: string) => void;
+}) {
+  const scores = cells.map((c) => c.score);
+  const lo = Math.min(...scores);
+  const hi = Math.max(...scores);
+  const shade = (s: number) => {
+    const t = hi === lo ? 0.5 : (s - lo) / (hi - lo);
+    // Restrained single-hue ramp on the champagne/slate axis — no traffic lights.
+    return `color-mix(in oklab, ${SERIES_COLORS.you} ${Math.round(10 + t * 62)}%, var(--card))`;
+  };
+  return (
+    <div>
+      <div className="grid" style={{ gridTemplateColumns: `5.5rem repeat(${columns.length}, minmax(0,1fr))` }}>
+        <span />
+        {columns.map((c) => (
+          <span key={c.key} className="pb-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            {c.label}
+          </span>
+        ))}
+        {rows.map((r) => (
+          <>
+            <span key={`l-${r}`} className="flex items-center pr-3 text-right text-[11px] font-medium text-muted-foreground">
+              {r}% step-up
+            </span>
+            {columns.map((c) => {
+              const cell = cells.find((x) => x.stepUp === r && x.scenario === c.key);
+              const active = r === activeStepUp && c.key === activeScenario;
+              return (
+                <button
+                  key={`${r}-${c.key}`}
+                  type="button"
+                  onClick={() => onSelect?.(r, c.key)}
+                  className={`m-[3px] rounded-lg py-3 font-mono text-[13px] tabular-nums transition-all ${
+                    active ? "ring-2 ring-foreground/70" : "hover:ring-1 hover:ring-border"
+                  }`}
+                  style={{ background: shade(cell?.score ?? 0), color: "var(--foreground)" }}
+                >
+                  {cell?.score ?? "—"}
+                </button>
+              );
+            })}
+          </>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────── STRESS — scenario rails ───────────────── */
+
+export function StressScenarios({
+  rows, formatValue,
+}: {
+  rows: { label: string; detail: string; impact: number; after: number; pctOfPortfolio: number }[];
+  formatValue: (n: number) => string;
+}) {
+  const max = Math.max(1, ...rows.map((r) => r.pctOfPortfolio));
+  return (
+    <ul className="space-y-3.5">
+      {rows.map((r) => (
+        <li key={r.label} className="border-b border-border/50 pb-3.5 last:border-0 last:pb-0">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <span className="text-[13px] font-semibold text-foreground">{r.label}</span>
+            <span className="font-mono text-[12px] tabular-nums text-foreground">
+              −{formatValue(r.impact)}
+              <span className="ml-2 text-muted-foreground">→ {formatValue(r.after)}</span>
+            </span>
+          </div>
+          <span className="mt-2 block h-[6px] w-full overflow-hidden rounded-full bg-muted/70">
+            <span
+              className="block h-full rounded-full"
+              style={{ width: `${(r.pctOfPortfolio / max) * 100}%`, background: SERIES_COLORS.attention, opacity: 0.85 }}
+            />
+          </span>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+            {r.detail} That is {r.pctOfPortfolio}% of today&rsquo;s portfolio value.
+          </p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/* ───────────────── PEER — paired comparison rails ───────────────── */
+
+export function PeerRails({
+  rows,
+}: {
+  rows: { label: string; you: number; typical: number; unit: string; verdict: string }[];
+}) {
+  return (
+    <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+      {rows.map((r) => {
+        const max = Math.max(r.you, r.typical, 1) * 1.15;
+        return (
+          <li key={r.label}>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-[12.5px] font-semibold text-foreground">{r.label}</span>
+              <span className="font-mono text-[11.5px] tabular-nums text-muted-foreground">
+                <span className="font-semibold text-foreground">{r.you}{r.unit}</span>
+                <span className="px-1.5">vs</span>
+                <span style={{ color: SERIES_COLORS.peer }}>{r.typical}{r.unit}</span>
+              </span>
+            </div>
+            <div className="mt-2 space-y-1">
+              <span className="block h-[6px] w-full overflow-hidden rounded-full bg-muted/70">
+                <span className="block h-full rounded-full" style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }} />
+              </span>
+              <span className="block h-[6px] w-full overflow-hidden rounded-full bg-muted/40">
+                <span className="block h-full rounded-full" style={{ width: `${(r.typical / max) * 100}%`, background: SERIES_COLORS.peer, opacity: 0.7 }} />
+              </span>
+            </div>
+            <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">{r.verdict}</p>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
