@@ -696,15 +696,28 @@ function ReportView({
   const reviewed = lastReviewedAt ? new Date(lastReviewedAt) : new Date();
   const equitySleeve = report.allocation.byMarketCap.reduce((a, s) => a + s.value, 0);
   const exposure = useMemo(() => buildExposureGroups(report), [report]);
+  const overlap = useMemo(() => detectOverlap(exposure), [exposure]);
   const largest = report.topHoldings[0];
   const peerLargest = peer?.rows.find((r) => /largest holding/i.test(r.label));
   const peerHoldings = peer?.rows.find((r) => /number of holdings/i.test(r.label));
+  const equityValue = report.allocation.byAssetClass
+    .filter((s) => /equity|index|etf|hybrid/i.test(s.label))
+    .reduce((a, s) => a + s.value, 0);
+  const stress = useMemo(
+    () => stressScenarios(report.totalValue, equityValue || report.totalValue),
+    [report.totalValue, equityValue],
+  );
+  const blendedCost = useMemo(() => blendedCostFromDiagnostics(diagnostics), [diagnostics]);
+  const drag = useMemo(
+    () => (report.projection && blendedCost != null ? costDrag(report.projection, blendedCost, 0.4, report.projection.defaultHorizonYears) : null),
+    [report.projection, blendedCost],
+  );
 
   const sectionIds = useMemo(() => SECTION_STEPS.map((s) => s.id), []);
   const activeSection = useActiveSection(sectionIds);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
@@ -733,12 +746,12 @@ function ReportView({
 
       {/* 1. VERDICT */}
       <section id="pr-verdict" className="scroll-mt-24">
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
-          <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:gap-10">
+        <div className="rounded-3xl border border-border bg-card px-6 py-7 shadow-soft md:px-9 md:py-8">
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Portfolio verdict</p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
-                <h2 className="font-display text-[2rem] leading-none tracking-tight text-foreground">{rating.label}</h2>
+                <h2 className="font-display text-[2.1rem] leading-none tracking-tight text-foreground">{rating.label}</h2>
                 <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${tone.bg} ${tone.text}`}>
                   Grade {rating.grade}
                 </span>
@@ -748,42 +761,31 @@ function ReportView({
                   </span>
                 )}
               </div>
-              <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-foreground/90">
-                {hero?.verdict ?? execSummary}
-              </p>
             </div>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 self-start rounded-2xl bg-surface/70 px-5 py-4 md:grid-cols-1 md:gap-y-3.5">
-              <div>
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Portfolio value</dt>
-                <dd className="mt-1 font-display text-2xl leading-none text-foreground">{snapshot?.valueLabel ?? formatInr(report.totalValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Holdings · style</dt>
-                <dd className="mt-1 text-[13px] font-medium text-foreground">
-                  {report.holdingCount} holdings{snapshot?.style ? ` · ${snapshot.style}` : ""}
-                </dd>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Largest position</dt>
-                <dd className="mt-1 truncate text-[13px] font-medium text-foreground">
-                  {largest ? `${largest.name} · ${largest.pct}%` : "—"}
-                </dd>
-              </div>
-            </dl>
+            <p className="font-mono text-[12.5px] tabular-nums text-muted-foreground">
+              <span className="font-display text-2xl not-italic tracking-tight text-foreground">{snapshot?.valueLabel ?? formatInr(report.totalValue)}</span>
+              <span className="px-2">·</span>{report.holdingCount} holdings
+              {snapshot?.style ? <><span className="px-2">·</span>{snapshot.style}</> : null}
+            </p>
           </div>
 
-          <div className="mt-6 grid gap-3 border-t border-border/70 pt-5 sm:grid-cols-3">
-            <InsightTile tone="good" label="Strength" body={report.biggestStrength ?? report.strengths[0]?.title ?? "Being invested and consistent."} />
-            <InsightTile tone="risk" label="Risk" body={report.largestRisk ?? report.gaps[0]?.title ?? "Nothing material flagged."} />
-            <InsightTile tone="act" label="Priority" body={report.recommendations[0]?.title ?? "Keep contributing and review in six months."} />
+          <p className="mt-5 max-w-3xl text-[15px] leading-[1.65] text-foreground/90">{hero?.verdict ?? execSummary}</p>
+
+          <div className="mt-6 grid gap-x-10 gap-y-5 border-t border-border/70 pt-6 md:grid-cols-3">
+            <VerdictNote label="What's working" body={report.biggestStrength ?? report.strengths[0]?.title ?? "You are invested and contributing consistently."} />
+            <VerdictNote
+              label="What's holding you back"
+              body={report.largestRisk ?? (largest ? `${largest.name} represents ${largest.pct}% of the portfolio.` : report.gaps[0]?.title ?? "Nothing material flagged.")}
+            />
+            <VerdictNote label="Highest-impact move" body={report.recommendations[0]?.title ?? "Keep contributing and review in six months."} accent />
           </div>
         </div>
       </section>
 
-      {/* 2. YOU VS YOUR PROFILE */}
+      {/* 2. YOU VS NITICORE */}
       {alloc.length > 0 && (
         <section id="pr-profile" className="scroll-mt-24">
-          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your portfolio vs your financial profile" subtitle="Where your money sits today, against what NitiCore™ would hold for your age, horizon and risk profile." />
+          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your portfolio vs NitiCore™" subtitle="Where your money sits today, against what NitiCore™ would hold for your age, horizon and risk profile." />
           <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
             <ComparisonTracks
               rows={alloc.map((r) => ({ label: r.label, you: r.you, recommended: r.recommended }))}
@@ -795,7 +797,7 @@ function ReportView({
                   {peerHoldings && (
                     <span>Holdings <span className="font-semibold text-foreground">{report.holdingCount}</span> · typical cohort {peerHoldings.typical}</span>
                   )}
-                  <span>A gap only matters when it conflicts with your horizon.</span>
+                  <span>A gap matters only when it conflicts with your age, horizon and risk profile.</span>
                 </span>
               }
             />
@@ -803,32 +805,63 @@ function ReportView({
         </section>
       )}
 
-      {/* 3. WHAT'S DRIVING THE PORTFOLIO */}
-      <section id="pr-drivers" className="scroll-mt-24">
-        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="What&rsquo;s really driving your portfolio?" subtitle="Holdings collapsed into the exposure they actually share — because holdings and diversification are not the same thing." />
-        <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
-          <ExposureOverlap
-            groups={exposure}
-            formatValue={formatInr}
-            empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
+      {/* 3. PORTFOLIO EFFECTIVENESS */}
+      {report.projection && report.totalValue > 0 && (
+        <section id="pr-effectiveness" className="scroll-mt-24">
+          <SectionHeading
+            icon={<GaugeIcon className="h-4 w-4 text-primary" />}
+            title="Portfolio effectiveness"
+            subtitle="See how today's decisions change your future. Illustrative scenarios built on NitiCore™ assumptions — never a forecast."
           />
-          {exposure.length > 0 && (
-            <p className="mt-4 border-t border-border/70 pt-3 text-[12px] leading-relaxed text-foreground/85">
-              {report.holdingCount} holdings resolve into{" "}
-              <span className="font-semibold">{exposure.length} distinct exposure {exposure.length === 1 ? "family" : "families"}</span>
-              {exposure[0].members.length > 1
-                ? `, and ${exposure[0].members.length} of them sit inside ${exposure[0].label.toLowerCase()} — together ${exposure[0].pct}% of the portfolio.`
-                : `, led by ${exposure[0].label.toLowerCase()} at ${exposure[0].pct}%.`}{" "}
-              More positions do not automatically mean more independent sources of return.
-            </p>
-          )}
-        </div>
-      </section>
+          <EffectivenessSection basis={report.projection} diagnostics={diagnostics} />
+        </section>
+      )}
 
-      {/* 4. ALLOCATION */}
-      <section id="pr-allocation" className="scroll-mt-24">
-        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Allocation" subtitle="Structure of the portfolio — asset class, equity sleeve, sector and position size." />
+      {/* 4. PORTFOLIO X-RAY */}
+      <section id="pr-xray" className="scroll-mt-24">
+        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="Portfolio X-Ray" subtitle="See what you actually own — beyond the number of holdings." />
+
+        {overlap && (
+          <div className="mt-4 rounded-2xl border border-warning/40 bg-warning-soft/30 px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                <AlertTriangle className="h-4 w-4 text-warning" /> Redundant exposure detected
+              </p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">Overlap severity · {overlap.severity}</p>
+            </div>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-foreground/85">
+              {overlap.members.map((m) => m.name).join(" + ")} sit inside {overlap.label.toLowerCase()} and together represent{" "}
+              <span className="font-semibold">{overlap.pct}%</span> of the portfolio. These holdings provide highly similar market exposure, so owning
+              both adds complexity without adding an independent source of return.
+            </p>
+          </div>
+        )}
+
         <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <ChartCard title="Exposure families" note="Holdings collapsed into the exposure they actually share.">
+            <ExposureOverlap
+              groups={exposure}
+              formatValue={formatInr}
+              empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
+            />
+            {exposure.length > 0 && (
+              <p className="mt-4 border-t border-border/70 pt-3 text-[12px] leading-relaxed text-foreground/85">
+                {report.holdingCount} holdings resolve into{" "}
+                <span className="font-semibold">{exposure.length} distinct exposure {exposure.length === 1 ? "family" : "families"}</span>. More
+                positions do not automatically mean more independent sources of return.
+              </p>
+            )}
+          </ChartCard>
+          <ChartCard title="Concentration" note="How much of the outcome rests on a single position.">
+            <ConcentrationLadder
+              rows={report.topHoldings.map((h) => ({
+                name: h.name,
+                pct: h.pct,
+                value: Math.round((h.pct / 100) * report.totalValue),
+              }))}
+              formatValue={formatInr}
+            />
+          </ChartCard>
           <ChartCard title="Asset allocation" note="Share and rupee value of each asset class.">
             <AllocationDonut
               slices={report.allocation.byAssetClass}
@@ -859,63 +892,79 @@ function ReportView({
               empty="Sector exposure appears once a holding is matched to a listed security. These positions are held through instruments that do not publish a single sector."
             />
           </ChartCard>
-          <ChartCard title="Holdings distribution" note="How much of the outcome rests on a single position.">
-            <ConcentrationLadder
-              rows={report.topHoldings.map((h) => ({
-                name: h.name,
-                pct: h.pct,
-                value: Math.round((h.pct / 100) * report.totalValue),
-              }))}
-              formatValue={formatInr}
-            />
-          </ChartCard>
+          {blendedCost != null && (
+            <ChartCard title="Cost drag" note="What the portfolio pays every year, and what that compounds into.">
+              <p className="font-display text-3xl leading-none tracking-tight text-foreground">{blendedCost}%</p>
+              <p className="mt-1.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Blended portfolio cost</p>
+              {drag && drag.difference > 0 ? (
+                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-foreground/85">
+                  At your current contribution rate, this cost could reduce long-term wealth by roughly{" "}
+                  <span className="font-semibold">{inrShort(drag.difference)}</span> over {report.projection?.defaultHorizonYears} years compared with a
+                  0.4% low-cost equivalent, holding every other assumption constant.
+                </p>
+              ) : (
+                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-muted-foreground">
+                  This is already at or below the cost of a low-cost index equivalent, so expense drag is not materially reducing your outcome.
+                </p>
+              )}
+            </ChartCard>
+          )}
         </div>
+
+        {holdings.length > 0 && (
+          <details className="group mt-4 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+              Fund &amp; stock intelligence — {holdings.length} {holdings.length === 1 ? "holding" : "holdings"}
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+            </summary>
+            <HoldingsExplorer holdings={holdings} />
+          </details>
+        )}
       </section>
 
-      {/* 5. FUND & STOCK INTELLIGENCE */}
-      {holdings.length > 0 && (
-        <section id="pr-holdings" className="scroll-mt-24">
-          <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Fund & stock intelligence" subtitle="Holding · role · allocation · value. Open one only when you want the detail." />
-          <HoldingsExplorer holdings={holdings} />
+      {/* 5. PEER COMPARISON */}
+      {peer && peer.rows.length > 0 && (
+        <section id="pr-peers" className="scroll-mt-24">
+          <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Peer comparison" subtitle="How your investing behaviour and portfolio structure compare with people at a similar life stage." />
+          <PeerComparison peer={peer} />
         </section>
       )}
 
-      {/* 6. PROJECTION */}
-      {report.projection && report.totalValue > 0 && (
-        <section id="pr-projection" className="scroll-mt-24">
-          <SectionHeading
-            icon={<LineChartIcon className="h-4 w-4 text-primary" />}
-            title="Where could this portfolio take you?"
-            subtitle="Change any assumption and the projection updates instantly. Illustrative scenario — not a forecast."
-          />
-          <ProjectionSection basis={report.projection} />
-        </section>
-      )}
-
-      {/* 7. PORTFOLIO HEALTH */}
-      {diagnostics.length > 0 && (
-        <section id="pr-diagnostics" className="scroll-mt-24">
-          <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Portfolio health" subtitle="Structural checks scored deterministically. Open one for the reasoning." />
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-            {diagnostics.map((d) => <DiagnosticChip key={d.id} d={d} />)}
+      {/* 6. STRESS TEST + HEALTH */}
+      <section id="pr-risk" className="scroll-mt-24">
+        <SectionHeading icon={<AlertTriangle className="h-4 w-4 text-primary" />} title="Risk & portfolio health" subtitle="How this portfolio behaves when markets fall, and where its structure is strong or weak." />
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <ChartCard title="How would your portfolio behave under stress?" note="Hypothetical scenarios applied to today's holdings — not predictions.">
+            <StressScenarios rows={stress} formatValue={formatInr} />
+          </ChartCard>
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+            <h4 className="font-display text-base tracking-tight text-foreground">Portfolio health</h4>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Deterministic NitiCore™ checks. Open one for the reasoning.</p>
+            {diagnostics.length > 0 ? (
+              <div className="mt-5 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
+                {diagnostics.map((d) => <DiagnosticChip key={d.id} d={d} />)}
+              </div>
+            ) : (
+              <p className="mt-5 text-sm text-muted-foreground">Diagnostics not available for this analysis.</p>
+            )}
           </div>
-          {insights.length > 0 && (
-            <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
-                What could hurt you — {insights.length} structural {insights.length === 1 ? "observation" : "observations"}
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
-              </summary>
-              <ul className="mt-4 grid gap-3 lg:grid-cols-2">
-                {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
-              </ul>
-            </details>
-          )}
-        </section>
-      )}
+        </div>
+        {insights.length > 0 && (
+          <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+              What could hurt you — {insights.length} structural {insights.length === 1 ? "observation" : "observations"}
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+            </summary>
+            <ul className="mt-4 grid gap-3 lg:grid-cols-2">
+              {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
+            </ul>
+          </details>
+        )}
+      </section>
 
-      {/* 8. NEXT MOVES */}
+      {/* 7. NEXT MOVES */}
       <section id="pr-actions" className="scroll-mt-24">
-        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your next 3 moves" subtitle="Ordered by what matters most, given your whole financial context." />
+        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your next 3 moves · NitiPath™" subtitle="What to do, why it matters, what happens if you don't — and the least disruptive way to do it." />
         {report.recommendations.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
             No priority actions right now. Revisit after any material change to income, goals or life stage.
@@ -940,7 +989,7 @@ function ReportView({
         )}
       </section>
 
-      {/* 9. NITIGUIDE */}
+      {/* 8. NITIGUIDE */}
       <section id="pr-guide" className="scroll-mt-24">
         {report.mentorSummary ? (
           <GuideBriefing text={report.mentorSummary} />
@@ -962,6 +1011,16 @@ function ReportView({
     </div>
   );
 }
+
+function VerdictNote({ label, body, accent }: { label: string; body: string; accent?: boolean }) {
+  return (
+    <div>
+      <p className={`text-[10px] font-bold uppercase tracking-[0.18em] ${accent ? "text-primary" : "text-muted-foreground"}`}>{label}</p>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-foreground/90">{body}</p>
+    </div>
+  );
+}
+
 
 function GuideBriefing({ text }: { text: string }) {
   const paras = text.split(/\n{2,}/).filter(Boolean);
