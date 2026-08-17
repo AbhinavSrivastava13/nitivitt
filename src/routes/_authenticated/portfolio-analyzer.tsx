@@ -1255,12 +1255,15 @@ function ActionRow({ r, index }: { r: import("@/lib/portfolio-analyzer/types").P
           </div>
           <dl className="mt-4 space-y-2 text-[13px] leading-relaxed">
             <div><dt className="inline font-semibold text-foreground/80">Why. </dt><dd className="inline text-muted-foreground">{r.reason}</dd></div>
-            <div><dt className="inline font-semibold text-foreground/80">Expected benefit. </dt><dd className="inline text-muted-foreground">{r.expectedBenefit}</dd></div>
+            <div><dt className="inline font-semibold text-foreground/80">If you don&rsquo;t. </dt><dd className="inline text-muted-foreground">{r.opportunityCost ?? r.expectedBenefit}</dd></div>
+            {r.nextStep && (
+              <div>
+                <dt className="inline font-semibold text-foreground/80">Least disruptive way. </dt>
+                <dd className="inline text-foreground/90">{r.nextStep}</dd>
+              </div>
+            )}
             {r.tradeOffs.length > 0 && (
               <div><dt className="inline font-semibold text-foreground/80">Trade-offs. </dt><dd className="inline text-muted-foreground">{r.tradeOffs.join(" ")}</dd></div>
-            )}
-            {r.nextStep && (
-              <div><dt className="inline font-semibold text-foreground/80">Next step. </dt><dd className="inline text-foreground/90">{r.nextStep}</dd></div>
             )}
           </dl>
           {r.crossPillarNote && (
@@ -1570,15 +1573,6 @@ function PeerComparison({ peer }: { peer: import("@/lib/portfolio-analyzer/types
   );
 }
 
-
-function ProjStat({ label, value, tone }: { label: string; value: string; tone: "you" | "alt" }) {
-  return (
-    <div className={`rounded-2xl border p-4 ${tone === "you" ? "border-border bg-surface" : "border-primary/25 bg-primary/[0.04]"}`}>
-      <p className="text-[10px] font-semibold uppercase leading-tight tracking-[0.12em] text-muted-foreground">{label}</p>
-      <p className="mt-2 font-display text-xl text-foreground">{value}</p>
-    </div>
-  );
-}
 
 function Slider({
   label, value, min, max, step, current, onChange, hint,
