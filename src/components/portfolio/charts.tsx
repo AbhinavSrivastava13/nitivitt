@@ -12,7 +12,7 @@
  * Colour is semantic and used sparingly. Charts communicate through position,
  * shape, typography and labels first.
  */
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -802,8 +802,8 @@ export function EffectivenessHeatmap({
           </span>
         ))}
         {rows.map((r) => (
-          <>
-            <span key={`l-${r}`} className="flex items-center pr-3 text-right text-[11px] font-medium text-muted-foreground">
+          <Fragment key={`row-${r}`}>
+            <span className="flex items-center pr-3 text-right text-[11px] font-medium text-muted-foreground">
               {r}% step-up
             </span>
             {columns.map((c) => {
@@ -823,7 +823,7 @@ export function EffectivenessHeatmap({
                 </button>
               );
             })}
-          </>
+          </Fragment>
         ))}
       </div>
     </div>
