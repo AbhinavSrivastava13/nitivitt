@@ -87,7 +87,15 @@ export function computeEffectiveness(
     contributed += plan.monthlySip * 12 * Math.pow(1 + plan.stepUpPct / 100, y);
   }
 
-  return { score, projected, reference, fundingPct, structure, returnPct, contributed: Math.round(contributed) };
+  return {
+    score,
+    projected,
+    reference,
+    fundingPct,
+    structure,
+    returnPct,
+    contributed: Math.round(contributed),
+  };
 }
 
 export const STEP_UP_ROWS = [0, 5, 10, 15];
@@ -107,7 +115,11 @@ export function effectivenessGrid(
   const out: HeatCell[] = [];
   for (const stepUp of STEP_UP_ROWS) {
     for (const s of SCENARIOS) {
-      const r = computeEffectiveness(basis, diagnostics, { ...plan, stepUpPct: stepUp, scenario: s.key });
+      const r = computeEffectiveness(basis, diagnostics, {
+        ...plan,
+        stepUpPct: stepUp,
+        scenario: s.key,
+      });
       out.push({ stepUp, scenario: s.key, score: r.score, projected: r.projected });
     }
   }
@@ -195,9 +207,24 @@ export interface StressScenario {
 
 export function stressScenarios(totalValue: number, equityValue: number): StressScenario[] {
   const rows: { label: string; detail: string; base: number; drop: number }[] = [
-    { label: "Broad market −10%", detail: "A routine correction — these happen most years.", base: totalValue, drop: 0.1 },
-    { label: "Equity −20%", detail: "A cyclical bear market affecting your equity sleeve.", base: equityValue, drop: 0.2 },
-    { label: "Equity −30%", detail: "A severe drawdown, comparable with 2008 or March 2020.", base: equityValue, drop: 0.3 },
+    {
+      label: "Broad market −10%",
+      detail: "A routine correction — these happen most years.",
+      base: totalValue,
+      drop: 0.1,
+    },
+    {
+      label: "Equity −20%",
+      detail: "A cyclical bear market affecting your equity sleeve.",
+      base: equityValue,
+      drop: 0.2,
+    },
+    {
+      label: "Equity −30%",
+      detail: "A severe drawdown, comparable with 2008 or March 2020.",
+      base: equityValue,
+      drop: 0.3,
+    },
   ];
   return rows.map((r) => {
     const impact = Math.round(r.base * r.drop);

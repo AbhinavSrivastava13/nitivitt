@@ -3,22 +3,63 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  ArrowLeft, ArrowRight, CheckCircle2, Info, Loader2, Plus,
-  RefreshCw, Sparkles, Trash2, TrendingUp, Upload, AlertTriangle,
-  ShieldCheck, Target, Layers, PieChart, Gauge as GaugeIcon,
-  LineChart as LineChartIcon,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Info,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  Trash2,
+  TrendingUp,
+  Upload,
+  AlertTriangle,
+  ShieldCheck,
+  Target,
+  Layers,
+  Gauge as GaugeIcon,
 } from "lucide-react";
 import { AnalysisSequence } from "@/components/analysis-sequence";
 import { PageShell } from "@/components/page-shell";
 import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
 import {
-  ComparisonTracks, ExposureOverlap, AllocationDonut, ConcentrationLadder, StackedComposition, SectorTreemap,
-  MiniMeter, ProjectionChart, SERIES_COLORS, type ExposureGroup,
+  ComparisonTracks,
+  ExposureOverlap,
+  AllocationDonut,
+  ConcentrationLadder,
+  StackedComposition,
+  SectorTreemap,
+  MiniMeter,
+  ProjectionChart,
+  SERIES_COLORS,
+  EffectivenessDial,
+  EffectivenessHeatmap,
+  StressScenarios,
+  PeerRails,
+  type ExposureGroup,
 } from "@/components/portfolio/charts";
-import { buildProjectionSeries, projectValue, projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
+import {
+  SCENARIOS,
+  computeEffectiveness,
+  effectivenessGrid,
+  highestImpactLever,
+  scenarioReturn,
+  detectOverlap,
+  blendedCostFromDiagnostics,
+  costDrag,
+  stressScenarios,
+  STEP_UP_ROWS,
+  type ScenarioKey,
+} from "@/lib/portfolio-analyzer/effectiveness";
+import {
+  buildProjectionSeries,
+  projectValue,
+  projectionGuidance,
+  inrShort,
+} from "@/lib/portfolio-analyzer/projection";
 import type { ProjectionBasis } from "@/lib/portfolio-analyzer/types";
-
 
 import {
   extractPortfolioFromScreenshots,
@@ -38,14 +79,14 @@ import {
 import { formatInr } from "@/lib/portfolio-analyzer/engine";
 import { derivePortfolioRating, ratingClasses } from "@/lib/ratings";
 
-
 export const Route = createFileRoute("/_authenticated/portfolio-analyzer")({
   head: () => ({
     meta: [
       { title: "NitiInvest™ — Portfolio Analyzer — NitiVitt" },
       {
         name: "description",
-        content: "Upload broker screenshots. NitiInvest™ scores your portfolio deterministically and grounds every observation in your NitiCore™ context.",
+        content:
+          "Upload broker screenshots. NitiInvest™ scores your portfolio deterministically and grounds every observation in your NitiCore™ context.",
       },
     ],
   }),
@@ -81,7 +122,9 @@ function PortfolioAnalyzerPage() {
           <UploadFlow
             replaceId={view.replaceId}
             onCancel={() => setView({ kind: "workspace" })}
-            onExtracted={(holdings, platform, name) => setView({ kind: "confirm", holdings, platform, name, replaceId: view.replaceId })}
+            onExtracted={(holdings, platform, name) =>
+              setView({ kind: "confirm", holdings, platform, name, replaceId: view.replaceId })
+            }
           />
         )}
         {view.kind === "confirm" && (
@@ -108,7 +151,9 @@ function PortfolioAnalyzerPage() {
 // ─────────────────────────── WORKSPACE ──────────────────────────
 
 function Workspace({
-  onAnalyzeNew, onOpenSaved, onReplaceStart,
+  onAnalyzeNew,
+  onOpenSaved,
+  onReplaceStart,
 }: {
   onAnalyzeNew: () => void;
   onOpenSaved: (id: string) => void;
@@ -147,9 +192,14 @@ function Workspace({
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-6 shadow-soft">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">NitiInvest™ workspace</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-secondary">
+            NitiInvest™ workspace
+          </p>
           <h2 className="mt-1 font-display text-2xl text-foreground">Your portfolios</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Upload one screenshot or several. Everything you save shows up here for later re-analysis.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Upload one screenshot or several. Everything you save shows up here for later
+            re-analysis.
+          </p>
         </div>
         <button
           onClick={onAnalyzeNew}
@@ -169,9 +219,13 @@ function Workspace({
           <TrendingUp className="mx-auto h-8 w-8 text-primary" />
           <h3 className="mt-3 font-display text-xl text-foreground">No portfolios yet</h3>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Take a screenshot of your holdings on Groww, Zerodha, INDmoney or any broker and drop it here. NitiInvest™ handles the rest.
+            Take a screenshot of your holdings on Groww, Zerodha, INDmoney or any broker and drop it
+            here. NitiInvest™ handles the rest.
           </p>
-          <button onClick={onAnalyzeNew} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90">
+          <button
+            onClick={onAnalyzeNew}
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-soft hover:bg-primary/90"
+          >
             <Upload className="h-4 w-4" /> Upload screenshots
           </button>
         </div>
@@ -188,7 +242,9 @@ function Workspace({
                 </div>
                 <RatingPill score={a.portfolioScore} />
                 {a.isPrimary && (
-                  <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success">My portfolio</span>
+                  <span className="rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success">
+                    My portfolio
+                  </span>
                 )}
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
@@ -199,13 +255,22 @@ function Workspace({
                 Last reviewed {new Date(a.lastReviewedAt).toLocaleDateString("en-IN")}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <button onClick={() => onOpenSaved(a.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90">
+                <button
+                  onClick={() => onOpenSaved(a.id)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90"
+                >
                   Open <ArrowRight className="h-3.5 w-3.5" />
                 </button>
-                <button onClick={() => onReplaceStart(a.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted">
+                <button
+                  onClick={() => onReplaceStart(a.id)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
+                >
                   <RefreshCw className="h-3.5 w-3.5" /> Replace
                 </button>
-                <button onClick={() => onDelete(a.id, a.name)} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10">
+                <button
+                  onClick={() => onDelete(a.id, a.name)}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10"
+                >
                   <Trash2 className="h-3.5 w-3.5" /> Delete
                 </button>
               </div>
@@ -220,7 +285,9 @@ function Workspace({
 // ─────────────────────────── UPLOAD ─────────────────────────────
 
 function UploadFlow({
-  replaceId, onCancel, onExtracted,
+  replaceId,
+  onCancel,
+  onExtracted,
 }: {
   replaceId?: string;
   onCancel: () => void;
@@ -236,7 +303,9 @@ function UploadFlow({
 
   function onSelect(list: FileList | null) {
     if (!list) return;
-    const arr = Array.from(list).filter((f) => f.type.startsWith("image/") && f.size <= 10 * 1024 * 1024);
+    const arr = Array.from(list).filter(
+      (f) => f.type.startsWith("image/") && f.size <= 10 * 1024 * 1024,
+    );
     if (arr.length + files.length > 8) {
       toast.error("Maximum 8 screenshots per upload.");
       return;
@@ -252,11 +321,13 @@ function UploadFlow({
     setBusy(true);
     setNote(null);
     try {
-      const screenshots = await Promise.all(files.map(async (f) => ({
-        fileName: f.name,
-        fileMime: f.type,
-        fileBase64: await fileToBase64(f),
-      })));
+      const screenshots = await Promise.all(
+        files.map(async (f) => ({
+          fileName: f.name,
+          fileMime: f.type,
+          fileBase64: await fileToBase64(f),
+        })),
+      );
       const res = await extractFn({ data: { platform, screenshots } });
       if (res.holdings.length === 0) {
         setNote(res.note ?? "Nothing was extracted. Add holdings manually on the next step.");
@@ -279,7 +350,10 @@ function UploadFlow({
   return (
     <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-soft">
       <div className="flex items-center gap-3">
-        <button onClick={onCancel} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
+        <button
+          onClick={onCancel}
+          className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary"
+        >
           <ArrowLeft className="h-3.5 w-3.5" /> Back
         </button>
         <span className="text-[11px] font-semibold uppercase tracking-wider text-secondary">
@@ -288,26 +362,49 @@ function UploadFlow({
       </div>
       <div>
         <h2 className="font-display text-2xl text-foreground">Add your holdings</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Upload one or more screenshots from your broker or tracker. NitiInvest™ never stores the images — only the extracted holdings.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Upload one or more screenshots from your broker or tracker. NitiInvest™ never stores the
+          images — only the extracted holdings.
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Platform</span>
-          <select value={platform} onChange={(e) => setPlatform(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm">
-            {PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Platform
+          </span>
+          <select
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          >
+            {PLATFORMS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
           </select>
         </label>
         <label className="block">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Portfolio name (optional)</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Long-term SIPs" className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Portfolio name (optional)
+          </span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Long-term SIPs"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          />
         </label>
       </div>
 
       <div
         className="rounded-xl border-2 border-dashed border-border bg-surface p-8 text-center"
         onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => { e.preventDefault(); onSelect(e.dataTransfer.files); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          onSelect(e.dataTransfer.files);
+        }}
       >
         <Upload className="mx-auto h-6 w-6 text-primary" />
         <p className="mt-2 text-sm font-semibold text-foreground">Drop screenshots or</p>
@@ -318,14 +415,31 @@ function UploadFlow({
         >
           Choose images
         </button>
-        <input ref={inputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => onSelect(e.target.files)} />
-        <p className="mt-2 text-[11px] text-muted-foreground">PNG or JPG · up to 8 files · 10 MB each</p>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => onSelect(e.target.files)}
+        />
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          PNG or JPG · up to 8 files · 10 MB each
+        </p>
         {files.length > 0 && (
           <ul className="mt-4 space-y-1 text-left text-xs text-muted-foreground">
             {files.map((f, i) => (
-              <li key={i} className="flex items-center justify-between rounded-lg bg-background px-3 py-1.5">
+              <li
+                key={i}
+                className="flex items-center justify-between rounded-lg bg-background px-3 py-1.5"
+              >
                 <span className="truncate">{f.name}</span>
-                <button onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))} className="text-destructive">Remove</button>
+                <button
+                  onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-destructive"
+                >
+                  Remove
+                </button>
               </li>
             ))}
           </ul>
@@ -339,11 +453,18 @@ function UploadFlow({
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        <button disabled={busy || files.length === 0} onClick={onExtract} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
+        <button
+          disabled={busy || files.length === 0}
+          onClick={onExtract}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
           {busy ? "Extracting…" : "Extract holdings with AI"}
         </button>
-        <button onClick={skipToManual} className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
+        <button
+          onClick={skipToManual}
+          className="text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary"
+        >
           Skip and add manually
         </button>
       </div>
@@ -362,12 +483,29 @@ async function fileToBase64(f: File): Promise<string> {
 // ─────────────────────────── CONFIRM ────────────────────────────
 
 const ASSET_CLASSES: AssetClass[] = [
-  "equity_stock","equity_mf","index_fund","etf","debt_mf","hybrid_mf",
-  "gold_etf","sgb","reit","invit","bond","fd","cash","other",
+  "equity_stock",
+  "equity_mf",
+  "index_fund",
+  "etf",
+  "debt_mf",
+  "hybrid_mf",
+  "gold_etf",
+  "sgb",
+  "reit",
+  "invit",
+  "bond",
+  "fd",
+  "cash",
+  "other",
 ];
 
 function ConfirmFlow({
-  initialHoldings, platform, name, replaceId, onBack, onDone,
+  initialHoldings,
+  platform,
+  name,
+  replaceId,
+  onBack,
+  onDone,
 }: {
   initialHoldings: Holding[];
   platform: string;
@@ -378,18 +516,28 @@ function ConfirmFlow({
 }) {
   const analyzeFn = useServerFn(analyzePortfolio);
   const qc = useQueryClient();
-  const [rows, setRows] = useState<Holding[]>(initialHoldings.length ? initialHoldings : [emptyHolding()]);
+  const [rows, setRows] = useState<Holding[]>(
+    initialHoldings.length ? initialHoldings : [emptyHolding()],
+  );
   const [busy, setBusy] = useState(false);
   const [isPrimary, setIsPrimary] = useState(true);
 
   function update(i: number, patch: Partial<Holding>) {
     setRows((prev) => prev.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   }
-  function addRow() { setRows((prev) => [...prev, emptyHolding()]); }
-  function removeRow(i: number) { setRows((prev) => prev.filter((_, j) => j !== i)); }
+  function addRow() {
+    setRows((prev) => [...prev, emptyHolding()]);
+  }
+  function removeRow(i: number) {
+    setRows((prev) => prev.filter((_, j) => j !== i));
+  }
 
   const totalPreview = useMemo(
-    () => rows.reduce((a, h) => a + Number(h.currentValue ?? (Number(h.units ?? 0) * Number(h.currentPrice ?? 0))), 0),
+    () =>
+      rows.reduce(
+        (a, h) => a + Number(h.currentValue ?? Number(h.units ?? 0) * Number(h.currentPrice ?? 0)),
+        0,
+      ),
     [rows],
   );
 
@@ -428,7 +576,9 @@ function ConfirmFlow({
     <>
       {busy && (
         <AnalysisSequence
-          onComplete={() => { /* deterministic sequence — final state controlled by RPC */ }}
+          onComplete={() => {
+            /* deterministic sequence — final state controlled by RPC */
+          }}
           stepDurationMs={520}
           title="Building your portfolio report"
           subtitle="NitiInvest™ is analyzing your holdings and grounding every finding in your NitiCore™ context."
@@ -445,107 +595,165 @@ function ConfirmFlow({
         />
       )}
 
-    <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-soft">
-      <div className="flex items-center gap-3">
-        <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back
-        </button>
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Step 2 of 2 · Confirm</span>
-      </div>
-      <div>
-        <h2 className="font-display text-2xl text-foreground">Review extracted holdings</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          NitiInvest™ shows exactly what it saw. Correct anything that looks wrong — extraction never invents values.
-        </p>
-      </div>
-
-      <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead className="bg-surface text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="px-3 py-2 text-left">Holding</th>
-              <th className="px-3 py-2 text-left">Class</th>
-              <th className="px-3 py-2 text-right">Units</th>
-              <th className="px-3 py-2 text-right">Current price</th>
-              <th className="px-3 py-2 text-right">Current value</th>
-              <th className="px-3 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((h, i) => {
-              const lowConf = h.lowConfidenceFields ?? [];
-              return (
-                <tr key={i} className="border-t border-border">
-                  <td className="px-3 py-2">
-                    <input value={h.name} onChange={(e) => update(i, { name: e.target.value })} className="w-full rounded-md border border-border bg-background px-2 py-1 text-sm" placeholder="e.g. HDFC Flexi Cap" />
-                    {lowConf.length > 0 && (
-                      <p className="mt-1 flex items-center gap-1 text-[10px] text-warning">
-                        <AlertTriangle className="h-3 w-3" /> Low confidence: {lowConf.join(", ")}
-                      </p>
-                    )}
-                  </td>
-                  <td className="px-3 py-2">
-                    <select value={h.assetClass} onChange={(e) => update(i, { assetClass: e.target.value as AssetClass })} className="w-full rounded-md border border-border bg-background px-2 py-1 text-sm">
-                      {ASSET_CLASSES.map((c) => <option key={c} value={c}>{ASSET_CLASS_LABEL[c]}</option>)}
-                    </select>
-                  </td>
-                  <td className="px-3 py-2">
-                    <input inputMode="decimal" value={h.units ?? ""} onChange={(e) => update(i, { units: e.target.value === "" ? null : Number(e.target.value) })} className="w-24 rounded-md border border-border bg-background px-2 py-1 text-right text-sm" />
-                  </td>
-                  <td className="px-3 py-2">
-                    <input inputMode="decimal" value={h.currentPrice ?? ""} onChange={(e) => update(i, { currentPrice: e.target.value === "" ? null : Number(e.target.value) })} className="w-24 rounded-md border border-border bg-background px-2 py-1 text-right text-sm" />
-                  </td>
-                  <td className="px-3 py-2">
-                    <input inputMode="decimal" value={h.currentValue ?? ""} onChange={(e) => update(i, { currentValue: e.target.value === "" ? null : Number(e.target.value) })} className="w-28 rounded-md border border-border bg-background px-2 py-1 text-right text-sm" />
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    <button onClick={() => removeRow(i)} className="text-destructive"><Trash2 className="h-4 w-4" /></button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <button onClick={addRow} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted">
-          <Plus className="h-3.5 w-3.5" /> Add holding
-        </button>
-        <p className="text-xs text-muted-foreground">
-          Preview total: <span className="font-semibold text-foreground">{formatInr(totalPreview)}</span>
-        </p>
-      </div>
-
-      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-4">
-        <input
-          type="checkbox"
-          checked={isPrimary}
-          onChange={(e) => setIsPrimary(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-border accent-[hsl(var(--primary))]"
-        />
-        <span>
-          <span className="text-sm font-semibold text-foreground">This is my portfolio</span>
-          <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
-            Link these holdings to your NitiCore™ profile so your investment total, net worth and recommendations across NitiVitt reflect them. Leave unticked to analyse someone else&rsquo;s portfolio or run a what-if without changing your financial picture.
+      <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-soft">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onBack}
+            className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back
+          </button>
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-secondary">
+            Step 2 of 2 · Confirm
           </span>
-        </span>
-      </label>
+        </div>
+        <div>
+          <h2 className="font-display text-2xl text-foreground">Review extracted holdings</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            NitiInvest™ shows exactly what it saw. Correct anything that looks wrong — extraction
+            never invents values.
+          </p>
+        </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button disabled={busy} onClick={onAnalyze} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
-          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-          {busy ? "Analyzing…" : "Analyze portfolio"}
-        </button>
-        <p className="text-[11px] text-muted-foreground">
-          Analysis uses NitiCore™ deterministically. AI only narrates — it never picks stocks or funds.
-        </p>
+        <div className="overflow-x-auto rounded-xl border border-border">
+          <table className="w-full min-w-[720px] text-sm">
+            <thead className="bg-surface text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-3 py-2 text-left">Holding</th>
+                <th className="px-3 py-2 text-left">Class</th>
+                <th className="px-3 py-2 text-right">Units</th>
+                <th className="px-3 py-2 text-right">Current price</th>
+                <th className="px-3 py-2 text-right">Current value</th>
+                <th className="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((h, i) => {
+                const lowConf = h.lowConfidenceFields ?? [];
+                return (
+                  <tr key={i} className="border-t border-border">
+                    <td className="px-3 py-2">
+                      <input
+                        value={h.name}
+                        onChange={(e) => update(i, { name: e.target.value })}
+                        className="w-full rounded-md border border-border bg-background px-2 py-1 text-sm"
+                        placeholder="e.g. HDFC Flexi Cap"
+                      />
+                      {lowConf.length > 0 && (
+                        <p className="mt-1 flex items-center gap-1 text-[10px] text-warning">
+                          <AlertTriangle className="h-3 w-3" /> Low confidence: {lowConf.join(", ")}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-3 py-2">
+                      <select
+                        value={h.assetClass}
+                        onChange={(e) => update(i, { assetClass: e.target.value as AssetClass })}
+                        className="w-full rounded-md border border-border bg-background px-2 py-1 text-sm"
+                      >
+                        {ASSET_CLASSES.map((c) => (
+                          <option key={c} value={c}>
+                            {ASSET_CLASS_LABEL[c]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        inputMode="decimal"
+                        value={h.units ?? ""}
+                        onChange={(e) =>
+                          update(i, {
+                            units: e.target.value === "" ? null : Number(e.target.value),
+                          })
+                        }
+                        className="w-24 rounded-md border border-border bg-background px-2 py-1 text-right text-sm"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        inputMode="decimal"
+                        value={h.currentPrice ?? ""}
+                        onChange={(e) =>
+                          update(i, {
+                            currentPrice: e.target.value === "" ? null : Number(e.target.value),
+                          })
+                        }
+                        className="w-24 rounded-md border border-border bg-background px-2 py-1 text-right text-sm"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        inputMode="decimal"
+                        value={h.currentValue ?? ""}
+                        onChange={(e) =>
+                          update(i, {
+                            currentValue: e.target.value === "" ? null : Number(e.target.value),
+                          })
+                        }
+                        className="w-28 rounded-md border border-border bg-background px-2 py-1 text-right text-sm"
+                      />
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      <button onClick={() => removeRow(i)} className="text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            onClick={addRow}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted"
+          >
+            <Plus className="h-3.5 w-3.5" /> Add holding
+          </button>
+          <p className="text-xs text-muted-foreground">
+            Preview total:{" "}
+            <span className="font-semibold text-foreground">{formatInr(totalPreview)}</span>
+          </p>
+        </div>
+
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border bg-surface p-4">
+          <input
+            type="checkbox"
+            checked={isPrimary}
+            onChange={(e) => setIsPrimary(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-border accent-[hsl(var(--primary))]"
+          />
+          <span>
+            <span className="text-sm font-semibold text-foreground">This is my portfolio</span>
+            <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+              Link these holdings to your NitiCore™ profile so your investment total, net worth and
+              recommendations across NitiVitt reflect them. Leave unticked to analyse someone
+              else&rsquo;s portfolio or run a what-if without changing your financial picture.
+            </span>
+          </span>
+        </label>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            disabled={busy}
+            onClick={onAnalyze}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {busy ? "Analyzing…" : "Analyze portfolio"}
+          </button>
+          <p className="text-[11px] text-muted-foreground">
+            Analysis uses NitiCore™ deterministically. AI only narrates — it never picks stocks or
+            funds.
+          </p>
+        </div>
       </div>
-    </div>
     </>
   );
 }
-
 
 // ─────────────────────────── SAVED ───────────────────────────
 
@@ -566,25 +774,34 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
     return (
       <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-soft">
         <p className="text-sm text-muted-foreground">Portfolio not found.</p>
-        <button onClick={onBack} className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground">
+        <button
+          onClick={onBack}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+        >
           <ArrowLeft className="h-3.5 w-3.5" /> Back
         </button>
       </div>
     );
   }
-  return <ReportView report={data.analysis.report} onBack={onBack} title={data.analysis.name} lastReviewedAt={data.analysis.lastReviewedAt ?? data.analysis.createdAt} />;
+  return (
+    <ReportView
+      report={data.analysis.report}
+      onBack={onBack}
+      title={data.analysis.name}
+      lastReviewedAt={data.analysis.lastReviewedAt ?? data.analysis.createdAt}
+    />
+  );
 }
 
 // ─────────────────────────── REPORT ───────────────────────────
 
 const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "verdict", label: "Verdict" },
-  { id: "profile", label: "You vs profile" },
-  { id: "drivers", label: "What's driving it" },
-  { id: "allocation", label: "Allocation" },
-  { id: "holdings", label: "Holdings" },
-  { id: "projection", label: "Projection" },
-  { id: "diagnostics", label: "Health" },
+  { id: "profile", label: "You vs NitiCore™" },
+  { id: "effectiveness", label: "Effectiveness" },
+  { id: "xray", label: "X-Ray" },
+  { id: "peers", label: "Peers" },
+  { id: "risk", label: "Risk & health" },
   { id: "actions", label: "Next moves" },
   { id: "guide", label: "NitiGuide™" },
 ];
@@ -593,11 +810,15 @@ const SECTION_STEPS: { id: string; label: string }[] = [
 function useActiveSection(ids: string[]) {
   const [active, setActive] = useState(ids[0]);
   useEffect(() => {
-    const els = ids.map((id) => document.getElementById(`pr-${id}`)).filter(Boolean) as HTMLElement[];
+    const els = ids
+      .map((id) => document.getElementById(`pr-${id}`))
+      .filter(Boolean) as HTMLElement[];
     if (els.length === 0) return;
     const io = new IntersectionObserver(
       (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
         if (visible[0]) setActive(visible[0].target.id.replace("pr-", ""));
       },
       { rootMargin: "-96px 0px -65% 0px", threshold: 0 },
@@ -610,7 +831,10 @@ function useActiveSection(ids: string[]) {
 
 /* ─────────── exposure grouping (deterministic, no invented data) ─────────── */
 
-function factValue(facts: { label: string; value: string }[] | undefined, re: RegExp): string | null {
+function factValue(
+  facts: { label: string; value: string }[] | undefined,
+  re: RegExp,
+): string | null {
   const f = facts?.find((x) => re.test(x.label));
   const v = f?.value?.trim();
   if (!v || /^(not available|unknown|n\/a|—)$/i.test(v)) return null;
@@ -625,12 +849,20 @@ function exposureFamily(
   const n = name.toLowerCase();
   if (assetClass === "gold_etf" || assetClass === "sgb" || /gold|sgb/.test(n)) return "Gold";
   if (/nifty\s?50|nifty50|niftybees|sensex|nifty bees/.test(n)) return "Nifty 50 / large-cap index";
-  if (/(next\s?50|junior|midcap|mid cap|smallcap|small cap)/.test(n) && /(index|etf|bees|fund)/.test(n)) {
+  if (
+    /(next\s?50|junior|midcap|mid cap|smallcap|small cap)/.test(n) &&
+    /(index|etf|bees|fund)/.test(n)
+  ) {
     return "Mid & small-cap index";
   }
   if (/bank\s?bees|nifty bank|banking index/.test(n)) return "Banking index";
   if (assetClass === "index_fund" || assetClass === "etf") return "Other index exposure";
-  if (assetClass === "debt_mf" || assetClass === "bond" || assetClass === "fd" || assetClass === "cash") {
+  if (
+    assetClass === "debt_mf" ||
+    assetClass === "bond" ||
+    assetClass === "fd" ||
+    assetClass === "cash"
+  ) {
     return "Debt & cash";
   }
   if (assetClass === "hybrid_mf") return "Hybrid funds";
@@ -649,7 +881,13 @@ function exposureFamily(
 function buildExposureGroups(report: PortfolioReport): ExposureGroup[] {
   const intel = report.holdingIntelligence ?? [];
   const rows = intel.length
-    ? intel.map((h) => ({ name: h.name, pct: h.pct, value: h.value, assetClass: h.assetClass, facts: h.facts }))
+    ? intel.map((h) => ({
+        name: h.name,
+        pct: h.pct,
+        value: h.value,
+        assetClass: h.assetClass,
+        facts: h.facts,
+      }))
     : report.topHoldings.map((h) => ({
         name: h.name,
         pct: h.pct,
@@ -676,7 +914,10 @@ function buildExposureGroups(report: PortfolioReport): ExposureGroup[] {
 }
 
 function ReportView({
-  report, onBack, title, lastReviewedAt,
+  report,
+  onBack,
+  title,
+  lastReviewedAt,
 }: {
   report: PortfolioReport;
   onBack: () => void;
@@ -696,21 +937,45 @@ function ReportView({
   const reviewed = lastReviewedAt ? new Date(lastReviewedAt) : new Date();
   const equitySleeve = report.allocation.byMarketCap.reduce((a, s) => a + s.value, 0);
   const exposure = useMemo(() => buildExposureGroups(report), [report]);
+  const overlap = useMemo(() => detectOverlap(exposure), [exposure]);
   const largest = report.topHoldings[0];
   const peerLargest = peer?.rows.find((r) => /largest holding/i.test(r.label));
   const peerHoldings = peer?.rows.find((r) => /number of holdings/i.test(r.label));
+  const equityValue = report.allocation.byAssetClass
+    .filter((s) => /equity|index|etf|hybrid/i.test(s.label))
+    .reduce((a, s) => a + s.value, 0);
+  const stress = useMemo(
+    () => stressScenarios(report.totalValue, equityValue || report.totalValue),
+    [report.totalValue, equityValue],
+  );
+  const blendedCost = useMemo(() => blendedCostFromDiagnostics(diagnostics), [diagnostics]);
+  const drag = useMemo(
+    () =>
+      report.projection && blendedCost != null
+        ? costDrag(report.projection, blendedCost, 0.4, report.projection.defaultHorizonYears)
+        : null,
+    [report.projection, blendedCost],
+  );
 
   const sectionIds = useMemo(() => SECTION_STEPS.map((s) => s.id), []);
   const activeSection = useActiveSection(sectionIds);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <button onClick={onBack} className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-primary"
+        >
           <ArrowLeft className="h-3.5 w-3.5" /> Back to workspace
         </button>
         <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
-          {title ? `${title} · ` : ""}Reviewed {reviewed.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+          {title ? `${title} · ` : ""}Reviewed{" "}
+          {reviewed.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
         </p>
       </div>
 
@@ -721,7 +986,9 @@ function ReportView({
               <a
                 href={`#pr-${s.id}`}
                 className={`inline-block rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
-                  activeSection === s.id ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground"
+                  activeSection === s.id
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {s.label}
@@ -733,13 +1000,19 @@ function ReportView({
 
       {/* 1. VERDICT */}
       <section id="pr-verdict" className="scroll-mt-24">
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
-          <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:gap-10">
+        <div className="rounded-3xl border border-border bg-card px-6 py-7 shadow-soft md:px-9 md:py-8">
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
             <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Portfolio verdict</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Portfolio verdict
+              </p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
-                <h2 className="font-display text-[2rem] leading-none tracking-tight text-foreground">{rating.label}</h2>
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${tone.bg} ${tone.text}`}>
+                <h2 className="font-display text-[2.1rem] leading-none tracking-tight text-foreground">
+                  {rating.label}
+                </h2>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${tone.bg} ${tone.text}`}
+                >
                   Grade {rating.grade}
                 </span>
                 {report.isPrimary && (
@@ -748,54 +1021,85 @@ function ReportView({
                   </span>
                 )}
               </div>
-              <p className="mt-4 max-w-2xl text-[15px] leading-[1.6] text-foreground/90">
-                {hero?.verdict ?? execSummary}
-              </p>
             </div>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-4 self-start rounded-2xl bg-surface/70 px-5 py-4 md:grid-cols-1 md:gap-y-3.5">
-              <div>
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Portfolio value</dt>
-                <dd className="mt-1 font-display text-2xl leading-none text-foreground">{snapshot?.valueLabel ?? formatInr(report.totalValue)}</dd>
-              </div>
-              <div>
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Holdings · style</dt>
-                <dd className="mt-1 text-[13px] font-medium text-foreground">
-                  {report.holdingCount} holdings{snapshot?.style ? ` · ${snapshot.style}` : ""}
-                </dd>
-              </div>
-              <div className="col-span-2 md:col-span-1">
-                <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Largest position</dt>
-                <dd className="mt-1 truncate text-[13px] font-medium text-foreground">
-                  {largest ? `${largest.name} · ${largest.pct}%` : "—"}
-                </dd>
-              </div>
-            </dl>
+            <p className="font-mono text-[12.5px] tabular-nums text-muted-foreground">
+              <span className="font-display text-2xl not-italic tracking-tight text-foreground">
+                {snapshot?.valueLabel ?? formatInr(report.totalValue)}
+              </span>
+              <span className="px-2">·</span>
+              {report.holdingCount} holdings
+              {snapshot?.style ? (
+                <>
+                  <span className="px-2">·</span>
+                  {snapshot.style}
+                </>
+              ) : null}
+            </p>
           </div>
 
-          <div className="mt-6 grid gap-3 border-t border-border/70 pt-5 sm:grid-cols-3">
-            <InsightTile tone="good" label="Strength" body={report.biggestStrength ?? report.strengths[0]?.title ?? "Being invested and consistent."} />
-            <InsightTile tone="risk" label="Risk" body={report.largestRisk ?? report.gaps[0]?.title ?? "Nothing material flagged."} />
-            <InsightTile tone="act" label="Priority" body={report.recommendations[0]?.title ?? "Keep contributing and review in six months."} />
+          <p className="mt-5 max-w-3xl text-[15px] leading-[1.65] text-foreground/90">
+            {hero?.verdict ?? execSummary}
+          </p>
+
+          <div className="mt-6 grid gap-x-10 gap-y-5 border-t border-border/70 pt-6 md:grid-cols-3">
+            <VerdictNote
+              label="What's working"
+              body={
+                report.biggestStrength ??
+                report.strengths[0]?.title ??
+                "You are invested and contributing consistently."
+              }
+            />
+            <VerdictNote
+              label="What's holding you back"
+              body={
+                report.largestRisk ??
+                (largest
+                  ? `${largest.name} represents ${largest.pct}% of the portfolio.`
+                  : (report.gaps[0]?.title ?? "Nothing material flagged."))
+              }
+            />
+            <VerdictNote
+              label="Highest-impact move"
+              body={
+                report.recommendations[0]?.title ?? "Keep contributing and review in six months."
+              }
+              accent
+            />
           </div>
         </div>
       </section>
 
-      {/* 2. YOU VS YOUR PROFILE */}
+      {/* 2. YOU VS NITICORE */}
       {alloc.length > 0 && (
         <section id="pr-profile" className="scroll-mt-24">
-          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your portfolio vs your financial profile" subtitle="Where your money sits today, against what NitiCore™ would hold for your age, horizon and risk profile." />
+          <SectionHeading
+            icon={<Target className="h-4 w-4 text-primary" />}
+            title="Your portfolio vs NitiCore™"
+            subtitle="Where your money sits today, against what NitiCore™ would hold for your age, horizon and risk profile."
+          />
           <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
             <ComparisonTracks
               rows={alloc.map((r) => ({ label: r.label, you: r.you, recommended: r.recommended }))}
               peerNote={
                 <span className="flex flex-wrap gap-x-5 gap-y-1">
                   {largest && peerLargest && (
-                    <span>Largest holding <span className="font-semibold text-foreground">{largest.pct}%</span> · typical cohort {peerLargest.typical}%</span>
+                    <span>
+                      Largest holding{" "}
+                      <span className="font-semibold text-foreground">{largest.pct}%</span> ·
+                      typical cohort {peerLargest.typical}%
+                    </span>
                   )}
                   {peerHoldings && (
-                    <span>Holdings <span className="font-semibold text-foreground">{report.holdingCount}</span> · typical cohort {peerHoldings.typical}</span>
+                    <span>
+                      Holdings{" "}
+                      <span className="font-semibold text-foreground">{report.holdingCount}</span> ·
+                      typical cohort {peerHoldings.typical}
+                    </span>
                   )}
-                  <span>A gap only matters when it conflicts with your horizon.</span>
+                  <span>
+                    A gap matters only when it conflicts with your age, horizon and risk profile.
+                  </span>
                 </span>
               }
             />
@@ -803,32 +1107,80 @@ function ReportView({
         </section>
       )}
 
-      {/* 3. WHAT'S DRIVING THE PORTFOLIO */}
-      <section id="pr-drivers" className="scroll-mt-24">
-        <SectionHeading icon={<Layers className="h-4 w-4 text-primary" />} title="What&rsquo;s really driving your portfolio?" subtitle="Holdings collapsed into the exposure they actually share — because holdings and diversification are not the same thing." />
-        <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
-          <ExposureOverlap
-            groups={exposure}
-            formatValue={formatInr}
-            empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
+      {/* 3. PORTFOLIO EFFECTIVENESS */}
+      {report.projection && report.totalValue > 0 && (
+        <section id="pr-effectiveness" className="scroll-mt-24">
+          <SectionHeading
+            icon={<GaugeIcon className="h-4 w-4 text-primary" />}
+            title="Portfolio effectiveness"
+            subtitle="See how today's decisions change your future. Illustrative scenarios built on NitiCore™ assumptions — never a forecast."
           />
-          {exposure.length > 0 && (
-            <p className="mt-4 border-t border-border/70 pt-3 text-[12px] leading-relaxed text-foreground/85">
-              {report.holdingCount} holdings resolve into{" "}
-              <span className="font-semibold">{exposure.length} distinct exposure {exposure.length === 1 ? "family" : "families"}</span>
-              {exposure[0].members.length > 1
-                ? `, and ${exposure[0].members.length} of them sit inside ${exposure[0].label.toLowerCase()} — together ${exposure[0].pct}% of the portfolio.`
-                : `, led by ${exposure[0].label.toLowerCase()} at ${exposure[0].pct}%.`}{" "}
-              More positions do not automatically mean more independent sources of return.
-            </p>
-          )}
-        </div>
-      </section>
+          <EffectivenessSection basis={report.projection} diagnostics={diagnostics} />
+        </section>
+      )}
 
-      {/* 4. ALLOCATION */}
-      <section id="pr-allocation" className="scroll-mt-24">
-        <SectionHeading icon={<PieChart className="h-4 w-4 text-primary" />} title="Allocation" subtitle="Structure of the portfolio — asset class, equity sleeve, sector and position size." />
+      {/* 4. PORTFOLIO X-RAY */}
+      <section id="pr-xray" className="scroll-mt-24">
+        <SectionHeading
+          icon={<Layers className="h-4 w-4 text-primary" />}
+          title="Portfolio X-Ray"
+          subtitle="See what you actually own — beyond the number of holdings."
+        />
+
+        {overlap && (
+          <div className="mt-4 rounded-2xl border border-warning/40 bg-warning-soft/30 px-5 py-4">
+            <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+              <p className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                <AlertTriangle className="h-4 w-4 text-warning" /> Redundant exposure detected
+              </p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                Overlap severity · {overlap.severity}
+              </p>
+            </div>
+            <p className="mt-2 text-[12.5px] leading-relaxed text-foreground/85">
+              {overlap.members.map((m) => m.name).join(" + ")} sit inside{" "}
+              {overlap.label.toLowerCase()} and together represent{" "}
+              <span className="font-semibold">{overlap.pct}%</span> of the portfolio. These holdings
+              provide highly similar market exposure, so owning both adds complexity without adding
+              an independent source of return.
+            </p>
+          </div>
+        )}
+
         <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <ChartCard
+            title="Exposure families"
+            note="Holdings collapsed into the exposure they actually share."
+          >
+            <ExposureOverlap
+              groups={exposure}
+              formatValue={formatInr}
+              empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
+            />
+            {exposure.length > 0 && (
+              <p className="mt-4 border-t border-border/70 pt-3 text-[12px] leading-relaxed text-foreground/85">
+                {report.holdingCount} holdings resolve into{" "}
+                <span className="font-semibold">
+                  {exposure.length} distinct exposure{" "}
+                  {exposure.length === 1 ? "family" : "families"}
+                </span>
+                . More positions do not automatically mean more independent sources of return.
+              </p>
+            )}
+          </ChartCard>
+          <ChartCard
+            title="Concentration"
+            note="How much of the outcome rests on a single position."
+          >
+            <ConcentrationLadder
+              rows={report.topHoldings.map((h) => ({
+                name: h.name,
+                pct: h.pct,
+                value: Math.round((h.pct / 100) * report.totalValue),
+              }))}
+              formatValue={formatInr}
+            />
+          </ChartCard>
           <ChartCard title="Asset allocation" note="Share and rupee value of each asset class.">
             <AllocationDonut
               slices={report.allocation.byAssetClass}
@@ -838,7 +1190,10 @@ function ReportView({
               empty="Asset class data not available for these holdings."
             />
           </ChartCard>
-          <ChartCard title="Market cap mix" note="Structure of the equity sleeve, shown exactly as identified.">
+          <ChartCard
+            title="Market cap mix"
+            note="Structure of the equity sleeve, shown exactly as identified."
+          >
             <StackedComposition
               slices={report.allocation.byMarketCap}
               formatValue={formatInr}
@@ -852,87 +1207,148 @@ function ReportView({
               empty="Market cap could not be identified for these holdings."
             />
           </ChartCard>
-          <ChartCard title="Sector mix" note="Sector exposure across holdings matched to verified security data.">
+          <ChartCard
+            title="Sector mix"
+            note="Sector exposure across holdings matched to verified security data."
+          >
             <SectorTreemap
               slices={report.allocation.bySector}
               formatValue={formatInr}
               empty="Sector exposure appears once a holding is matched to a listed security. These positions are held through instruments that do not publish a single sector."
             />
           </ChartCard>
-          <ChartCard title="Holdings distribution" note="How much of the outcome rests on a single position.">
-            <ConcentrationLadder
-              rows={report.topHoldings.map((h) => ({
-                name: h.name,
-                pct: h.pct,
-                value: Math.round((h.pct / 100) * report.totalValue),
-              }))}
-              formatValue={formatInr}
-            />
-          </ChartCard>
+          {blendedCost != null && (
+            <ChartCard
+              title="Cost drag"
+              note="What the portfolio pays every year, and what that compounds into."
+            >
+              <p className="font-display text-3xl leading-none tracking-tight text-foreground">
+                {blendedCost}%
+              </p>
+              <p className="mt-1.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                Blended portfolio cost
+              </p>
+              {drag && drag.difference > 0 ? (
+                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-foreground/85">
+                  At your current contribution rate, this cost could reduce long-term wealth by
+                  roughly <span className="font-semibold">{inrShort(drag.difference)}</span> over{" "}
+                  {report.projection?.defaultHorizonYears} years compared with a 0.4% low-cost
+                  equivalent, holding every other assumption constant.
+                </p>
+              ) : (
+                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-muted-foreground">
+                  This is already at or below the cost of a low-cost index equivalent, so expense
+                  drag is not materially reducing your outcome.
+                </p>
+              )}
+            </ChartCard>
+          )}
         </div>
+
+        {holdings.length > 0 && (
+          <details className="group mt-4 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+              Fund &amp; stock intelligence — {holdings.length}{" "}
+              {holdings.length === 1 ? "holding" : "holdings"}
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+            </summary>
+            <HoldingsExplorer holdings={holdings} />
+          </details>
+        )}
       </section>
 
-      {/* 5. FUND & STOCK INTELLIGENCE */}
-      {holdings.length > 0 && (
-        <section id="pr-holdings" className="scroll-mt-24">
-          <SectionHeading icon={<ShieldCheck className="h-4 w-4 text-primary" />} title="Fund & stock intelligence" subtitle="Holding · role · allocation · value. Open one only when you want the detail." />
-          <HoldingsExplorer holdings={holdings} />
-        </section>
-      )}
-
-      {/* 6. PROJECTION */}
-      {report.projection && report.totalValue > 0 && (
-        <section id="pr-projection" className="scroll-mt-24">
+      {/* 5. PEER COMPARISON */}
+      {peer && peer.rows.length > 0 && (
+        <section id="pr-peers" className="scroll-mt-24">
           <SectionHeading
-            icon={<LineChartIcon className="h-4 w-4 text-primary" />}
-            title="Where could this portfolio take you?"
-            subtitle="Change any assumption and the projection updates instantly. Illustrative scenario — not a forecast."
+            icon={<ShieldCheck className="h-4 w-4 text-primary" />}
+            title="Peer comparison"
+            subtitle="How your investing behaviour and portfolio structure compare with people at a similar life stage."
           />
-          <ProjectionSection basis={report.projection} />
+          <PeerComparison peer={peer} />
         </section>
       )}
 
-      {/* 7. PORTFOLIO HEALTH */}
-      {diagnostics.length > 0 && (
-        <section id="pr-diagnostics" className="scroll-mt-24">
-          <SectionHeading icon={<GaugeIcon className="h-4 w-4 text-primary" />} title="Portfolio health" subtitle="Structural checks scored deterministically. Open one for the reasoning." />
-          <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-            {diagnostics.map((d) => <DiagnosticChip key={d.id} d={d} />)}
+      {/* 6. STRESS TEST + HEALTH */}
+      <section id="pr-risk" className="scroll-mt-24">
+        <SectionHeading
+          icon={<AlertTriangle className="h-4 w-4 text-primary" />}
+          title="Risk & portfolio health"
+          subtitle="How this portfolio behaves when markets fall, and where its structure is strong or weak."
+        />
+        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+          <ChartCard
+            title="How would your portfolio behave under stress?"
+            note="Hypothetical scenarios applied to today's holdings — not predictions."
+          >
+            <StressScenarios rows={stress} formatValue={formatInr} />
+          </ChartCard>
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+            <h4 className="font-display text-base tracking-tight text-foreground">
+              Portfolio health
+            </h4>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              Deterministic NitiCore™ checks. Open one for the reasoning.
+            </p>
+            {diagnostics.length > 0 ? (
+              <div className="mt-5 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
+                {diagnostics.map((d) => (
+                  <DiagnosticChip key={d.id} d={d} />
+                ))}
+              </div>
+            ) : (
+              <p className="mt-5 text-sm text-muted-foreground">
+                Diagnostics not available for this analysis.
+              </p>
+            )}
           </div>
-          {insights.length > 0 && (
-            <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
-                What could hurt you — {insights.length} structural {insights.length === 1 ? "observation" : "observations"}
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
-              </summary>
-              <ul className="mt-4 grid gap-3 lg:grid-cols-2">
-                {insights.map((i) => <InsightCard key={i.id} insight={i} />)}
-              </ul>
-            </details>
-          )}
-        </section>
-      )}
+        </div>
+        {insights.length > 0 && (
+          <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+              What could hurt you — {insights.length} structural{" "}
+              {insights.length === 1 ? "observation" : "observations"}
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+            </summary>
+            <ul className="mt-4 grid gap-3 lg:grid-cols-2">
+              {insights.map((i) => (
+                <InsightCard key={i.id} insight={i} />
+              ))}
+            </ul>
+          </details>
+        )}
+      </section>
 
-      {/* 8. NEXT MOVES */}
+      {/* 7. NEXT MOVES */}
       <section id="pr-actions" className="scroll-mt-24">
-        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Your next 3 moves" subtitle="Ordered by what matters most, given your whole financial context." />
+        <SectionHeading
+          icon={<Target className="h-4 w-4 text-primary" />}
+          title="Your next 3 moves · NitiPath™"
+          subtitle="What to do, why it matters, what happens if you don't — and the least disruptive way to do it."
+        />
         {report.recommendations.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
-            No priority actions right now. Revisit after any material change to income, goals or life stage.
+            No priority actions right now. Revisit after any material change to income, goals or
+            life stage.
           </div>
         ) : (
           <>
             <ol className="mt-4 space-y-3">
-              {report.recommendations.slice(0, 3).map((r, i) => <ActionRow key={r.id} r={r} index={i} />)}
+              {report.recommendations.slice(0, 3).map((r, i) => (
+                <ActionRow key={r.id} r={r} index={i} />
+              ))}
             </ol>
             {report.recommendations.length > 3 && (
               <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
-                  {report.recommendations.length - 3} secondary {report.recommendations.length - 3 === 1 ? "action" : "actions"}
+                  {report.recommendations.length - 3} secondary{" "}
+                  {report.recommendations.length - 3 === 1 ? "action" : "actions"}
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
                 </summary>
                 <ol className="mt-4 space-y-3">
-                  {report.recommendations.slice(3).map((r, i) => <ActionRow key={r.id} r={r} index={i + 3} />)}
+                  {report.recommendations.slice(3).map((r, i) => (
+                    <ActionRow key={r.id} r={r} index={i + 3} />
+                  ))}
                 </ol>
               </details>
             )}
@@ -940,7 +1356,7 @@ function ReportView({
         )}
       </section>
 
-      {/* 9. NITIGUIDE */}
+      {/* 8. NITIGUIDE */}
       <section id="pr-guide" className="scroll-mt-24">
         {report.mentorSummary ? (
           <GuideBriefing text={report.mentorSummary} />
@@ -954,11 +1370,29 @@ function ReportView({
       <div className="rounded-2xl border border-dashed border-border bg-card p-5 text-sm">
         <p className="text-muted-foreground">
           Want to close a protection or emergency-fund gap surfaced here?{" "}
-          <Link to="/insurance-analyzer" className="font-semibold text-primary hover:underline">Open Insurance Analyzer</Link>{" "}
+          <Link to="/insurance-analyzer" className="font-semibold text-primary hover:underline">
+            Open Insurance Analyzer
+          </Link>{" "}
           or review your{" "}
-          <Link to="/financial-health" className="font-semibold text-primary hover:underline">Financial Health Report</Link>.
+          <Link to="/financial-health" className="font-semibold text-primary hover:underline">
+            Financial Health Report
+          </Link>
+          .
         </p>
       </div>
+    </div>
+  );
+}
+
+function VerdictNote({ label, body, accent }: { label: string; body: string; accent?: boolean }) {
+  return (
+    <div>
+      <p
+        className={`text-[10px] font-bold uppercase tracking-[0.18em] ${accent ? "text-primary" : "text-muted-foreground"}`}
+      >
+        {label}
+      </p>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-foreground/90">{body}</p>
     </div>
   );
 }
@@ -971,34 +1405,62 @@ function GuideBriefing({ text }: { text: string }) {
     <div className="rounded-3xl border border-primary/25 bg-primary-soft/20 p-6 md:p-8">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-primary" />
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">NitiGuide™ · portfolio mentor</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          NitiGuide™ · portfolio mentor
+        </p>
       </div>
       <div className="mt-4 max-w-3xl space-y-3.5 text-[14.5px] leading-[1.7] text-foreground/90">
-        {shown.map((para, i) => <p key={i} className="whitespace-pre-wrap">{para}</p>)}
+        {shown.map((para, i) => (
+          <p key={i} className="whitespace-pre-wrap">
+            {para}
+          </p>
+        ))}
       </div>
       {paras.length > 1 && (
-        <button onClick={() => setOpen((v) => !v)} className="mt-4 text-[11px] font-semibold text-primary hover:underline">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="mt-4 text-[11px] font-semibold text-primary hover:underline"
+        >
           {open ? "Show less" : "Read the full explanation"}
         </button>
       )}
       <p className="mt-5 border-t border-primary/15 pt-3 text-[11px] text-muted-foreground">
-        NitiGuide teaches and explains. Every number and recommendation above is calculated deterministically by NitiCore™.
+        NitiGuide teaches and explains. Every number and recommendation above is calculated
+        deterministically by NitiCore™.
       </p>
     </div>
   );
 }
 
-function ChartCard({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
+function ChartCard({
+  title,
+  note,
+  children,
+}: {
+  title: string;
+  note?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
       <h4 className="font-display text-base tracking-tight text-foreground">{title}</h4>
-      {note && <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>}
+      {note && (
+        <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>
+      )}
       <div className="mt-5">{children}</div>
     </div>
   );
 }
 
-function InsightTile({ tone, label, body }: { tone: "good" | "risk" | "act"; label: string; body: string }) {
+function InsightTile({
+  tone,
+  label,
+  body,
+}: {
+  tone: "good" | "risk" | "act";
+  label: string;
+  body: string;
+}) {
   const accent = {
     good: "border-success/60",
     risk: "border-destructive/50",
@@ -1006,7 +1468,9 @@ function InsightTile({ tone, label, body }: { tone: "good" | "risk" | "act"; lab
   }[tone];
   return (
     <div className={`border-l-2 pl-3.5 ${accent}`}>
-      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </p>
       <p className="mt-1 text-[13px] leading-relaxed text-foreground/90">{body}</p>
     </div>
   );
@@ -1015,9 +1479,13 @@ function InsightTile({ tone, label, body }: { tone: "good" | "risk" | "act"; lab
 function SnapItem({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </dt>
       <dd className="mt-1.5 text-[14px] font-medium leading-snug text-foreground">{value}</dd>
-      {sub && <dd className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">{sub}</dd>}
+      {sub && (
+        <dd className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">{sub}</dd>
+      )}
     </div>
   );
 }
@@ -1028,7 +1496,11 @@ function SnapItem({ label, value, sub }: { label: string; value: string; sub?: s
  * Compact health chip. Status + measured value are glanceable; the reasoning
  * expands only on interaction so the matrix stays a strip, not six blocks.
  */
-function DiagnosticChip({ d }: { d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic }) {
+function DiagnosticChip({
+  d,
+}: {
+  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+}) {
   const map = {
     good: { dot: SERIES_COLORS.positive, chip: "text-success", word: "Healthy" },
     watch: { dot: SERIES_COLORS.attention, chip: "text-warning", word: "Watch" },
@@ -1041,21 +1513,32 @@ function DiagnosticChip({ d }: { d: import("@/lib/portfolio-analyzer/types").Por
         <span className="min-w-0 flex-1">
           <span className="flex items-baseline justify-between gap-2">
             <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
-            <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-foreground">{d.valueLabel}</span>
+            <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-foreground">
+              {d.valueLabel}
+            </span>
           </span>
-          <span className="mt-1.5 block"><MiniMeter value={d.score} color={map.dot} /></span>
+          <span className="mt-1.5 block">
+            <MiniMeter value={d.score} color={map.dot} />
+          </span>
         </span>
-        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}>{map.word}</span>
+        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}>
+          {map.word}
+        </span>
         <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
       </summary>
       <div className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed">
-        <p><strong className="font-semibold text-foreground/80">Why it matters. </strong><span className="text-muted-foreground">{d.detail}</span></p>
-        <p><strong className="font-semibold text-foreground/80">Target. </strong><span className="text-muted-foreground">{d.targetLabel}</span></p>
+        <p>
+          <strong className="font-semibold text-foreground/80">Why it matters. </strong>
+          <span className="text-muted-foreground">{d.detail}</span>
+        </p>
+        <p>
+          <strong className="font-semibold text-foreground/80">Target. </strong>
+          <span className="text-muted-foreground">{d.targetLabel}</span>
+        </p>
       </div>
     </details>
   );
 }
-
 
 /* ─────────── holdings ─────────── */
 
@@ -1068,7 +1551,11 @@ function shortRole(role: string): string {
   return "Supporting";
 }
 
-function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-analyzer/types").HoldingIntelligence[] }) {
+function HoldingsExplorer({
+  holdings,
+}: {
+  holdings: import("@/lib/portfolio-analyzer/types").HoldingIntelligence[];
+}) {
   const [showAll, setShowAll] = useState(false);
   const [q, setQ] = useState("");
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -1103,9 +1590,15 @@ function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-anal
                 className="flex w-full items-center gap-4 px-5 py-3.5 text-left transition-colors hover:bg-muted/40"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[13.5px] font-semibold text-foreground">{h.name}</span>
+                  <span className="block truncate text-[13.5px] font-semibold text-foreground">
+                    {h.name}
+                  </span>
                   <span className="mt-0.5 block text-[11px] uppercase tracking-wider text-muted-foreground">
-                    {h.kind === "fund" ? "Mutual fund" : h.kind === "stock" ? "Direct equity" : ASSET_CLASS_LABEL[h.assetClass]}
+                    {h.kind === "fund"
+                      ? "Mutual fund"
+                      : h.kind === "stock"
+                        ? "Direct equity"
+                        : ASSET_CLASS_LABEL[h.assetClass]}
                   </span>
                 </span>
                 <span className="hidden w-24 shrink-0 text-[11px] font-medium uppercase tracking-wider text-muted-foreground sm:block">
@@ -1113,42 +1606,65 @@ function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-anal
                 </span>
                 <span className="shrink-0 text-right font-mono text-[12px] tabular-nums text-foreground">
                   {h.pct}%
-                  <span className="ml-2 hidden text-muted-foreground sm:inline">{formatInr(h.value)}</span>
+                  <span className="ml-2 hidden text-muted-foreground sm:inline">
+                    {formatInr(h.value)}
+                  </span>
                 </span>
-                <ArrowRight className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? "rotate-90" : ""}`} />
+                <ArrowRight
+                  className={`h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+                />
               </button>
               {open && (
                 <div className="animate-in fade-in slide-in-from-top-1 border-t border-border/60 bg-surface px-5 py-5 duration-200">
                   {h.objective && (
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">What it is</p>
-                      <p className="mt-1 text-[13px] leading-relaxed text-foreground/90">{h.objective}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                        What it is
+                      </p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-foreground/90">
+                        {h.objective}
+                      </p>
                     </div>
                   )}
                   <div className="mt-4 grid gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <SnapItem label="Portfolio weight" value={`${h.pct}%`} sub={formatInr(h.value)} />
-                    <SnapItem label="Category" value={category ?? ASSET_CLASS_LABEL[h.assetClass]} />
+                    <SnapItem
+                      label="Portfolio weight"
+                      value={`${h.pct}%`}
+                      sub={formatInr(h.value)}
+                    />
+                    <SnapItem
+                      label="Category"
+                      value={category ?? ASSET_CLASS_LABEL[h.assetClass]}
+                    />
                     <SnapItem label="Sector" value={sector ?? "Not available"} />
                     <SnapItem label="Market cap" value={mcap ?? "Not available"} />
                   </div>
                   <div className="mt-5 grid gap-5 md:grid-cols-2">
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Why it matters</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                        Why it matters
+                      </p>
                       <ul className="mt-1.5 space-y-1 text-[13px] leading-relaxed text-foreground/90">
-                        {(h.strengths.length > 0 ? h.strengths.slice(0, 2) : ["Contributes to overall portfolio structure."]).map((s, i) => (
+                        {(h.strengths.length > 0
+                          ? h.strengths.slice(0, 2)
+                          : ["Contributes to overall portfolio structure."]
+                        ).map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Risk</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                        Risk
+                      </p>
                       <p className="mt-1.5 text-[13px] leading-relaxed text-foreground/90">
                         {h.risks[0] ?? "No specific risk flagged beyond normal market movement."}
                       </p>
                     </div>
                   </div>
                   <p className="mt-5 border-t border-border/60 pt-3 text-[12.5px] text-foreground/85">
-                    <strong className="font-semibold">Role in your portfolio.</strong> {shortRole(h.suggestedRole)} — {h.suggestedRole}
+                    <strong className="font-semibold">Role in your portfolio.</strong>{" "}
+                    {shortRole(h.suggestedRole)} — {h.suggestedRole}
                   </p>
                   {h.aiSummary && (
                     <p className="mt-3 flex gap-2 rounded-xl bg-primary-soft/30 p-3 text-xs leading-relaxed text-foreground/85">
@@ -1161,10 +1677,18 @@ function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-anal
             </div>
           );
         })}
-        {list.length === 0 && <p className="px-5 py-6 text-sm text-muted-foreground">No holdings match that search.</p>}
+        {list.length === 0 && (
+          <p className="px-5 py-6 text-sm text-muted-foreground">No holdings match that search.</p>
+        )}
       </div>
       {holdings.length > 5 && (
-        <button onClick={() => { setShowAll((v) => !v); setQ(""); }} className="mt-3 text-[11px] font-semibold text-primary hover:underline">
+        <button
+          onClick={() => {
+            setShowAll((v) => !v);
+            setQ("");
+          }}
+          className="mt-3 text-[11px] font-semibold text-primary hover:underline"
+        >
           {showAll ? "Show top 5 holdings" : `View all ${holdings.length} holdings`}
         </button>
       )}
@@ -1174,34 +1698,69 @@ function HoldingsExplorer({ holdings }: { holdings: import("@/lib/portfolio-anal
 
 /* ─────────── actions ─────────── */
 
-function ActionRow({ r, index }: { r: import("@/lib/portfolio-analyzer/types").PortfolioRecommendation; index: number }) {
+function ActionRow({
+  r,
+  index,
+}: {
+  r: import("@/lib/portfolio-analyzer/types").PortfolioRecommendation;
+  index: number;
+}) {
   const lead = index === 0;
   const chip =
-    r.priority === "high" ? "text-destructive" :
-    r.priority === "medium" ? "text-warning" : "text-muted-foreground";
+    r.priority === "high"
+      ? "text-destructive"
+      : r.priority === "medium"
+        ? "text-warning"
+        : "text-muted-foreground";
   return (
-    <li className={`rounded-2xl border bg-card p-6 shadow-soft ${lead ? "border-foreground/25 md:p-8" : "border-border"}`}>
+    <li
+      className={`rounded-2xl border bg-card p-6 shadow-soft ${lead ? "border-foreground/25 md:p-8" : "border-border"}`}
+    >
       <div className="flex items-start gap-5">
-        <span className={`shrink-0 font-mono tabular-nums leading-none ${lead ? "text-2xl text-foreground" : "text-lg text-muted-foreground"}`}>
+        <span
+          className={`shrink-0 font-mono tabular-nums leading-none ${lead ? "text-2xl text-foreground" : "text-lg text-muted-foreground"}`}
+        >
           {String(index + 1).padStart(2, "0")}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <p className={`font-display leading-snug text-foreground ${lead ? "text-xl md:text-2xl" : "text-base"}`}>{r.title}</p>
-            <span className={`text-[10px] font-bold uppercase tracking-[0.16em] ${chip}`}>{r.priority}</span>
+            <p
+              className={`font-display leading-snug text-foreground ${lead ? "text-xl md:text-2xl" : "text-base"}`}
+            >
+              {r.title}
+            </p>
+            <span className={`text-[10px] font-bold uppercase tracking-[0.16em] ${chip}`}>
+              {r.priority}
+            </span>
           </div>
           <dl className="mt-4 space-y-2 text-[13px] leading-relaxed">
-            <div><dt className="inline font-semibold text-foreground/80">Why. </dt><dd className="inline text-muted-foreground">{r.reason}</dd></div>
-            <div><dt className="inline font-semibold text-foreground/80">Expected benefit. </dt><dd className="inline text-muted-foreground">{r.expectedBenefit}</dd></div>
-            {r.tradeOffs.length > 0 && (
-              <div><dt className="inline font-semibold text-foreground/80">Trade-offs. </dt><dd className="inline text-muted-foreground">{r.tradeOffs.join(" ")}</dd></div>
-            )}
+            <div>
+              <dt className="inline font-semibold text-foreground/80">Why. </dt>
+              <dd className="inline text-muted-foreground">{r.reason}</dd>
+            </div>
+            <div>
+              <dt className="inline font-semibold text-foreground/80">If you don&rsquo;t. </dt>
+              <dd className="inline text-muted-foreground">
+                {r.opportunityCost ?? r.expectedBenefit}
+              </dd>
+            </div>
             {r.nextStep && (
-              <div><dt className="inline font-semibold text-foreground/80">Next step. </dt><dd className="inline text-foreground/90">{r.nextStep}</dd></div>
+              <div>
+                <dt className="inline font-semibold text-foreground/80">Least disruptive way. </dt>
+                <dd className="inline text-foreground/90">{r.nextStep}</dd>
+              </div>
+            )}
+            {r.tradeOffs.length > 0 && (
+              <div>
+                <dt className="inline font-semibold text-foreground/80">Trade-offs. </dt>
+                <dd className="inline text-muted-foreground">{r.tradeOffs.join(" ")}</dd>
+              </div>
             )}
           </dl>
           {r.crossPillarNote && (
-            <p className="mt-3 border-l-2 border-primary/50 pl-3 text-[11.5px] leading-relaxed text-muted-foreground">{r.crossPillarNote}</p>
+            <p className="mt-3 border-l-2 border-primary/50 pl-3 text-[11.5px] leading-relaxed text-muted-foreground">
+              {r.crossPillarNote}
+            </p>
           )}
         </div>
       </div>
@@ -1209,12 +1768,19 @@ function ActionRow({ r, index }: { r: import("@/lib/portfolio-analyzer/types").P
   );
 }
 
-function InsightCard({ insight }: { insight: import("@/lib/portfolio-analyzer/types").PortfolioInsight }) {
-  const icon = insight.severity === "risk"
-    ? <AlertTriangle className="h-4 w-4 text-destructive" />
-    : insight.severity === "gap"
-      ? <Info className="h-4 w-4 text-warning" />
-      : <Info className="h-4 w-4 text-muted-foreground" />;
+function InsightCard({
+  insight,
+}: {
+  insight: import("@/lib/portfolio-analyzer/types").PortfolioInsight;
+}) {
+  const icon =
+    insight.severity === "risk" ? (
+      <AlertTriangle className="h-4 w-4 text-destructive" />
+    ) : insight.severity === "gap" ? (
+      <Info className="h-4 w-4 text-warning" />
+    ) : (
+      <Info className="h-4 w-4 text-muted-foreground" />
+    );
   return (
     <li className="rounded-2xl border border-border bg-surface p-5">
       <div className="flex items-start gap-2.5">
@@ -1222,9 +1788,18 @@ function InsightCard({ insight }: { insight: import("@/lib/portfolio-analyzer/ty
         <p className="text-sm font-semibold leading-snug text-foreground">{insight.title}</p>
       </div>
       <dl className="mt-3 space-y-2 text-xs leading-relaxed">
-        <div><dt className="inline font-semibold text-foreground/80">Why it matters. </dt><dd className="inline text-muted-foreground">{insight.whyItMatters}</dd></div>
-        <div><dt className="inline font-semibold text-foreground/80">Potential impact. </dt><dd className="inline text-muted-foreground">{insight.impact}</dd></div>
-        <div><dt className="inline font-semibold text-foreground/80">Suggested action. </dt><dd className="inline text-muted-foreground">{insight.action}</dd></div>
+        <div>
+          <dt className="inline font-semibold text-foreground/80">Why it matters. </dt>
+          <dd className="inline text-muted-foreground">{insight.whyItMatters}</dd>
+        </div>
+        <div>
+          <dt className="inline font-semibold text-foreground/80">Potential impact. </dt>
+          <dd className="inline text-muted-foreground">{insight.impact}</dd>
+        </div>
+        <div>
+          <dt className="inline font-semibold text-foreground/80">Suggested action. </dt>
+          <dd className="inline text-muted-foreground">{insight.action}</dd>
+        </div>
       </dl>
     </li>
   );
@@ -1232,14 +1807,24 @@ function InsightCard({ insight }: { insight: import("@/lib/portfolio-analyzer/ty
 
 // ─────────────────────────── ATOMS ───────────────────────────
 
-function SectionHeading({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
+function SectionHeading({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+}) {
   return (
     <div>
       <div className="flex items-center gap-2">
         {icon}
         <h3 className="font-display text-xl tracking-tight text-foreground">{title}</h3>
       </div>
-      {subtitle && <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-muted-foreground">{subtitle}</p>}
+      {subtitle && (
+        <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-muted-foreground">{subtitle}</p>
+      )}
     </div>
   );
 }
@@ -1247,7 +1832,9 @@ function SectionHeading({ icon, title, subtitle }: { icon: React.ReactNode; titl
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </p>
       <p className="mt-1 font-display text-lg text-foreground">{value}</p>
     </div>
   );
@@ -1258,160 +1845,365 @@ function RatingPill({ score }: { score: number }) {
   const r = derivePortfolioRating(score);
   const t = ratingClasses(r.tone);
   return (
-    <div className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${t.bg} ${t.text}`}>
+    <div
+      className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${t.bg} ${t.text}`}
+    >
       {r.label} · Grade {r.grade}
     </div>
   );
 }
 
-// ───────────────────── PORTFOLIO PROJECTION ─────────────────────
+// ─────────────── PORTFOLIO EFFECTIVENESS · NitiSim™ ───────────────
 
-const HORIZON_PRESETS = [5, 10, 15, 20];
-
-function ProjectionSection({ basis }: { basis: ProjectionBasis }) {
+/**
+ * Effectiveness is derived, not invented: the projection basis and the
+ * deterministic NitiCore™ diagnostics are the only inputs. See
+ * lib/portfolio-analyzer/effectiveness.ts for the formula.
+ */
+function EffectivenessSection({
+  basis,
+  diagnostics,
+}: {
+  basis: ProjectionBasis;
+  diagnostics: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic[];
+}) {
   const [years, setYears] = useState(basis.defaultHorizonYears);
-  const [extraSip, setExtraSip] = useState(basis.suggestedSipUplift);
-  const [returnPct, setReturnPct] = useState(basis.expectedReturnPct);
-  const [stepUpPct, setStepUpPct] = useState(10);
+  const [monthlySip, setMonthlySip] = useState(Math.max(basis.monthlySip, 0));
+  const [stepUpPct, setStepUpPct] = useState(0);
+  const [scenario, setScenario] = useState<ScenarioKey>("base");
 
-  const baseArgs = { currentValue: basis.currentValue, monthlySip: basis.monthlySip, annualReturnPct: returnPct, years };
-  const altArgs = { ...baseArgs, monthlySip: basis.monthlySip + extraSip };
-  const thirdArgs = { ...altArgs, annualStepUpPct: stepUpPct };
-  const showThird = stepUpPct > 0 && basis.monthlySip + extraSip > 0;
-
-  const series = useMemo(
-    () => buildProjectionSeries(baseArgs, altArgs, showThird ? thirdArgs : undefined),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [basis, years, extraSip, returnPct, stepUpPct, showThird],
+  const current = useMemo(
+    () =>
+      computeEffectiveness(basis, diagnostics, {
+        monthlySip: basis.monthlySip,
+        stepUpPct: 0,
+        years: basis.defaultHorizonYears,
+        scenario: "base",
+      }),
+    [basis, diagnostics],
   );
+  const result = useMemo(
+    () => computeEffectiveness(basis, diagnostics, { monthlySip, stepUpPct, years, scenario }),
+    [basis, diagnostics, monthlySip, stepUpPct, years, scenario],
+  );
+  const grid = useMemo(
+    () => effectivenessGrid(basis, diagnostics, { monthlySip, years }),
+    [basis, diagnostics, monthlySip, years],
+  );
+  const lever = useMemo(() => highestImpactLever(grid), [grid]);
 
-  const baseFv = projectValue(baseArgs);
-  const altFv = projectValue(altArgs);
-  const thirdFv = projectValue(thirdArgs);
-  const guidance = useMemo(() => projectionGuidance(basis, years), [basis, years]);
-  const invested = (basis.monthlySip + extraSip) * years * 12;
-  const changed = extraSip !== basis.suggestedSipUplift || returnPct !== basis.expectedReturnPct || years !== basis.defaultHorizonYears || stepUpPct !== 10;
+  const series = useMemo(() => {
+    const common = { currentValue: basis.currentValue, years };
+    return buildProjectionSeries(
+      { ...common, monthlySip: basis.monthlySip, annualReturnPct: basis.expectedReturnPct },
+      { ...common, monthlySip, annualReturnPct: result.returnPct, annualStepUpPct: stepUpPct },
+    );
+  }, [basis, monthlySip, years, stepUpPct, result.returnPct]);
+
+  const changed =
+    monthlySip !== basis.monthlySip ||
+    stepUpPct !== 0 ||
+    years !== basis.defaultHorizonYears ||
+    scenario !== "base";
+  const interpretation =
+    result.fundingPct >= 100
+      ? "At this contribution level the plan already clears the NitiCore™ reference path for your horizon. The remaining upside now comes from portfolio structure, not from taking more risk."
+      : result.structure >= result.fundingPct
+        ? "Your portfolio is structurally sound; the shortfall is a contribution question, not a market question. Increasing what you invest has more potential impact than taking additional investment risk."
+        : "Contributions are doing their job — the constraint here is portfolio structure. Fixing concentration and allocation moves this score more than adding rupees.";
 
   return (
-    <div className="mt-5 space-y-5">
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-9">
-        <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
+    <div className="mt-4 space-y-4">
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:gap-12">
           <div>
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              {HORIZON_PRESETS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setYears(p)}
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                    years === p ? "bg-foreground text-background" : "border border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {p} years
-                </button>
-              ))}
-            </div>
-            <ProjectionChart
-              data={series}
-              format={inrShort}
-              series={[
-                { key: "base", label: "Current path", color: SERIES_COLORS.you },
-                { key: "alternative", label: "Higher contribution", color: SERIES_COLORS.recommended, dash: "6 4" },
-                ...(showThird ? [{ key: "third" as const, label: `Higher contribution + ${stepUpPct}% yearly increase`, color: SERIES_COLORS.peer, dash: "2 5" }] : []),
-              ]}
-            />
+            <EffectivenessDial score={result.score} delta={result.score - current.score} />
+            <p className="mt-5 text-[13px] leading-relaxed text-foreground/85">{interpretation}</p>
+            <dl className="mt-5 space-y-2.5 border-t border-border/70 pt-4 text-[12px]">
+              <EffStat
+                label="Current plan"
+                value={`₹${basis.monthlySip.toLocaleString("en-IN")}/month · 0% step-up · Base`}
+              />
+              <EffStat
+                label={`Projected in ${years} years`}
+                value={inrShort(result.projected)}
+                strong
+              />
+              <EffStat label="NitiCore™ reference path" value={inrShort(result.reference)} />
+              <EffStat
+                label="Funding progress · structure"
+                value={`${result.fundingPct}% · ${result.structure}/100`}
+              />
+            </dl>
+            <p className="mt-3 text-[10.5px] leading-relaxed text-muted-foreground">
+              Effectiveness = 65% funding progress against the NitiCore™ reference path for the same
+              horizon, plus 35% deterministic structural health.
+            </p>
           </div>
 
           <div className="space-y-6">
-            <div className="space-y-3">
-              <ProjStat label={`Current path · ${years} years`} value={inrShort(baseFv)} tone="you" />
-              <ProjStat label="With higher contribution" value={inrShort(altFv)} tone="alt" />
-              {showThird && <ProjStat label={`Plus ${stepUpPct}% yearly increase`} value={inrShort(thirdFv)} tone="alt" />}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Return scenario
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {SCENARIOS.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => setScenario(s.key)}
+                    className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                      scenario === s.key
+                        ? "bg-foreground text-background"
+                        : "border border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {s.label} · {scenarioReturn(basis.expectedReturnPct, s.key)}%
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[10.5px] text-muted-foreground">
+                {basis.returnBasis} Scenarios apply ±2 percentage points to that blended assumption.
+              </p>
             </div>
-            <p className="text-[12px] leading-relaxed text-muted-foreground">
-              Of the projected total, <span className="font-semibold text-foreground">{inrShort(Math.max(0, invested))}</span> is money you contribute over {years} years. The rest is compounding.
-            </p>
 
-            <div className="space-y-5 border-t border-border/70 pt-5">
+            <div className="grid gap-5 sm:grid-cols-2">
               <Slider
-                label="Projection period"
+                label="Monthly contribution"
+                value={`₹${monthlySip.toLocaleString("en-IN")}`}
+                min={0}
+                max={Math.max(50000, (basis.monthlySip + basis.suggestedSipUplift) * 3)}
+                step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
+                current={monthlySip}
+                onChange={setMonthlySip}
+                hint={
+                  basis.sipSource === "profile"
+                    ? `Your recorded contribution is ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
+                    : "No recurring contribution recorded in your profile yet"
+                }
+              />
+              <Slider
+                label="Annual step-up"
+                value={`${stepUpPct}%`}
+                min={0}
+                max={20}
+                step={1}
+                current={stepUpPct}
+                onChange={setStepUpPct}
+                hint="Most salaried investors can raise contributions in line with annual increments."
+              />
+              <Slider
+                label="Years to retirement"
                 value={`${years} years`}
-                min={3} max={35} step={1}
+                min={3}
+                max={40}
+                step={1}
                 current={years}
                 onChange={setYears}
                 hint={basis.horizonBasis}
               />
-              <Slider
-                label="Extra monthly investment"
-                value={`₹${extraSip.toLocaleString("en-IN")}`}
-                min={0} max={Math.max(25000, basis.suggestedSipUplift * 5)} step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
-                current={extraSip}
-                onChange={setExtraSip}
-                hint={basis.sipSource === "profile"
-                  ? `On top of your recorded ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
-                  : "No recurring contribution recorded in your profile yet"}
-              />
-              <Slider
-                label="Annual increase in contribution"
-                value={`${stepUpPct}%`}
-                min={0} max={20} step={1}
-                current={stepUpPct}
-                onChange={setStepUpPct}
-                hint="Most salaried investors can raise their SIP roughly in line with annual increments."
-              />
-              <Slider
-                label="Expected annual return"
-                value={`${returnPct}%`}
-                min={5} max={15} step={0.5}
-                current={returnPct}
-                onChange={setReturnPct}
-                hint={basis.returnBasis}
-              />
+              <div>
+                <p className="text-[12px] font-semibold text-foreground">
+                  Contributed over the period
+                </p>
+                <p className="mt-2 font-mono text-[13px] tabular-nums text-foreground">
+                  {inrShort(result.contributed)}
+                </p>
+                <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
+                  The rest of the projected total is compounding, not money you paid in.
+                </p>
+              </div>
             </div>
 
-            {changed && (
-              <button
-                onClick={() => { setExtraSip(basis.suggestedSipUplift); setReturnPct(basis.expectedReturnPct); setYears(basis.defaultHorizonYears); setStepUpPct(10); }}
-                className="text-[11px] font-semibold text-primary hover:underline"
-              >
-                Reset to NitiCore™ defaults
-              </button>
-            )}
+            <div className="border-t border-border/70 pt-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Effectiveness across contribution &amp; return
+                </p>
+                {changed && (
+                  <button
+                    onClick={() => {
+                      setMonthlySip(basis.monthlySip);
+                      setStepUpPct(0);
+                      setYears(basis.defaultHorizonYears);
+                      setScenario("base");
+                    }}
+                    className="text-[11px] font-semibold text-primary hover:underline"
+                  >
+                    Reset to NitiCore™ defaults
+                  </button>
+                )}
+              </div>
+              <div className="mt-3">
+                <EffectivenessHeatmap
+                  cells={grid}
+                  rows={STEP_UP_ROWS}
+                  columns={SCENARIOS.map((s) => ({ key: s.key, label: s.label }))}
+                  activeStepUp={stepUpPct}
+                  activeScenario={scenario}
+                  onSelect={(st, sc) => {
+                    setStepUpPct(st);
+                    setScenario(sc as ScenarioKey);
+                  }}
+                />
+              </div>
+              {lever && (
+                <p className="mt-3 text-[11.5px] leading-relaxed text-foreground/85">{lever}</p>
+              )}
+            </div>
           </div>
+        </div>
+
+        <div className="mt-8 border-t border-border/70 pt-6">
+          <ProjectionChart
+            data={series}
+            format={inrShort}
+            series={[
+              { key: "base", label: "Current plan", color: SERIES_COLORS.you },
+              {
+                key: "alternative",
+                label: "Your scenario",
+                color: SERIES_COLORS.recommended,
+                dash: "6 4",
+              },
+            ]}
+          />
+          <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+            Illustrative scenarios, not guaranteed returns. Markets never deliver a smooth annual
+            number, and the return assumption is the least reliable input on this page.
+          </p>
         </div>
       </div>
 
-      <div className="rounded-3xl border border-border bg-surface p-6 md:p-8">
-        <h4 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">What this means</h4>
+      <details className="group rounded-2xl border border-border bg-surface px-5 py-3.5">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+          What this means in plain language
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+        </summary>
         <ul className="mt-4 space-y-3">
-          {guidance.map((g, i) => (
+          {projectionGuidance(basis, years).map((g, i) => (
             <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-foreground/85">
               <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
               <span>{g}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-5 border-t border-border/70 pt-4 text-[11px] leading-relaxed text-muted-foreground">
-          Illustrative projection — not a forecast or guarantee. It shows how your portfolio could evolve under the assumptions you choose above. Actual market returns will vary, and they never arrive as a smooth annual number.
-        </p>
-      </div>
+      </details>
     </div>
   );
 }
 
-function ProjStat({ label, value, tone }: { label: string; value: string; tone: "you" | "alt" }) {
+function EffStat({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-4 ${tone === "you" ? "border-border bg-surface" : "border-primary/25 bg-primary/[0.04]"}`}>
-      <p className="text-[10px] font-semibold uppercase leading-tight tracking-[0.12em] text-muted-foreground">{label}</p>
-      <p className="mt-2 font-display text-xl text-foreground">{value}</p>
+    <div className="flex items-baseline justify-between gap-4">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd
+        className={`font-mono tabular-nums ${strong ? "text-[14px] font-semibold text-foreground" : "text-foreground/85"}`}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+// ─────────────────────── PEER COMPARISON ───────────────────────
+
+const AGE_BANDS = ["25-29", "30-34", "35-39", "40-44", "45-49", "50-54"];
+
+function PeerComparison({
+  peer,
+}: {
+  peer: import("@/lib/portfolio-analyzer/types").PeerBenchmark;
+}) {
+  const detected = /Age\s(\d{2})-(\d{2})/.exec(peer.cohort);
+  const detectedBand = detected ? `${detected[1]}-${detected[2]}` : AGE_BANDS[1];
+  const [band, setBand] = useState(AGE_BANDS.includes(detectedBand) ? detectedBand : AGE_BANDS[1]);
+
+  // Only the equity-participation reference moves with age, and it moves by the
+  // same deterministic NitiCore™ rule (roughly 100 − age). Every other cohort
+  // reference is structural, so it is left exactly as the engine calculated it.
+  const bandStart = Number(band.split("-")[0]);
+  const rows = peer.rows.map((r) =>
+    /equity participation/i.test(r.label)
+      ? { ...r, typical: Math.max(20, Math.min(90, 100 - (bandStart + 2))) }
+      : r,
+  );
+
+  const conc = rows.find((r) => /largest holding/i.test(r.label));
+  const div = rows.find((r) => /diversification/i.test(r.label));
+  const conclusion = (() => {
+    const bits: string[] = [];
+    if (div)
+      bits.push(
+        Math.abs(div.you - div.typical) <= 8
+          ? "Your portfolio is broadly aligned with peers on diversification"
+          : div.you > div.typical
+            ? "Your portfolio is better diversified than your cohort"
+            : "Your portfolio is less diversified than your cohort",
+      );
+    if (conc)
+      bits.push(
+        Math.abs(conc.you - conc.typical) <= 5
+          ? "and concentration sits in the usual range"
+          : conc.you > conc.typical
+            ? `but concentration is materially higher — ${conc.you}% in one holding against a typical ${conc.typical}%`
+            : "and concentration is lower than typical",
+      );
+    return bits.length ? `${bits.join(", ")}.` : "";
+  })();
+
+  return (
+    <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[11px] text-muted-foreground">{peer.cohort}</p>
+        <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          Compare with age
+          <select
+            value={band}
+            onChange={(e) => setBand(e.target.value)}
+            className="rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] text-foreground"
+          >
+            {AGE_BANDS.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="mt-5">
+        <PeerRails rows={rows} />
+      </div>
+      {conclusion && (
+        <p className="mt-5 border-t border-border/70 pt-4 text-[13px] leading-relaxed text-foreground/90">
+          {conclusion}
+        </p>
+      )}
+      <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+        {peer.note} City-level benchmarks are not shown because NitiVitt has no reliable location
+        data to compare against — behaviour and structure are the comparisons that matter here.
+      </p>
     </div>
   );
 }
 
 function Slider({
-  label, value, min, max, step, current, onChange, hint,
+  label,
+  value,
+  min,
+  max,
+  step,
+  current,
+  onChange,
+  hint,
 }: {
-  label: string; value: string; min: number; max: number; step: number;
-  current: number; onChange: (n: number) => void; hint?: string;
+  label: string;
+  value: string;
+  min: number;
+  max: number;
+  step: number;
+  current: number;
+  onChange: (n: number) => void;
+  hint?: string;
 }) {
   return (
     <div>
@@ -1421,7 +2213,10 @@ function Slider({
       </div>
       <input
         type="range"
-        min={min} max={max} step={step} value={current}
+        min={min}
+        max={max}
+        step={step}
+        value={current}
         onChange={(e) => onChange(Number(e.target.value))}
         aria-label={label}
         className="mt-2.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
