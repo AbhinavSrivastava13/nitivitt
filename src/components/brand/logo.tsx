@@ -4,6 +4,8 @@ interface LogoProps {
   className?: string;
   showWordmark?: boolean;
   tone?: "default" | "inverse";
+  /** Render without its own anchor — use when a parent already links the mark. */
+  plain?: boolean;
 }
 
 /**
@@ -11,10 +13,14 @@ interface LogoProps {
  * forming a stylised "N" lens. Drawn as inline SVG so it inherits currentColor
  * and stays crisp at any size.
  */
-export function Logo({ className, showWordmark = true, tone = "default" }: LogoProps) {
+export function Logo({ className, showWordmark = true, tone = "default", plain = false }: LogoProps) {
   const color = tone === "inverse" ? "text-background" : "text-primary";
+  const Wrapper = plain ? "span" : Link;
+  const wrapperProps = plain
+    ? {}
+    : ({ to: "/", "aria-label": "NitiVitt — home" } as const);
   return (
-    <Link to="/" className={`group inline-flex items-center gap-2.5 ${className ?? ""}`} aria-label="NitiVitt — home">
+    <Wrapper {...(wrapperProps as never)} className={`group inline-flex items-center gap-2.5 ${className ?? ""}`}>
       <span className={`relative inline-flex h-8 w-8 items-center justify-center ${color}`}>
         <svg viewBox="0 0 32 32" className="h-full w-full" aria-hidden="true">
           <defs>
@@ -36,6 +42,6 @@ export function Logo({ className, showWordmark = true, tone = "default" }: LogoP
           NitiVitt
         </span>
       )}
-    </Link>
+    </Wrapper>
   );
 }

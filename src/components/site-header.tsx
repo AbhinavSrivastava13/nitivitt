@@ -22,11 +22,11 @@ export function SiteHeader() {
       <div className="container-page flex h-16 items-center justify-between gap-3">
         {isAuthenticated ? (
           <Link to="/dashboard" aria-label="Go to dashboard">
-            <Logo />
+            <Logo plain />
           </Link>
         ) : (
           <Link to="/" aria-label="NitiVitt home">
-            <Logo />
+            <Logo plain />
           </Link>
         )}
 
