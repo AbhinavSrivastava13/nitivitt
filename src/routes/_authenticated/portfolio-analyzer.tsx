@@ -5,8 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft, ArrowRight, CheckCircle2, Info, Loader2, Plus,
   RefreshCw, Sparkles, Trash2, TrendingUp, Upload, AlertTriangle,
-  ShieldCheck, Target, Layers, PieChart, Gauge as GaugeIcon,
-  LineChart as LineChartIcon,
+  ShieldCheck, Target, Layers, Gauge as GaugeIcon,
 } from "lucide-react";
 import { AnalysisSequence } from "@/components/analysis-sequence";
 import { PageShell } from "@/components/page-shell";
@@ -14,8 +13,14 @@ import { useConfirm } from "@/components/platform/confirm-dialog";
 import { toast } from "sonner";
 import {
   ComparisonTracks, ExposureOverlap, AllocationDonut, ConcentrationLadder, StackedComposition, SectorTreemap,
-  MiniMeter, ProjectionChart, SERIES_COLORS, type ExposureGroup,
+  MiniMeter, ProjectionChart, SERIES_COLORS, EffectivenessDial, EffectivenessHeatmap, StressScenarios, PeerRails,
+  type ExposureGroup,
 } from "@/components/portfolio/charts";
+import {
+  SCENARIOS, computeEffectiveness, effectivenessGrid, highestImpactLever, scenarioReturn,
+  detectOverlap, blendedCostFromDiagnostics, costDrag, stressScenarios, STEP_UP_ROWS,
+  type ScenarioKey,
+} from "@/lib/portfolio-analyzer/effectiveness";
 import { buildProjectionSeries, projectValue, projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
 import type { ProjectionBasis } from "@/lib/portfolio-analyzer/types";
 
@@ -579,12 +584,11 @@ function SavedView({ id, onBack }: { id: string; onBack: () => void }) {
 
 const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "verdict", label: "Verdict" },
-  { id: "profile", label: "You vs profile" },
-  { id: "drivers", label: "What's driving it" },
-  { id: "allocation", label: "Allocation" },
-  { id: "holdings", label: "Holdings" },
-  { id: "projection", label: "Projection" },
-  { id: "diagnostics", label: "Health" },
+  { id: "profile", label: "You vs NitiCore™" },
+  { id: "effectiveness", label: "Effectiveness" },
+  { id: "xray", label: "X-Ray" },
+  { id: "peers", label: "Peers" },
+  { id: "risk", label: "Risk & health" },
   { id: "actions", label: "Next moves" },
   { id: "guide", label: "NitiGuide™" },
 ];
