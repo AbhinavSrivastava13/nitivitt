@@ -14,22 +14,33 @@
  */
 import { Fragment, useState } from "react";
 import {
-  PieChart, Pie, Cell, ResponsiveContainer, Tooltip,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  LineChart, Line, LabelList, ReferenceLine, Treemap,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LineChart,
+  Line,
+  LabelList,
+  ReferenceLine,
+  Treemap,
 } from "recharts";
 
 /** Semantic series colours — one meaning per colour, used sparingly. */
 export const SERIES_COLORS = {
-  you: "#3f4d75",          // current user position — calm slate-indigo
-  recommended: "#0d9488",  // scenario / alternative series — teal
-  nitiCore: "#9c8355",     // NitiCore™ recommendation — muted champagne
+  you: "#3f4d75", // current user position — calm slate-indigo
+  recommended: "#0d9488", // scenario / alternative series — teal
+  nitiCore: "#9c8355", // NitiCore™ recommendation — muted champagne
   positive: "#15803d",
   attention: "#b45309",
   action: "#b91c1c",
   peer: "#8b7f5e",
 };
-
 
 /** Restrained composition palette — differentiated without being loud. */
 export const CHART_PALETTE = [
@@ -55,7 +66,11 @@ const TOOLTIP_STYLE: React.CSSProperties = {
 
 const AXIS_TICK = { fill: "var(--muted-foreground)", fontSize: 11 };
 
-export function ChartLegend({ items }: { items: { label: string; color: string; hint?: string; dashed?: boolean }[] }) {
+export function ChartLegend({
+  items,
+}: {
+  items: { label: string; color: string; hint?: string; dashed?: boolean }[];
+}) {
   return (
     <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
       {items.map((i) => (
@@ -64,7 +79,10 @@ export function ChartLegend({ items }: { items: { label: string; color: string; 
             className="mt-1 h-2.5 w-4 shrink-0 rounded-[2px]"
             style={
               i.dashed
-                ? { background: `repeating-linear-gradient(135deg, ${i.color} 0 4px, transparent 4px 7px)`, border: `1px solid ${i.color}` }
+                ? {
+                    background: `repeating-linear-gradient(135deg, ${i.color} 0 4px, transparent 4px 7px)`,
+                    border: `1px solid ${i.color}`,
+                  }
                 : { background: i.color }
             }
           />
@@ -76,7 +94,11 @@ export function ChartLegend({ items }: { items: { label: string; color: string; 
   );
 }
 
-export interface Slice { label: string; pct: number; value: number }
+export interface Slice {
+  label: string;
+  pct: number;
+  value: number;
+}
 
 export function NoData({ children }: { children?: React.ReactNode }) {
   return (
@@ -88,14 +110,23 @@ export function NoData({ children }: { children?: React.ReactNode }) {
 
 /* ───────────────── COMPARISON — You vs NitiCore™ ───────────────── */
 
-export function ComparisonBars({ rows }: { rows: { label: string; you: number; recommended: number }[] }) {
+export function ComparisonBars({
+  rows,
+}: {
+  rows: { label: string; you: number; recommended: number }[];
+}) {
   const max = Math.max(100, ...rows.flatMap((r) => [r.you, r.recommended]));
   return (
     <div className="space-y-7">
       <ChartLegend
         items={[
           { label: "You", color: SERIES_COLORS.you, hint: "current mix" },
-          { label: "NitiCore™ recommended", color: SERIES_COLORS.nitiCore, hint: "your age, horizon & risk", dashed: true },
+          {
+            label: "NitiCore™ recommended",
+            color: SERIES_COLORS.nitiCore,
+            hint: "your age, horizon & risk",
+            dashed: true,
+          },
         ]}
       />
       <ul className="space-y-6">
@@ -114,7 +145,9 @@ export function ComparisonBars({ rows }: { rows: { label: string; you: number; r
               </div>
               <div className="mt-2.5 space-y-1.5">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-[74px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">You</span>
+                  <span className="w-[74px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    You
+                  </span>
                   <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted/70">
                     <span
                       className="block h-full rounded-full transition-[width] duration-500"
@@ -123,7 +156,9 @@ export function ComparisonBars({ rows }: { rows: { label: string; you: number; r
                   </span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <span className="w-[74px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">Target</span>
+                  <span className="w-[74px] shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    Target
+                  </span>
                   <span className="h-2.5 flex-1 overflow-hidden rounded-full border border-dashed border-border">
                     <span
                       className="block h-full rounded-full transition-[width] duration-500"
@@ -137,11 +172,18 @@ export function ComparisonBars({ rows }: { rows: { label: string; you: number; r
               </div>
               {!aligned && (
                 <p className="mt-2 text-[11px] text-foreground/75">
-                  <span className="font-mono tabular-nums font-semibold">{gap > 0 ? "+" : "−"}{Math.abs(gap)}</span>{" "}
+                  <span className="font-mono tabular-nums font-semibold">
+                    {gap > 0 ? "+" : "−"}
+                    {Math.abs(gap)}
+                  </span>{" "}
                   percentage points {gap > 0 ? "above" : "below"} the recommended level.
                 </p>
               )}
-              {aligned && <p className="mt-2 text-[11px] text-muted-foreground">In line with the recommended band.</p>}
+              {aligned && (
+                <p className="mt-2 text-[11px] text-muted-foreground">
+                  In line with the recommended band.
+                </p>
+              )}
             </li>
           );
         })}
@@ -153,7 +195,11 @@ export function ComparisonBars({ rows }: { rows: { label: string; you: number; r
 /* ───────────────── COMPOSITION — donut ───────────────── */
 
 export function AllocationDonut({
-  slices, formatValue, centerLabel, centerValue, empty,
+  slices,
+  formatValue,
+  centerLabel,
+  centerValue,
+  empty,
 }: {
   slices: Slice[];
   formatValue: (n: number) => string;
@@ -191,7 +237,10 @@ export function AllocationDonut({
                 />
               ))}
             </Pie>
-            <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number, n) => [`${v}%`, n as string]} />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              formatter={(v: number, n) => [`${v}%`, n as string]}
+            />
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
@@ -211,10 +260,19 @@ export function AllocationDonut({
             onMouseLeave={() => setActive(null)}
             className={`flex items-baseline gap-3 rounded-lg px-2.5 py-2 transition-colors ${active === i ? "bg-muted/60" : ""}`}
           >
-            <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-            <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">{s.label}</span>
+            <span
+              className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]"
+              style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }}
+            />
+            <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">
+              {s.label}
+            </span>
             <span className="font-mono text-[12px] tabular-nums text-foreground">{s.pct}%</span>
-            {s.value > 0 && <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>}
+            {s.value > 0 && (
+              <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+                {formatValue(s.value)}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -225,7 +283,9 @@ export function AllocationDonut({
 /* ───────────────── CONCENTRATION — ranked bars ───────────────── */
 
 export function ConcentrationBars({
-  rows, formatValue, threshold = 15,
+  rows,
+  formatValue,
+  threshold = 15,
 }: {
   rows: { name: string; pct: number; value?: number }[];
   formatValue: (n: number) => string;
@@ -246,7 +306,9 @@ export function ConcentrationBars({
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border/70 pb-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Largest position</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Largest position
+          </p>
           <p className="mt-1 font-display text-xl leading-tight text-foreground">{largest.name}</p>
         </div>
         <p className="font-mono text-[13px] tabular-nums text-foreground">
@@ -255,15 +317,31 @@ export function ConcentrationBars({
       </div>
       <div style={{ height: Math.max(190, data.length * 38) }} className="mt-5 w-full">
         <ResponsiveContainer>
-          <BarChart data={data} layout="vertical" margin={{ top: 16, right: 48, bottom: 4, left: 4 }}>
+          <BarChart
+            data={data}
+            layout="vertical"
+            margin={{ top: 16, right: 48, bottom: 4, left: 4 }}
+          >
             <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" horizontal={false} />
             <XAxis type="number" unit="%" tick={AXIS_TICK} axisLine={false} tickLine={false} />
-            <YAxis type="category" dataKey="name" width={150} tick={{ fill: "var(--foreground)", fontSize: 12 }} axisLine={false} tickLine={false} />
+            <YAxis
+              type="category"
+              dataKey="name"
+              width={150}
+              tick={{ fill: "var(--foreground)", fontSize: 12 }}
+              axisLine={false}
+              tickLine={false}
+            />
             <ReferenceLine
               x={threshold}
               stroke={SERIES_COLORS.attention}
               strokeDasharray="5 4"
-              label={{ value: `${threshold}% concentration line`, position: "top", fill: SERIES_COLORS.attention, fontSize: 10 }}
+              label={{
+                value: `${threshold}% concentration line`,
+                position: "top",
+                fill: SERIES_COLORS.attention,
+                fontSize: 10,
+              }}
             />
             <Tooltip
               cursor={{ fill: "var(--muted)", opacity: 0.25 }}
@@ -278,17 +356,30 @@ export function ConcentrationBars({
               {data.map((d, i) => (
                 <Cell
                   key={i}
-                  fill={d.Share >= 25 ? SERIES_COLORS.action : d.Share >= threshold ? SERIES_COLORS.attention : SERIES_COLORS.you}
+                  fill={
+                    d.Share >= 25
+                      ? SERIES_COLORS.action
+                      : d.Share >= threshold
+                        ? SERIES_COLORS.attention
+                        : SERIES_COLORS.you
+                  }
                   fillOpacity={i === 0 ? 1 : i < 5 ? 0.75 : 0.4}
                 />
               ))}
-              <LabelList dataKey="Share" position="right" formatter={(v: number) => `${v}%`} style={{ fill: "var(--muted-foreground)", fontSize: 11 }} />
+              <LabelList
+                dataKey="Share"
+                position="right"
+                formatter={(v: number) => `${v}%`}
+                style={{ fill: "var(--muted-foreground)", fontSize: 11 }}
+              />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
       <p className="mt-4 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">
-        Your top five holdings are <span className="font-semibold text-foreground">{top5}%</span> of the portfolio. Past the {threshold}% line, a single position starts to steer the whole outcome.
+        Your top five holdings are <span className="font-semibold text-foreground">{top5}%</span> of
+        the portfolio. Past the {threshold}% line, a single position starts to steer the whole
+        outcome.
       </p>
     </div>
   );
@@ -297,7 +388,10 @@ export function ConcentrationBars({
 /* ───────────────── STACKED COMPOSITION — market cap ───────────────── */
 
 export function StackedComposition({
-  slices, formatValue, caption, empty,
+  slices,
+  formatValue,
+  caption,
+  empty,
 }: {
   slices: Slice[];
   formatValue: (n: number) => string;
@@ -324,7 +418,11 @@ export function StackedComposition({
             }}
             className="flex h-full items-center justify-center transition-opacity"
           >
-            {s.pct >= 12 && <span className="px-1 font-mono text-[11px] tabular-nums text-white/95">{s.pct}%</span>}
+            {s.pct >= 12 && (
+              <span className="px-1 font-mono text-[11px] tabular-nums text-white/95">
+                {s.pct}%
+              </span>
+            )}
           </span>
         ))}
       </div>
@@ -336,10 +434,19 @@ export function StackedComposition({
             onMouseLeave={() => setActive(null)}
             className={`flex items-baseline gap-3 rounded-lg px-2 py-1.5 transition-colors ${active === s.label ? "bg-muted/60" : ""}`}
           >
-            <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{s.label}</span>
+            <span
+              className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]"
+              style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }}
+            />
+            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">
+              {s.label}
+            </span>
             <span className="font-mono text-[12px] tabular-nums text-foreground">{s.pct}%</span>
-            {s.value > 0 && <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>}
+            {s.value > 0 && (
+              <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+                {formatValue(s.value)}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -350,8 +457,13 @@ export function StackedComposition({
 /* ───────────────── SECTOR — treemap ───────────────── */
 
 interface TreemapNodeProps {
-  x?: number; y?: number; width?: number; height?: number; index?: number;
-  name?: string; pct?: number;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  index?: number;
+  name?: string;
+  pct?: number;
 }
 
 function SectorTile(props: TreemapNodeProps) {
@@ -360,13 +472,26 @@ function SectorTile(props: TreemapNodeProps) {
   const showLabel = width > 66 && height > 34;
   return (
     <g>
-      <rect x={x} y={y} width={width} height={height} rx={8} fill={color} stroke="var(--card)" strokeWidth={3} />
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        rx={8}
+        fill={color}
+        stroke="var(--card)"
+        strokeWidth={3}
+      />
       {showLabel && (
         <>
           <text x={x + 10} y={y + 20} fill="#fff" fontSize={11} fontWeight={600}>
-            {name.length > Math.floor(width / 7) ? `${name.slice(0, Math.max(3, Math.floor(width / 7) - 1))}…` : name}
+            {name.length > Math.floor(width / 7)
+              ? `${name.slice(0, Math.max(3, Math.floor(width / 7) - 1))}…`
+              : name}
           </text>
-          <text x={x + 10} y={y + 36} fill="rgba(255,255,255,0.85)" fontSize={11}>{pct}%</text>
+          <text x={x + 10} y={y + 36} fill="rgba(255,255,255,0.85)" fontSize={11}>
+            {pct}%
+          </text>
         </>
       )}
     </g>
@@ -374,30 +499,52 @@ function SectorTile(props: TreemapNodeProps) {
 }
 
 export function SectorTreemap({
-  slices, formatValue, empty,
+  slices,
+  formatValue,
+  empty,
 }: {
   slices: Slice[];
   formatValue: (n: number) => string;
   empty?: string;
 }) {
-  const data = slices.filter((s) => s.pct > 0).map((s) => ({ name: s.label, size: s.pct, pct: s.pct, value: s.value }));
+  const data = slices
+    .filter((s) => s.pct > 0)
+    .map((s) => ({ name: s.label, size: s.pct, pct: s.pct, value: s.value }));
   if (data.length === 0) return <NoData>{empty}</NoData>;
   return (
     <div>
       <div className="h-[260px] w-full">
         <ResponsiveContainer>
-          <Treemap data={data} dataKey="size" stroke="var(--card)" isAnimationActive={false} content={<SectorTile />}>
-            <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number, _n, p) => [`${v}%`, (p?.payload?.name as string) ?? "Sector"]} />
+          <Treemap
+            data={data}
+            dataKey="size"
+            stroke="var(--card)"
+            isAnimationActive={false}
+            content={<SectorTile />}
+          >
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              formatter={(v: number, _n, p) => [`${v}%`, (p?.payload?.name as string) ?? "Sector"]}
+            />
           </Treemap>
         </ResponsiveContainer>
       </div>
       <ul className="mt-5 grid gap-x-8 gap-y-1.5 sm:grid-cols-2">
         {data.slice(0, 8).map((s, i) => (
           <li key={s.name} className="flex items-baseline gap-2.5 border-b border-border/50 pb-1.5">
-            <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">{s.name}</span>
+            <span
+              className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]"
+              style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }}
+            />
+            <span className="min-w-0 flex-1 truncate text-[12.5px] font-medium text-foreground">
+              {s.name}
+            </span>
             <span className="font-mono text-[12px] tabular-nums text-foreground">{s.pct}%</span>
-            {s.value > 0 && <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(s.value)}</span>}
+            {s.value > 0 && (
+              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                {formatValue(s.value)}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -407,7 +554,15 @@ export function SectorTreemap({
 
 /* ───────────────── DIAGNOSTIC INDICATORS ───────────────── */
 
-export function ScoreRing({ value, color, size = 44 }: { value: number; color: string; size?: number }) {
+export function ScoreRing({
+  value,
+  color,
+  size = 44,
+}: {
+  value: number;
+  color: string;
+  size?: number;
+}) {
   const v = Math.max(0, Math.min(100, value));
   const r = (size - 6) / 2;
   const c = 2 * Math.PI * r;
@@ -415,7 +570,13 @@ export function ScoreRing({ value, color, size = 44 }: { value: number; color: s
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="shrink-0 -rotate-90">
       <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--muted)" strokeWidth={5} />
       <circle
-        cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={5} strokeLinecap="round"
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke={color}
+        strokeWidth={5}
+        strokeLinecap="round"
         strokeDasharray={`${(v / 100) * c} ${c}`}
       />
     </svg>
@@ -426,17 +587,31 @@ export function MiniMeter({ value, color }: { value: number; color: string }) {
   const v = Math.max(0, Math.min(100, value));
   return (
     <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted">
-      <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${Math.max(3, v)}%`, background: color }} />
+      <span
+        className="block h-full rounded-full transition-[width] duration-500"
+        style={{ width: `${Math.max(3, v)}%`, background: color }}
+      />
     </span>
   );
 }
 
-export function ThresholdMarker({ value, threshold, color }: { value: number; threshold: number; color: string }) {
+export function ThresholdMarker({
+  value,
+  threshold,
+  color,
+}: {
+  value: number;
+  threshold: number;
+  color: string;
+}) {
   const scale = Math.max(100, value * 1.2, threshold * 1.6);
   return (
     <span className="relative block h-5 w-full">
       <span className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
-        <span className="block h-full rounded-full" style={{ width: `${(Math.min(value, scale) / scale) * 100}%`, background: color }} />
+        <span
+          className="block h-full rounded-full"
+          style={{ width: `${(Math.min(value, scale) / scale) * 100}%`, background: color }}
+        />
       </span>
       <span
         className="absolute top-0 h-5 border-l border-dashed"
@@ -449,7 +624,9 @@ export function ThresholdMarker({ value, threshold, color }: { value: number; th
 /* ───────────────── PROJECTION — interactive line chart ───────────────── */
 
 export function ProjectionChart({
-  data, format, series,
+  data,
+  format,
+  series,
 }: {
   data: { year: number; base: number; alternative: number; third?: number }[];
   format: (n: number) => string;
@@ -458,7 +635,9 @@ export function ProjectionChart({
   const labelOf = (k: string) => series.find((s) => s.key === k)?.label ?? k;
   return (
     <div>
-      <ChartLegend items={series.map((s) => ({ label: s.label, color: s.color, dashed: Boolean(s.dash) }))} />
+      <ChartLegend
+        items={series.map((s) => ({ label: s.label, color: s.color, dashed: Boolean(s.dash) }))}
+      />
       <div className="mt-5 h-[320px] w-full">
         <ResponsiveContainer>
           <LineChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
@@ -472,7 +651,13 @@ export function ProjectionChart({
               dy={6}
               minTickGap={16}
             />
-            <YAxis tickFormatter={(v: number) => format(v)} tick={AXIS_TICK} axisLine={false} tickLine={false} width={62} />
+            <YAxis
+              tickFormatter={(v: number) => format(v)}
+              tick={AXIS_TICK}
+              axisLine={false}
+              tickLine={false}
+              width={62}
+            />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               labelFormatter={(v: number) => (v === 0 ? "Today" : `In ${v} years`)}
@@ -507,7 +692,9 @@ export function ProjectionChart({
  * once as a quiet vertical guide.
  */
 export function ConcentrationLadder({
-  rows, formatValue, threshold = 15,
+  rows,
+  formatValue,
+  threshold = 15,
 }: {
   rows: { name: string; pct: number; value?: number }[];
   formatValue: (n: number) => string;
@@ -529,20 +716,32 @@ export function ConcentrationLadder({
       <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-surface/60 px-5 py-4">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Largest position</p>
-            <p className="mt-1 truncate font-display text-xl leading-tight text-foreground">{lead.name}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Largest position
+            </p>
+            <p className="mt-1 truncate font-display text-xl leading-tight text-foreground">
+              {lead.name}
+            </p>
           </div>
           <div className="text-right">
-            <p className="font-display text-3xl leading-none tracking-tight" style={{ color: toneOf(lead.pct) }}>
+            <p
+              className="font-display text-3xl leading-none tracking-tight"
+              style={{ color: toneOf(lead.pct) }}
+            >
               {lead.pct}%
             </p>
             {lead.value ? (
-              <p className="mt-1 font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(lead.value)}</p>
+              <p className="mt-1 font-mono text-[11px] tabular-nums text-muted-foreground">
+                {formatValue(lead.value)}
+              </p>
             ) : null}
           </div>
         </div>
         <div className="relative mt-3.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <span className="block h-full rounded-full" style={{ width: `${(lead.pct / scale) * 100}%`, background: toneOf(lead.pct) }} />
+          <span
+            className="block h-full rounded-full"
+            style={{ width: `${(lead.pct / scale) * 100}%`, background: toneOf(lead.pct) }}
+          />
         </div>
       </div>
 
@@ -560,16 +759,24 @@ export function ConcentrationLadder({
                 key={`${r.name}-${i}`}
                 className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-x-3 border-b border-border/50 py-2 last:border-0 sm:grid-cols-[1.5rem_minmax(0,44%)_1fr_auto]"
               >
-                <span className="font-mono text-[11px] tabular-nums text-muted-foreground/70">{String(i + 2).padStart(2, "0")}</span>
+                <span className="font-mono text-[11px] tabular-nums text-muted-foreground/70">
+                  {String(i + 2).padStart(2, "0")}
+                </span>
                 <span className="truncate text-[13px] font-medium text-foreground">{r.name}</span>
                 <span className="col-span-2 mt-1 flex items-center gap-3 sm:col-span-1 sm:mt-0">
                   <span className="h-[5px] flex-1 overflow-hidden rounded-full bg-muted/70">
                     <span
                       className="block h-full rounded-full"
-                      style={{ width: `${(r.pct / scale) * 100}%`, background: toneOf(r.pct), opacity: 0.85 }}
+                      style={{
+                        width: `${(r.pct / scale) * 100}%`,
+                        background: toneOf(r.pct),
+                        opacity: 0.85,
+                      }}
                     />
                   </span>
-                  <span className="w-11 shrink-0 text-right font-mono text-[12px] tabular-nums text-foreground">{r.pct}%</span>
+                  <span className="w-11 shrink-0 text-right font-mono text-[12px] tabular-nums text-foreground">
+                    {r.pct}%
+                  </span>
                 </span>
                 <span className="hidden w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground sm:block">
                   {r.value ? formatValue(r.value) : ""}
@@ -582,7 +789,8 @@ export function ConcentrationLadder({
 
       <p className="mt-3 flex flex-wrap items-baseline gap-x-2 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">
         <span>
-          Top five holdings hold <span className="font-semibold text-foreground">{top5}%</span> of the portfolio.
+          Top five holdings hold <span className="font-semibold text-foreground">{top5}%</span> of
+          the portfolio.
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-3 w-0 border-l border-dashed border-muted-foreground" />
@@ -602,7 +810,8 @@ export function ConcentrationLadder({
  * compact and avoids repeating the two-bar comparison pattern.
  */
 export function ComparisonTracks({
-  rows, peerNote,
+  rows,
+  peerNote,
 }: {
   rows: { label: string; you: number; recommended: number }[];
   peerNote?: React.ReactNode;
@@ -613,7 +822,11 @@ export function ComparisonTracks({
       <ChartLegend
         items={[
           { label: "You", color: SERIES_COLORS.you, hint: "current mix" },
-          { label: "NitiCore™", color: SERIES_COLORS.nitiCore, hint: "recommended for your profile" },
+          {
+            label: "NitiCore™",
+            color: SERIES_COLORS.nitiCore,
+            hint: "recommended for your profile",
+          },
         ]}
       />
       <ul className="mt-4 space-y-3.5">
@@ -621,8 +834,13 @@ export function ComparisonTracks({
           const gap = Math.round((r.you - r.recommended) * 10) / 10;
           const aligned = Math.abs(gap) <= 5;
           return (
-            <li key={r.label} className="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-x-3">
-              <span className="truncate text-[12.5px] font-semibold text-foreground">{r.label}</span>
+            <li
+              key={r.label}
+              className="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-x-3"
+            >
+              <span className="truncate text-[12.5px] font-semibold text-foreground">
+                {r.label}
+              </span>
               <span className="relative block h-3.5">
                 <span className="absolute inset-x-0 top-1/2 h-[7px] -translate-y-1/2 overflow-hidden rounded-full bg-muted/70">
                   <span
@@ -632,7 +850,10 @@ export function ComparisonTracks({
                 </span>
                 <span
                   className="absolute top-0 h-3.5 w-[2px] rounded-full"
-                  style={{ left: `${(r.recommended / max) * 100}%`, background: SERIES_COLORS.nitiCore }}
+                  style={{
+                    left: `${(r.recommended / max) * 100}%`,
+                    background: SERIES_COLORS.nitiCore,
+                  }}
                   title={`NitiCore™ recommended ${r.recommended}%`}
                 />
               </span>
@@ -642,7 +863,8 @@ export function ComparisonTracks({
                 <span style={{ color: SERIES_COLORS.nitiCore }}>{r.recommended}%</span>
                 {!aligned && (
                   <span className="ml-2 text-[10.5px] text-foreground/60">
-                    {gap > 0 ? "+" : "−"}{Math.abs(gap)}pp
+                    {gap > 0 ? "+" : "−"}
+                    {Math.abs(gap)}pp
                   </span>
                 )}
               </span>
@@ -650,7 +872,11 @@ export function ComparisonTracks({
           );
         })}
       </ul>
-      {peerNote && <div className="mt-4 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">{peerNote}</div>}
+      {peerNote && (
+        <div className="mt-4 border-t border-border/70 pt-3 text-[11px] leading-relaxed text-muted-foreground">
+          {peerNote}
+        </div>
+      )}
     </div>
   );
 }
@@ -670,7 +896,9 @@ export interface ExposureGroup {
  * deliberately not another bar chart.
  */
 export function ExposureOverlap({
-  groups, formatValue, empty,
+  groups,
+  formatValue,
+  empty,
 }: {
   groups: ExposureGroup[];
   formatValue: (n: number) => string;
@@ -695,7 +923,11 @@ export function ExposureOverlap({
             }}
             className="flex h-full items-center justify-center transition-opacity"
           >
-            {g.pct >= 10 && <span className="px-1 font-mono text-[11px] tabular-nums text-white/95">{g.pct}%</span>}
+            {g.pct >= 10 && (
+              <span className="px-1 font-mono text-[11px] tabular-nums text-white/95">
+                {g.pct}%
+              </span>
+            )}
           </span>
         ))}
       </div>
@@ -708,13 +940,25 @@ export function ExposureOverlap({
             className={`rounded-xl px-2.5 py-2 transition-colors ${active === g.label ? "bg-muted/50" : ""}`}
           >
             <div className="flex items-baseline gap-2.5">
-              <span className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]" style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }} />
-              <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-foreground">{g.label}</span>
+              <span
+                className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]"
+                style={{ background: CHART_PALETTE[i % CHART_PALETTE.length] }}
+              />
+              <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-foreground">
+                {g.label}
+              </span>
               <span className="font-mono text-[12px] tabular-nums text-foreground">{g.pct}%</span>
-              {g.value > 0 && <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">{formatValue(g.value)}</span>}
+              {g.value > 0 && (
+                <span className="w-20 shrink-0 text-right font-mono text-[11px] tabular-nums text-muted-foreground">
+                  {formatValue(g.value)}
+                </span>
+              )}
             </div>
             <p className="mt-1 pl-5 text-[11px] leading-relaxed text-muted-foreground">
-              {g.members.slice(0, 4).map((m) => `${m.name} ${m.pct}%`).join(" · ")}
+              {g.members
+                .slice(0, 4)
+                .map((m) => `${m.name} ${m.pct}%`)
+                .join(" · ")}
               {g.members.length > 4 ? ` · +${g.members.length - 4} more` : ""}
             </p>
           </li>
@@ -731,7 +975,9 @@ export function ExposureOverlap({
  * number, no gauge needle theatre.
  */
 export function EffectivenessDial({
-  score, delta, caption,
+  score,
+  delta,
+  caption,
 }: {
   score: number;
   delta?: number;
@@ -741,30 +987,45 @@ export function EffectivenessDial({
   const size = 168;
   const r = (size - 14) / 2;
   const c = Math.PI * r; // half circle
-  const color = v >= 80 ? SERIES_COLORS.positive : v >= 60 ? SERIES_COLORS.you : SERIES_COLORS.attention;
+  const color =
+    v >= 80 ? SERIES_COLORS.positive : v >= 60 ? SERIES_COLORS.you : SERIES_COLORS.attention;
   return (
     <div className="flex flex-col items-center">
       <div className="relative" style={{ width: size, height: size / 2 + 18 }}>
         <svg width={size} height={size / 2 + 10} viewBox={`0 0 ${size} ${size / 2 + 10}`}>
           <path
             d={`M 7 ${size / 2} A ${r} ${r} 0 0 1 ${size - 7} ${size / 2}`}
-            fill="none" stroke="var(--muted)" strokeWidth={9} strokeLinecap="round"
+            fill="none"
+            stroke="var(--muted)"
+            strokeWidth={9}
+            strokeLinecap="round"
           />
           <path
             d={`M 7 ${size / 2} A ${r} ${r} 0 0 1 ${size - 7} ${size / 2}`}
-            fill="none" stroke={color} strokeWidth={9} strokeLinecap="round"
+            fill="none"
+            stroke={color}
+            strokeWidth={9}
+            strokeLinecap="round"
             strokeDasharray={`${(v / 100) * c} ${c}`}
             style={{ transition: "stroke-dasharray 400ms ease" }}
           />
         </svg>
         <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
-          <span className="font-display text-[2.75rem] leading-none tracking-tight text-foreground tabular-nums">{v}</span>
-          <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">out of 100</span>
+          <span className="font-display text-[2.75rem] leading-none tracking-tight text-foreground tabular-nums">
+            {v}
+          </span>
+          <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            out of 100
+          </span>
         </div>
       </div>
       {typeof delta === "number" && delta !== 0 && (
-        <p className="mt-3 font-mono text-[12px] tabular-nums" style={{ color: delta > 0 ? SERIES_COLORS.positive : SERIES_COLORS.attention }}>
-          {delta > 0 ? "+" : "−"}{Math.abs(delta)} vs your current plan
+        <p
+          className="mt-3 font-mono text-[12px] tabular-nums"
+          style={{ color: delta > 0 ? SERIES_COLORS.positive : SERIES_COLORS.attention }}
+        >
+          {delta > 0 ? "+" : "−"}
+          {Math.abs(delta)} vs your current plan
         </p>
       )}
       {caption && <p className="mt-2 text-center text-[11px] text-muted-foreground">{caption}</p>}
@@ -775,7 +1036,12 @@ export function EffectivenessDial({
 /* ───────────────── EFFECTIVENESS — heatmap ───────────────── */
 
 export function EffectivenessHeatmap({
-  cells, columns, rows, activeStepUp, activeScenario, onSelect,
+  cells,
+  columns,
+  rows,
+  activeStepUp,
+  activeScenario,
+  onSelect,
 }: {
   cells: { stepUp: number; scenario: string; score: number }[];
   columns: { key: string; label: string }[];
@@ -794,10 +1060,16 @@ export function EffectivenessHeatmap({
   };
   return (
     <div>
-      <div className="grid" style={{ gridTemplateColumns: `5.5rem repeat(${columns.length}, minmax(0,1fr))` }}>
+      <div
+        className="grid"
+        style={{ gridTemplateColumns: `5.5rem repeat(${columns.length}, minmax(0,1fr))` }}
+      >
         <span />
         {columns.map((c) => (
-          <span key={c.key} className="pb-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span
+            key={c.key}
+            className="pb-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+          >
             {c.label}
           </span>
         ))}
@@ -833,7 +1105,8 @@ export function EffectivenessHeatmap({
 /* ───────────────── STRESS — scenario rails ───────────────── */
 
 export function StressScenarios({
-  rows, formatValue,
+  rows,
+  formatValue,
 }: {
   rows: { label: string; detail: string; impact: number; after: number; pctOfPortfolio: number }[];
   formatValue: (n: number) => string;
@@ -853,7 +1126,11 @@ export function StressScenarios({
           <span className="mt-2 block h-[6px] w-full overflow-hidden rounded-full bg-muted/70">
             <span
               className="block h-full rounded-full"
-              style={{ width: `${(r.pctOfPortfolio / max) * 100}%`, background: SERIES_COLORS.attention, opacity: 0.85 }}
+              style={{
+                width: `${(r.pctOfPortfolio / max) * 100}%`,
+                background: SERIES_COLORS.attention,
+                opacity: 0.85,
+              }}
             />
           </span>
           <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
@@ -881,20 +1158,38 @@ export function PeerRails({
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-[12.5px] font-semibold text-foreground">{r.label}</span>
               <span className="font-mono text-[11.5px] tabular-nums text-muted-foreground">
-                <span className="font-semibold text-foreground">{r.you}{r.unit}</span>
+                <span className="font-semibold text-foreground">
+                  {r.you}
+                  {r.unit}
+                </span>
                 <span className="px-1.5">vs</span>
-                <span style={{ color: SERIES_COLORS.peer }}>{r.typical}{r.unit}</span>
+                <span style={{ color: SERIES_COLORS.peer }}>
+                  {r.typical}
+                  {r.unit}
+                </span>
               </span>
             </div>
             <div className="mt-2 space-y-1">
               <span className="block h-[6px] w-full overflow-hidden rounded-full bg-muted/70">
-                <span className="block h-full rounded-full" style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }} />
+                <span
+                  className="block h-full rounded-full"
+                  style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
+                />
               </span>
               <span className="block h-[6px] w-full overflow-hidden rounded-full bg-muted/40">
-                <span className="block h-full rounded-full" style={{ width: `${(r.typical / max) * 100}%`, background: SERIES_COLORS.peer, opacity: 0.7 }} />
+                <span
+                  className="block h-full rounded-full"
+                  style={{
+                    width: `${(r.typical / max) * 100}%`,
+                    background: SERIES_COLORS.peer,
+                    opacity: 0.7,
+                  }}
+                />
               </span>
             </div>
-            <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">{r.verdict}</p>
+            <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
+              {r.verdict}
+            </p>
           </li>
         );
       })}
