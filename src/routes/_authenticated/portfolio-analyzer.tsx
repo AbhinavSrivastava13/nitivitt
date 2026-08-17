@@ -1327,139 +1327,249 @@ function RatingPill({ score }: { score: number }) {
   );
 }
 
-// ───────────────────── PORTFOLIO PROJECTION ─────────────────────
+// ─────────────── PORTFOLIO EFFECTIVENESS · NitiSim™ ───────────────
 
-const HORIZON_PRESETS = [5, 10, 15, 20];
-
-function ProjectionSection({ basis }: { basis: ProjectionBasis }) {
+/**
+ * Effectiveness is derived, not invented: the projection basis and the
+ * deterministic NitiCore™ diagnostics are the only inputs. See
+ * lib/portfolio-analyzer/effectiveness.ts for the formula.
+ */
+function EffectivenessSection({
+  basis, diagnostics,
+}: {
+  basis: ProjectionBasis;
+  diagnostics: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic[];
+}) {
   const [years, setYears] = useState(basis.defaultHorizonYears);
-  const [extraSip, setExtraSip] = useState(basis.suggestedSipUplift);
-  const [returnPct, setReturnPct] = useState(basis.expectedReturnPct);
-  const [stepUpPct, setStepUpPct] = useState(10);
+  const [monthlySip, setMonthlySip] = useState(Math.max(basis.monthlySip, 0));
+  const [stepUpPct, setStepUpPct] = useState(0);
+  const [scenario, setScenario] = useState<ScenarioKey>("base");
 
-  const baseArgs = { currentValue: basis.currentValue, monthlySip: basis.monthlySip, annualReturnPct: returnPct, years };
-  const altArgs = { ...baseArgs, monthlySip: basis.monthlySip + extraSip };
-  const thirdArgs = { ...altArgs, annualStepUpPct: stepUpPct };
-  const showThird = stepUpPct > 0 && basis.monthlySip + extraSip > 0;
-
-  const series = useMemo(
-    () => buildProjectionSeries(baseArgs, altArgs, showThird ? thirdArgs : undefined),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [basis, years, extraSip, returnPct, stepUpPct, showThird],
+  const current = useMemo(
+    () => computeEffectiveness(basis, diagnostics, { monthlySip: basis.monthlySip, stepUpPct: 0, years: basis.defaultHorizonYears, scenario: "base" }),
+    [basis, diagnostics],
   );
+  const result = useMemo(
+    () => computeEffectiveness(basis, diagnostics, { monthlySip, stepUpPct, years, scenario }),
+    [basis, diagnostics, monthlySip, stepUpPct, years, scenario],
+  );
+  const grid = useMemo(() => effectivenessGrid(basis, diagnostics, { monthlySip, years }), [basis, diagnostics, monthlySip, years]);
+  const lever = useMemo(() => highestImpactLever(grid), [grid]);
 
-  const baseFv = projectValue(baseArgs);
-  const altFv = projectValue(altArgs);
-  const thirdFv = projectValue(thirdArgs);
-  const guidance = useMemo(() => projectionGuidance(basis, years), [basis, years]);
-  const invested = (basis.monthlySip + extraSip) * years * 12;
-  const changed = extraSip !== basis.suggestedSipUplift || returnPct !== basis.expectedReturnPct || years !== basis.defaultHorizonYears || stepUpPct !== 10;
+  const series = useMemo(() => {
+    const common = { currentValue: basis.currentValue, years };
+    return buildProjectionSeries(
+      { ...common, monthlySip: basis.monthlySip, annualReturnPct: basis.expectedReturnPct },
+      { ...common, monthlySip, annualReturnPct: result.returnPct, annualStepUpPct: stepUpPct },
+    );
+  }, [basis, monthlySip, years, stepUpPct, result.returnPct]);
+
+  const changed = monthlySip !== basis.monthlySip || stepUpPct !== 0 || years !== basis.defaultHorizonYears || scenario !== "base";
+  const interpretation =
+    result.fundingPct >= 100
+      ? "At this contribution level the plan already clears the NitiCore™ reference path for your horizon. The remaining upside now comes from portfolio structure, not from taking more risk."
+      : result.structure >= result.fundingPct
+        ? "Your portfolio is structurally sound; the shortfall is a contribution question, not a market question. Increasing what you invest has more potential impact than taking additional investment risk."
+        : "Contributions are doing their job — the constraint here is portfolio structure. Fixing concentration and allocation moves this score more than adding rupees.";
 
   return (
-    <div className="mt-5 space-y-5">
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-9">
-        <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] lg:gap-12">
+    <div className="mt-4 space-y-4">
+      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:gap-12">
           <div>
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              {HORIZON_PRESETS.map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setYears(p)}
-                  className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                    years === p ? "bg-foreground text-background" : "border border-border text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {p} years
-                </button>
-              ))}
-            </div>
-            <ProjectionChart
-              data={series}
-              format={inrShort}
-              series={[
-                { key: "base", label: "Current path", color: SERIES_COLORS.you },
-                { key: "alternative", label: "Higher contribution", color: SERIES_COLORS.recommended, dash: "6 4" },
-                ...(showThird ? [{ key: "third" as const, label: `Higher contribution + ${stepUpPct}% yearly increase`, color: SERIES_COLORS.peer, dash: "2 5" }] : []),
-              ]}
-            />
+            <EffectivenessDial score={result.score} delta={result.score - current.score} />
+            <p className="mt-5 text-[13px] leading-relaxed text-foreground/85">{interpretation}</p>
+            <dl className="mt-5 space-y-2.5 border-t border-border/70 pt-4 text-[12px]">
+              <EffStat label="Current plan" value={`₹${basis.monthlySip.toLocaleString("en-IN")}/month · 0% step-up · Base`} />
+              <EffStat label={`Projected in ${years} years`} value={inrShort(result.projected)} strong />
+              <EffStat label="NitiCore™ reference path" value={inrShort(result.reference)} />
+              <EffStat label="Funding progress · structure" value={`${result.fundingPct}% · ${result.structure}/100`} />
+            </dl>
+            <p className="mt-3 text-[10.5px] leading-relaxed text-muted-foreground">
+              Effectiveness = 65% funding progress against the NitiCore™ reference path for the same horizon, plus 35% deterministic structural health.
+            </p>
           </div>
 
           <div className="space-y-6">
-            <div className="space-y-3">
-              <ProjStat label={`Current path · ${years} years`} value={inrShort(baseFv)} tone="you" />
-              <ProjStat label="With higher contribution" value={inrShort(altFv)} tone="alt" />
-              {showThird && <ProjStat label={`Plus ${stepUpPct}% yearly increase`} value={inrShort(thirdFv)} tone="alt" />}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Return scenario</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {SCENARIOS.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => setScenario(s.key)}
+                    className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors ${
+                      scenario === s.key ? "bg-foreground text-background" : "border border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {s.label} · {scenarioReturn(basis.expectedReturnPct, s.key)}%
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[10.5px] text-muted-foreground">{basis.returnBasis} Scenarios apply ±2 percentage points to that blended assumption.</p>
             </div>
-            <p className="text-[12px] leading-relaxed text-muted-foreground">
-              Of the projected total, <span className="font-semibold text-foreground">{inrShort(Math.max(0, invested))}</span> is money you contribute over {years} years. The rest is compounding.
-            </p>
 
-            <div className="space-y-5 border-t border-border/70 pt-5">
+            <div className="grid gap-5 sm:grid-cols-2">
               <Slider
-                label="Projection period"
-                value={`${years} years`}
-                min={3} max={35} step={1}
-                current={years}
-                onChange={setYears}
-                hint={basis.horizonBasis}
+                label="Monthly contribution"
+                value={`₹${monthlySip.toLocaleString("en-IN")}`}
+                min={0}
+                max={Math.max(50000, (basis.monthlySip + basis.suggestedSipUplift) * 3)}
+                step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
+                current={monthlySip}
+                onChange={setMonthlySip}
+                hint={basis.sipSource === "profile" ? `Your recorded contribution is ₹${basis.monthlySip.toLocaleString("en-IN")}/month` : "No recurring contribution recorded in your profile yet"}
               />
               <Slider
-                label="Extra monthly investment"
-                value={`₹${extraSip.toLocaleString("en-IN")}`}
-                min={0} max={Math.max(25000, basis.suggestedSipUplift * 5)} step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
-                current={extraSip}
-                onChange={setExtraSip}
-                hint={basis.sipSource === "profile"
-                  ? `On top of your recorded ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
-                  : "No recurring contribution recorded in your profile yet"}
-              />
-              <Slider
-                label="Annual increase in contribution"
+                label="Annual step-up"
                 value={`${stepUpPct}%`}
                 min={0} max={20} step={1}
                 current={stepUpPct}
                 onChange={setStepUpPct}
-                hint="Most salaried investors can raise their SIP roughly in line with annual increments."
+                hint="Most salaried investors can raise contributions in line with annual increments."
               />
               <Slider
-                label="Expected annual return"
-                value={`${returnPct}%`}
-                min={5} max={15} step={0.5}
-                current={returnPct}
-                onChange={setReturnPct}
-                hint={basis.returnBasis}
+                label="Years to retirement"
+                value={`${years} years`}
+                min={3} max={40} step={1}
+                current={years}
+                onChange={setYears}
+                hint={basis.horizonBasis}
               />
+              <div>
+                <p className="text-[12px] font-semibold text-foreground">Contributed over the period</p>
+                <p className="mt-2 font-mono text-[13px] tabular-nums text-foreground">{inrShort(result.contributed)}</p>
+                <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
+                  The rest of the projected total is compounding, not money you paid in.
+                </p>
+              </div>
             </div>
 
-            {changed && (
-              <button
-                onClick={() => { setExtraSip(basis.suggestedSipUplift); setReturnPct(basis.expectedReturnPct); setYears(basis.defaultHorizonYears); setStepUpPct(10); }}
-                className="text-[11px] font-semibold text-primary hover:underline"
-              >
-                Reset to NitiCore™ defaults
-              </button>
-            )}
+            <div className="border-t border-border/70 pt-5">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Effectiveness across contribution &amp; return</p>
+                {changed && (
+                  <button
+                    onClick={() => { setMonthlySip(basis.monthlySip); setStepUpPct(0); setYears(basis.defaultHorizonYears); setScenario("base"); }}
+                    className="text-[11px] font-semibold text-primary hover:underline"
+                  >
+                    Reset to NitiCore™ defaults
+                  </button>
+                )}
+              </div>
+              <div className="mt-3">
+                <EffectivenessHeatmap
+                  cells={grid}
+                  rows={STEP_UP_ROWS}
+                  columns={SCENARIOS.map((s) => ({ key: s.key, label: s.label }))}
+                  activeStepUp={stepUpPct}
+                  activeScenario={scenario}
+                  onSelect={(st, sc) => { setStepUpPct(st); setScenario(sc as ScenarioKey); }}
+                />
+              </div>
+              {lever && <p className="mt-3 text-[11.5px] leading-relaxed text-foreground/85">{lever}</p>}
+            </div>
           </div>
+        </div>
+
+        <div className="mt-8 border-t border-border/70 pt-6">
+          <ProjectionChart
+            data={series}
+            format={inrShort}
+            series={[
+              { key: "base", label: "Current plan", color: SERIES_COLORS.you },
+              { key: "alternative", label: "Your scenario", color: SERIES_COLORS.recommended, dash: "6 4" },
+            ]}
+          />
+          <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+            Illustrative scenarios, not guaranteed returns. Markets never deliver a smooth annual number, and the return assumption is the least reliable input on this page.
+          </p>
         </div>
       </div>
 
-      <div className="rounded-3xl border border-border bg-surface p-6 md:p-8">
-        <h4 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">What this means</h4>
+      <details className="group rounded-2xl border border-border bg-surface px-5 py-3.5">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+          What this means in plain language
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+        </summary>
         <ul className="mt-4 space-y-3">
-          {guidance.map((g, i) => (
+          {projectionGuidance(basis, years).map((g, i) => (
             <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-foreground/85">
               <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
               <span>{g}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-5 border-t border-border/70 pt-4 text-[11px] leading-relaxed text-muted-foreground">
-          Illustrative projection — not a forecast or guarantee. It shows how your portfolio could evolve under the assumptions you choose above. Actual market returns will vary, and they never arrive as a smooth annual number.
-        </p>
-      </div>
+      </details>
     </div>
   );
 }
+
+function EffStat({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={`font-mono tabular-nums ${strong ? "text-[14px] font-semibold text-foreground" : "text-foreground/85"}`}>{value}</dd>
+    </div>
+  );
+}
+
+// ─────────────────────── PEER COMPARISON ───────────────────────
+
+const AGE_BANDS = ["25-29", "30-34", "35-39", "40-44", "45-49", "50-54"];
+
+function PeerComparison({ peer }: { peer: import("@/lib/portfolio-analyzer/types").PeerBenchmark }) {
+  const detected = /Age\s(\d{2})-(\d{2})/.exec(peer.cohort);
+  const detectedBand = detected ? `${detected[1]}-${detected[2]}` : AGE_BANDS[1];
+  const [band, setBand] = useState(AGE_BANDS.includes(detectedBand) ? detectedBand : AGE_BANDS[1]);
+
+  // Only the equity-participation reference moves with age, and it moves by the
+  // same deterministic NitiCore™ rule (roughly 100 − age). Every other cohort
+  // reference is structural, so it is left exactly as the engine calculated it.
+  const bandStart = Number(band.split("-")[0]);
+  const rows = peer.rows.map((r) =>
+    /equity participation/i.test(r.label)
+      ? { ...r, typical: Math.max(20, Math.min(90, 100 - (bandStart + 2))) }
+      : r,
+  );
+
+  const conc = rows.find((r) => /largest holding/i.test(r.label));
+  const div = rows.find((r) => /diversification/i.test(r.label));
+  const conclusion = (() => {
+    const bits: string[] = [];
+    if (div) bits.push(Math.abs(div.you - div.typical) <= 8 ? "Your portfolio is broadly aligned with peers on diversification" : div.you > div.typical ? "Your portfolio is better diversified than your cohort" : "Your portfolio is less diversified than your cohort");
+    if (conc) bits.push(Math.abs(conc.you - conc.typical) <= 5 ? "and concentration sits in the usual range" : conc.you > conc.typical ? `but concentration is materially higher — ${conc.you}% in one holding against a typical ${conc.typical}%` : "and concentration is lower than typical");
+    return bits.length ? `${bits.join(", ")}.` : "";
+  })();
+
+  return (
+    <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[11px] text-muted-foreground">{peer.cohort}</p>
+        <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          Compare with age
+          <select
+            value={band}
+            onChange={(e) => setBand(e.target.value)}
+            className="rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] text-foreground"
+          >
+            {AGE_BANDS.map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+        </label>
+      </div>
+      <div className="mt-5">
+        <PeerRails rows={rows} />
+      </div>
+      {conclusion && (
+        <p className="mt-5 border-t border-border/70 pt-4 text-[13px] leading-relaxed text-foreground/90">{conclusion}</p>
+      )}
+      <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+        {peer.note} City-level benchmarks are not shown because NitiVitt has no reliable location data to compare against — behaviour and structure are the comparisons that matter here.
+      </p>
+    </div>
+  );
+}
+
 
 function ProjStat({ label, value, tone }: { label: string; value: string; tone: "you" | "alt" }) {
   return (
