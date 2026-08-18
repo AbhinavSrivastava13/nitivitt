@@ -38,6 +38,28 @@ export function structuralScore(diagnostics: PortfolioDiagnostic[]): number {
   return Math.round(diagnostics.reduce((a, d) => a + d.score, 0) / diagnostics.length);
 }
 
+/**
+ * The contribution the "current plan" is measured from. When the profile has no
+ * recorded SIP we fall back to the NitiCore™ suggested starting contribution so
+ * the plan, the sliders, the reference path and the matrix all agree — and the
+ * UI states which of the two it is using.
+ */
+export function baselineSip(basis: ProjectionBasis): number {
+  return basis.monthlySip > 0 ? basis.monthlySip : basis.suggestedSipUplift;
+}
+
+/**
+ * Horizon actually shown. Older stored analyses bucketed the horizon (20/15/10)
+ * while the stated basis quoted the true runway; when the basis text carries a
+ * runway, that is the number both the copy and the maths use.
+ */
+export function resolveHorizon(basis: ProjectionBasis): number {
+  const m = /about\s+(\d{1,2})\s+years/i.exec(basis.horizonBasis ?? "");
+  const stated = m ? Number(m[1]) : NaN;
+  return Number.isFinite(stated) && stated >= 3 && stated <= 40 ? stated : basis.defaultHorizonYears;
+}
+
+
 export interface PlanInput {
   monthlySip: number;
   stepUpPct: number;
