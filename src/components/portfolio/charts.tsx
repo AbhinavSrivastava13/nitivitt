@@ -1033,74 +1033,85 @@ export function EffectivenessDial({
   );
 }
 
-/* ───────────────── EFFECTIVENESS — heatmap ───────────────── */
+/* ───────────────── NITISIM™ — scenario matrix ───────────────── */
 
-export function EffectivenessHeatmap({
+/**
+ * Each cell shows the projected outcome for a contribution/return combination,
+ * so cells always differ where the model differs. The effectiveness score sits
+ * underneath as a secondary read.
+ */
+export function ScenarioMatrix({
   cells,
   columns,
   rows,
   activeStepUp,
   activeScenario,
+  formatValue,
   onSelect,
 }: {
-  cells: { stepUp: number; scenario: string; score: number }[];
+  cells: { stepUp: number; scenario: string; score: number; projected: number }[];
   columns: { key: string; label: string }[];
   rows: number[];
   activeStepUp: number;
   activeScenario: string;
+  formatValue: (n: number) => string;
   onSelect?: (stepUp: number, scenario: string) => void;
 }) {
-  const scores = cells.map((c) => c.score);
-  const lo = Math.min(...scores);
-  const hi = Math.max(...scores);
-  const shade = (s: number) => {
-    const t = hi === lo ? 0.5 : (s - lo) / (hi - lo);
-    // Restrained single-hue ramp on the champagne/slate axis — no traffic lights.
-    return `color-mix(in oklab, ${SERIES_COLORS.you} ${Math.round(10 + t * 62)}%, var(--card))`;
+  const values = cells.map((c) => c.projected);
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  const shade = (v: number) => {
+    const t = hi === lo ? 0.35 : (v - lo) / (hi - lo);
+    // Restrained single-hue ramp — no traffic lights.
+    return `color-mix(in oklab, ${SERIES_COLORS.you} ${Math.round(8 + t * 40)}%, var(--card))`;
   };
   return (
-    <div>
-      <div
-        className="grid"
-        style={{ gridTemplateColumns: `5.5rem repeat(${columns.length}, minmax(0,1fr))` }}
-      >
-        <span />
-        {columns.map((c) => (
-          <span
-            key={c.key}
-            className="pb-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground"
-          >
-            {c.label}
+    <div
+      className="grid"
+      style={{ gridTemplateColumns: `4.75rem repeat(${columns.length}, minmax(0,1fr))` }}
+    >
+      <span />
+      {columns.map((c) => (
+        <span
+          key={c.key}
+          className="pb-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground"
+        >
+          {c.label}
+        </span>
+      ))}
+      {rows.map((r) => (
+        <Fragment key={`row-${r}`}>
+          <span className="flex items-center justify-end pr-2.5 text-right text-[11px] font-medium text-muted-foreground">
+            {r}% step-up
           </span>
-        ))}
-        {rows.map((r) => (
-          <Fragment key={`row-${r}`}>
-            <span className="flex items-center pr-3 text-right text-[11px] font-medium text-muted-foreground">
-              {r}% step-up
-            </span>
-            {columns.map((c) => {
-              const cell = cells.find((x) => x.stepUp === r && x.scenario === c.key);
-              const active = r === activeStepUp && c.key === activeScenario;
-              return (
-                <button
-                  key={`${r}-${c.key}`}
-                  type="button"
-                  onClick={() => onSelect?.(r, c.key)}
-                  className={`m-[3px] rounded-lg py-3 font-mono text-[13px] tabular-nums transition-all ${
-                    active ? "ring-2 ring-foreground/70" : "hover:ring-1 hover:ring-border"
-                  }`}
-                  style={{ background: shade(cell?.score ?? 0), color: "var(--foreground)" }}
-                >
-                  {cell?.score ?? "—"}
-                </button>
-              );
-            })}
-          </Fragment>
-        ))}
-      </div>
+          {columns.map((c) => {
+            const cell = cells.find((x) => x.stepUp === r && x.scenario === c.key);
+            const active = r === activeStepUp && c.key === activeScenario;
+            return (
+              <button
+                key={`${r}-${c.key}`}
+                type="button"
+                onClick={() => onSelect?.(r, c.key)}
+                className={`m-[3px] rounded-lg px-1 py-2 text-center transition-all ${
+                  active ? "ring-2 ring-foreground/70" : "hover:ring-1 hover:ring-border"
+                }`}
+                style={{ background: shade(cell?.projected ?? 0) }}
+              >
+                <span className="block font-mono text-[12.5px] font-semibold tabular-nums text-foreground">
+                  {cell ? formatValue(cell.projected) : "—"}
+                </span>
+                <span className="mt-0.5 block font-mono text-[10px] tabular-nums text-muted-foreground">
+                  {cell ? `${cell.score}/100` : ""}
+                </span>
+              </button>
+            );
+          })}
+        </Fragment>
+      ))}
     </div>
   );
 }
+
 
 /* ───────────────── STRESS — scenario rails ───────────────── */
 

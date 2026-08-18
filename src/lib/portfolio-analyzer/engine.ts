@@ -687,7 +687,10 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     cashPct: pct(cash, totalValue),
   });
   const yearsToRetirement = Math.max(5, Math.round((input.retirementAge || 60) - input.ageYears));
-  const defaultHorizonYears = yearsToRetirement >= 18 ? 20 : yearsToRetirement >= 13 ? 15 : yearsToRetirement >= 8 ? 10 : 5;
+  // The default horizon IS the runway to retirement, so the stated basis and
+  // the projected horizon can never contradict each other on screen.
+  const defaultHorizonYears = Math.min(40, yearsToRetirement);
+
   const upliftBase = monthlySip > 0 ? monthlySip * 0.25 : Math.max(2500, input.monthlyIncome * 0.05);
   const suggestedSipUplift = Math.max(1000, Math.round(upliftBase / 500) * 500);
   const projection: import("./types").ProjectionBasis = {

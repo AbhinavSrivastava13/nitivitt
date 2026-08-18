@@ -38,6 +38,28 @@ export function structuralScore(diagnostics: PortfolioDiagnostic[]): number {
   return Math.round(diagnostics.reduce((a, d) => a + d.score, 0) / diagnostics.length);
 }
 
+/**
+ * The contribution the "current plan" is measured from. When the profile has no
+ * recorded SIP we fall back to the NitiCore™ suggested starting contribution so
+ * the plan, the sliders, the reference path and the matrix all agree — and the
+ * UI states which of the two it is using.
+ */
+export function baselineSip(basis: ProjectionBasis): number {
+  return basis.monthlySip > 0 ? basis.monthlySip : basis.suggestedSipUplift;
+}
+
+/**
+ * Horizon actually shown. Older stored analyses bucketed the horizon (20/15/10)
+ * while the stated basis quoted the true runway; when the basis text carries a
+ * runway, that is the number both the copy and the maths use.
+ */
+export function resolveHorizon(basis: ProjectionBasis): number {
+  const m = /about\s+(\d{1,2})\s+years/i.exec(basis.horizonBasis ?? "");
+  const stated = m ? Number(m[1]) : NaN;
+  return Number.isFinite(stated) && stated >= 3 && stated <= 40 ? stated : basis.defaultHorizonYears;
+}
+
+
 export interface PlanInput {
   monthlySip: number;
   stepUpPct: number;
@@ -68,18 +90,25 @@ export function computeEffectiveness(
     years: plan.years,
     annualStepUpPct: plan.stepUpPct,
   });
+  // The reference is a fixed target: the NitiCore™ plan (your contribution plus
+  // its suggested uplift) run over your actual runway to retirement. It does not
+  // move when you drag a slider, so readiness always means the same thing.
   const reference = Math.max(
     1,
     projectValue({
       currentValue: basis.currentValue,
-      monthlySip: basis.monthlySip + basis.suggestedSipUplift,
+      monthlySip: baselineSip(basis) + basis.suggestedSipUplift,
       annualReturnPct: basis.expectedReturnPct,
-      years: plan.years,
+      years: resolveHorizon(basis),
     }),
   );
-  const fundingPct = Math.min(100, Math.round((projected / reference) * 100));
+  const fundingPct = Math.max(0, Math.round((projected / reference) * 100));
   const structure = structuralScore(diagnostics);
-  const score = Math.max(0, Math.min(100, Math.round(fundingPct * 0.65 + structure * 0.35)));
+  const score = Math.max(
+    0,
+    Math.min(100, Math.round(Math.min(100, fundingPct) * 0.65 + structure * 0.35)),
+  );
+
 
   // Rough sum of contributions with the annual step-up applied.
   let contributed = 0;

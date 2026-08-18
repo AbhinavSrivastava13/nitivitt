@@ -1867,20 +1867,22 @@ function EffectivenessSection({
   basis: ProjectionBasis;
   diagnostics: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic[];
 }) {
-  const [years, setYears] = useState(basis.defaultHorizonYears);
-  const [monthlySip, setMonthlySip] = useState(Math.max(basis.monthlySip, 0));
+  const baseSip = baselineSip(basis);
+  const baseYears = resolveHorizon(basis);
+  const [years, setYears] = useState(baseYears);
+  const [monthlySip, setMonthlySip] = useState(baseSip);
   const [stepUpPct, setStepUpPct] = useState(0);
   const [scenario, setScenario] = useState<ScenarioKey>("base");
 
   const current = useMemo(
     () =>
       computeEffectiveness(basis, diagnostics, {
-        monthlySip: basis.monthlySip,
+        monthlySip: baseSip,
         stepUpPct: 0,
-        years: basis.defaultHorizonYears,
+        years: baseYears,
         scenario: "base",
       }),
-    [basis, diagnostics],
+    [basis, diagnostics, baseSip, baseYears],
   );
   const result = useMemo(
     () => computeEffectiveness(basis, diagnostics, { monthlySip, stepUpPct, years, scenario }),
@@ -1895,90 +1897,72 @@ function EffectivenessSection({
   const series = useMemo(() => {
     const common = { currentValue: basis.currentValue, years };
     return buildProjectionSeries(
-      { ...common, monthlySip: basis.monthlySip, annualReturnPct: basis.expectedReturnPct },
+      { ...common, monthlySip: baseSip, annualReturnPct: basis.expectedReturnPct },
       { ...common, monthlySip, annualReturnPct: result.returnPct, annualStepUpPct: stepUpPct },
     );
-  }, [basis, monthlySip, years, stepUpPct, result.returnPct]);
+  }, [basis, baseSip, monthlySip, years, stepUpPct, result.returnPct]);
 
   const changed =
-    monthlySip !== basis.monthlySip ||
-    stepUpPct !== 0 ||
-    years !== basis.defaultHorizonYears ||
-    scenario !== "base";
+    monthlySip !== baseSip || stepUpPct !== 0 || years !== baseYears || scenario !== "base";
+  const readiness = Math.min(100, result.fundingPct);
   const interpretation =
     result.fundingPct >= 100
-      ? "At this contribution level the plan already clears the NitiCore™ reference path for your horizon. The remaining upside now comes from portfolio structure, not from taking more risk."
-      : result.structure >= result.fundingPct
-        ? "Your portfolio is structurally sound; the shortfall is a contribution question, not a market question. Increasing what you invest has more potential impact than taking additional investment risk."
-        : "Contributions are doing their job — the constraint here is portfolio structure. Fixing concentration and allocation moves this score more than adding rupees.";
+      ? "This plan already clears the NitiCore™ reference path for your runway. Remaining upside now comes from portfolio structure, not from taking more market risk."
+      : result.structure >= readiness
+        ? "The shortfall here is a contribution question, not a market question: your structure is sounder than your funding pace. Raising what you invest moves this more than assuming a better return."
+        : "Contributions are doing their job — structure is the constraint. Fixing concentration and allocation moves this score more than adding rupees.";
 
   return (
-    <div className="mt-4 space-y-4">
-      <div className="rounded-3xl border border-border bg-card p-6 shadow-soft md:p-8">
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:gap-12">
+    <div className="mt-4 space-y-3">
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-7">
+        <div className="grid gap-7 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] lg:gap-10">
+          {/* Score + the numbers it is made of */}
           <div>
             <EffectivenessDial score={result.score} delta={result.score - current.score} />
-            <p className="mt-5 text-[13px] leading-relaxed text-foreground/85">{interpretation}</p>
-            <dl className="mt-5 space-y-2.5 border-t border-border/70 pt-4 text-[12px]">
+            <dl className="mt-5 space-y-2 border-t border-border/70 pt-4 text-[12px]">
               <EffStat
                 label="Current plan"
-                value={`₹${basis.monthlySip.toLocaleString("en-IN")}/month · 0% step-up · Base`}
+                value={`₹${baseSip.toLocaleString("en-IN")}/mo · 0% step-up · Base · ${baseYears} yrs`}
               />
               <EffStat
-                label={`Projected in ${years} years`}
-                value={inrShort(result.projected)}
-                strong
+                label="This scenario"
+                value={`₹${monthlySip.toLocaleString("en-IN")}/mo · ${stepUpPct}% step-up · ${SCENARIOS.find((s) => s.key === scenario)?.label} · ${years} yrs`}
               />
-              <EffStat label="NitiCore™ reference path" value={inrShort(result.reference)} />
+              <EffStat label={`Projected in ${years} years`} value={inrShort(result.projected)} strong />
               <EffStat
-                label="Funding progress · structure"
-                value={`${result.fundingPct}% · ${result.structure}/100`}
+                label={`NitiCore™ reference (${baseYears} yrs)`}
+                value={inrShort(result.reference)}
+              />
+              <EffStat
+                label="Readiness · structure"
+                value={`${readiness}% · ${result.structure}/100`}
               />
             </dl>
             <p className="mt-3 text-[10.5px] leading-relaxed text-muted-foreground">
-              Effectiveness = 65% funding progress against the NitiCore™ reference path for the same
-              horizon, plus 35% deterministic structural health.
+              Effectiveness = 65% readiness against the NitiCore™ reference path + 35% deterministic
+              structural health.{" "}
+              {basis.sipSource === "profile"
+                ? "Your current plan uses the contribution recorded in your profile."
+                : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}
             </p>
+            <p className="mt-3 text-[13px] leading-relaxed text-foreground/85">{interpretation}</p>
           </div>
 
-          <div className="space-y-6">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Return scenario
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {SCENARIOS.map((s) => (
-                  <button
-                    key={s.key}
-                    onClick={() => setScenario(s.key)}
-                    className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-colors ${
-                      scenario === s.key
-                        ? "bg-foreground text-background"
-                        : "border border-border text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {s.label} · {scenarioReturn(basis.expectedReturnPct, s.key)}%
-                  </button>
-                ))}
-              </div>
-              <p className="mt-1.5 text-[10.5px] text-muted-foreground">
-                {basis.returnBasis} Scenarios apply ±2 percentage points to that blended assumption.
-              </p>
-            </div>
-
+          {/* Controls + scenario matrix side by side on desktop */}
+          <div className="space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
               <Slider
                 label="Monthly contribution"
                 value={`₹${monthlySip.toLocaleString("en-IN")}`}
                 min={0}
-                max={Math.max(50000, (basis.monthlySip + basis.suggestedSipUplift) * 3)}
+                max={Math.max(50000, (baseSip + basis.suggestedSipUplift) * 3)}
                 step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
                 current={monthlySip}
                 onChange={setMonthlySip}
                 hint={
                   basis.sipSource === "profile"
-                    ? `Your recorded contribution is ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
-                    : "No recurring contribution recorded in your profile yet"
+                    ? `Recorded contribution · ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
+                    : `Starting point · NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month`
                 }
               />
               <Slider
@@ -1989,7 +1973,7 @@ function EffectivenessSection({
                 step={1}
                 current={stepUpPct}
                 onChange={setStepUpPct}
-                hint="Most salaried investors can raise contributions in line with annual increments."
+                hint="Most salaried investors can raise contributions with each annual increment."
               />
               <Slider
                 label="Years to retirement"
@@ -2002,45 +1986,59 @@ function EffectivenessSection({
                 hint={basis.horizonBasis}
               />
               <div>
-                <p className="text-[12px] font-semibold text-foreground">
-                  Contributed over the period
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Return scenario
                 </p>
-                <p className="mt-2 font-mono text-[13px] tabular-nums text-foreground">
-                  {inrShort(result.contributed)}
-                </p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {SCENARIOS.map((s) => (
+                    <button
+                      key={s.key}
+                      onClick={() => setScenario(s.key)}
+                      className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors ${
+                        scenario === s.key
+                          ? "bg-foreground text-background"
+                          : "border border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {s.label} · {scenarioReturn(basis.expectedReturnPct, s.key)}%
+                    </button>
+                  ))}
+                </div>
                 <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
-                  The rest of the projected total is compounding, not money you paid in.
+                  Scenarios apply ±2 percentage points to your blended {basis.expectedReturnPct}%
+                  assumption.
                 </p>
               </div>
             </div>
 
-            <div className="border-t border-border/70 pt-5">
+            <div className="border-t border-border/70 pt-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Effectiveness across contribution &amp; return
+                  Projected value at {years} years · contribution vs return
                 </p>
                 {changed && (
                   <button
                     onClick={() => {
-                      setMonthlySip(basis.monthlySip);
+                      setMonthlySip(baseSip);
                       setStepUpPct(0);
-                      setYears(basis.defaultHorizonYears);
+                      setYears(baseYears);
                       setScenario("base");
                     }}
                     className="text-[11px] font-semibold text-primary hover:underline"
                   >
-                    Reset to NitiCore™ defaults
+                    Reset to current plan
                   </button>
                 )}
               </div>
               <div className="mt-3">
-                <EffectivenessHeatmap
+                <ScenarioMatrix
                   cells={grid}
                   rows={STEP_UP_ROWS}
                   columns={SCENARIOS.map((s) => ({ key: s.key, label: s.label }))}
                   activeStepUp={stepUpPct}
                   activeScenario={scenario}
-                  onSelect={(st, sc) => {
+                  formatValue={inrShort}
+                  onSelect={(st: number, sc: string) => {
                     setStepUpPct(st);
                     setScenario(sc as ScenarioKey);
                   }}
@@ -2053,7 +2051,7 @@ function EffectivenessSection({
           </div>
         </div>
 
-        <div className="mt-8 border-t border-border/70 pt-6">
+        <div className="mt-6 border-t border-border/70 pt-5">
           <ProjectionChart
             data={series}
             format={inrShort}
@@ -2067,9 +2065,10 @@ function EffectivenessSection({
               },
             ]}
           />
-          <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
-            Illustrative scenarios, not guaranteed returns. Markets never deliver a smooth annual
-            number, and the return assumption is the least reliable input on this page.
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+            Illustrative scenarios, not guaranteed returns. Contributed over the period:{" "}
+            {inrShort(result.contributed)} — the rest of the projected total is compounding, not
+            money you paid in.
           </p>
         </div>
       </div>
@@ -2091,6 +2090,7 @@ function EffectivenessSection({
     </div>
   );
 }
+
 
 function EffStat({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
