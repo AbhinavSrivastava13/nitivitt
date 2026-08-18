@@ -15,12 +15,17 @@ interface LogoProps {
  */
 export function Logo({ className, showWordmark = true, tone = "default", plain = false }: LogoProps) {
   const color = tone === "inverse" ? "text-background" : "text-primary";
-  const Wrapper = plain ? "span" : Link;
-  const wrapperProps = plain
-    ? {}
-    : ({ to: "/", "aria-label": "NitiVitt — home" } as const);
+  const cls = `group inline-flex items-center gap-2.5 ${className ?? ""}`;
+  const Wrapper = ({ children }: { children: React.ReactNode }) =>
+    plain ? (
+      <span className={cls}>{children}</span>
+    ) : (
+      <Link to="/" className={cls} aria-label="NitiVitt — home">
+        {children}
+      </Link>
+    );
   return (
-    <Wrapper {...(wrapperProps as never)} className={`group inline-flex items-center gap-2.5 ${className ?? ""}`}>
+    <Wrapper>
       <span className={`relative inline-flex h-8 w-8 items-center justify-center ${color}`}>
         <svg viewBox="0 0 32 32" className="h-full w-full" aria-hidden="true">
           <defs>
