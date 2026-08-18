@@ -1,6 +1,16 @@
 import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, User, LayoutDashboard, FileText, Settings, RefreshCw, UserCircle2, Sparkles } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  User,
+  LayoutDashboard,
+  FileText,
+  Settings,
+  RefreshCw,
+  UserCircle2,
+  Sparkles,
+} from "lucide-react";
 import { Logo } from "./brand/logo";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,9 +95,15 @@ export function SiteHeader() {
             className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border md:hidden"
           >
             <span className="relative block h-3 w-4">
-              <span className={`absolute left-0 top-0 h-0.5 w-full bg-current transition ${menuOpen ? "translate-y-1.5 rotate-45" : ""}`} />
-              <span className={`absolute left-0 top-1.5 h-0.5 w-full bg-current transition ${menuOpen ? "opacity-0" : ""}`} />
-              <span className={`absolute left-0 top-3 h-0.5 w-full bg-current transition ${menuOpen ? "-translate-y-1.5 -rotate-45" : ""}`} />
+              <span
+                className={`absolute left-0 top-0 h-0.5 w-full bg-current transition ${menuOpen ? "translate-y-1.5 rotate-45" : ""}`}
+              />
+              <span
+                className={`absolute left-0 top-1.5 h-0.5 w-full bg-current transition ${menuOpen ? "opacity-0" : ""}`}
+              />
+              <span
+                className={`absolute left-0 top-3 h-0.5 w-full bg-current transition ${menuOpen ? "-translate-y-1.5 -rotate-45" : ""}`}
+              />
             </span>
           </button>
         </div>
@@ -154,7 +170,6 @@ function UserMenu({ name }: { name: string }) {
     { to: "/onboarding" as const, label: "Review Profile", icon: RefreshCw },
   ];
 
-
   return (
     <div ref={ref} className="relative">
       <button
@@ -172,7 +187,9 @@ function UserMenu({ name }: { name: string }) {
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-card shadow-elevated">
           <div className="border-b border-border px-4 py-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Signed in as</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Signed in as
+            </p>
             <p className="mt-0.5 truncate text-sm font-semibold text-foreground">{name}</p>
           </div>
           <ul className="p-1.5">
@@ -183,7 +200,6 @@ function UserMenu({ name }: { name: string }) {
                   <Link
                     to={it.to}
                     onClick={() => setOpen(false)}
-
                     className="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-foreground hover:bg-muted"
                   >
                     <Icon className="h-4 w-4 text-muted-foreground" />
