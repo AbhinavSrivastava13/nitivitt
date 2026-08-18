@@ -90,18 +90,25 @@ export function computeEffectiveness(
     years: plan.years,
     annualStepUpPct: plan.stepUpPct,
   });
+  // The reference is a fixed target: the NitiCore™ plan (your contribution plus
+  // its suggested uplift) run over your actual runway to retirement. It does not
+  // move when you drag a slider, so readiness always means the same thing.
   const reference = Math.max(
     1,
     projectValue({
       currentValue: basis.currentValue,
-      monthlySip: basis.monthlySip + basis.suggestedSipUplift,
+      monthlySip: baselineSip(basis) + basis.suggestedSipUplift,
       annualReturnPct: basis.expectedReturnPct,
-      years: plan.years,
+      years: resolveHorizon(basis),
     }),
   );
-  const fundingPct = Math.min(100, Math.round((projected / reference) * 100));
+  const fundingPct = Math.max(0, Math.round((projected / reference) * 100));
   const structure = structuralScore(diagnostics);
-  const score = Math.max(0, Math.min(100, Math.round(fundingPct * 0.65 + structure * 0.35)));
+  const score = Math.max(
+    0,
+    Math.min(100, Math.round(Math.min(100, fundingPct) * 0.65 + structure * 0.35)),
+  );
+
 
   // Rough sum of contributions with the annual step-up applied.
   let contributed = 0;
