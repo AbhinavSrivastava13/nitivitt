@@ -13,7 +13,12 @@ interface LogoProps {
  * forming a stylised "N" lens. Drawn as inline SVG so it inherits currentColor
  * and stays crisp at any size.
  */
-export function Logo({ className, showWordmark = true, tone = "default", plain = false }: LogoProps) {
+export function Logo({
+  className,
+  showWordmark = true,
+  tone = "default",
+  plain = false,
+}: LogoProps) {
   const color = tone === "inverse" ? "text-background" : "text-primary";
   const cls = `group inline-flex items-center gap-2.5 ${className ?? ""}`;
   const Wrapper = ({ children }: { children: React.ReactNode }) =>
@@ -43,7 +48,9 @@ export function Logo({ className, showWordmark = true, tone = "default", plain =
         </svg>
       </span>
       {showWordmark && (
-        <span className={`text-base font-semibold tracking-tight ${tone === "inverse" ? "text-background" : "text-foreground"}`}>
+        <span
+          className={`text-base font-semibold tracking-tight ${tone === "inverse" ? "text-background" : "text-foreground"}`}
+        >
           NitiVitt
         </span>
       )}
