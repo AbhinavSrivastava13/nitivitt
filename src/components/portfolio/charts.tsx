@@ -816,7 +816,7 @@ export function ComparisonTracks({
   rows: { label: string; you: number; recommended: number }[];
   peerNote?: React.ReactNode;
 }) {
-  const max = Math.max(20, ...rows.flatMap((r) => [r.you, r.recommended])) * 1.12;
+  const max = Math.max(20, ...rows.flatMap((r) => [r.you, r.recommended])) * 1.08;
   return (
     <div>
       <ChartLegend
@@ -829,45 +829,49 @@ export function ComparisonTracks({
           },
         ]}
       />
-      <ul className="mt-4 space-y-3.5">
+      <ul className="mt-4 grid gap-x-8 gap-y-4 lg:grid-cols-3">
         {rows.map((r) => {
           const gap = Math.round((r.you - r.recommended) * 10) / 10;
           const aligned = Math.abs(gap) <= 5;
           return (
-            <li
-              key={r.label}
-              className="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-center gap-x-3"
-            >
-              <span className="truncate text-[12.5px] font-semibold text-foreground">
-                {r.label}
-              </span>
-              <span className="relative block h-3.5">
-                <span className="absolute inset-x-0 top-1/2 h-[7px] -translate-y-1/2 overflow-hidden rounded-full bg-muted/70">
-                  <span
-                    className="block h-full rounded-full transition-[width] duration-500"
-                    style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
-                  />
+            <li key={r.label} className="min-w-0">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="truncate text-[12px] font-semibold uppercase tracking-[0.1em] text-foreground">
+                  {r.label}
                 </span>
                 <span
-                  className="absolute top-0 h-3.5 w-[2px] rounded-full"
-                  style={{
-                    left: `${(r.recommended / max) * 100}%`,
-                    background: SERIES_COLORS.nitiCore,
-                  }}
-                  title={`NitiCore™ recommended ${r.recommended}%`}
-                />
-              </span>
-              <span className="whitespace-nowrap font-mono text-[11.5px] tabular-nums text-muted-foreground">
-                <span className="font-semibold text-foreground">{r.you}%</span>
-                <span className="px-1">→</span>
-                <span style={{ color: SERIES_COLORS.nitiCore }}>{r.recommended}%</span>
-                {!aligned && (
-                  <span className="ml-2 text-[10.5px] text-foreground/60">
-                    {gap > 0 ? "+" : "−"}
-                    {Math.abs(gap)}pp
-                  </span>
-                )}
-              </span>
+                  className={`shrink-0 font-mono text-[11.5px] font-semibold tabular-nums ${
+                    aligned ? "text-muted-foreground" : "text-foreground"
+                  }`}
+                  title="Gap against the NitiCore™ recommendation"
+                >
+                  {aligned ? "in line" : `${gap > 0 ? "+" : "−"}${Math.abs(gap)}pp`}
+                </span>
+              </div>
+              <div className="mt-2.5 space-y-1.5">
+                {[
+                  { key: "You", v: r.you, color: SERIES_COLORS.you },
+                  { key: "NitiCore™", v: r.recommended, color: SERIES_COLORS.nitiCore },
+                ].map((t) => (
+                  <div
+                    key={t.key}
+                    className="grid grid-cols-[4.25rem_minmax(0,1fr)_2.75rem] items-center gap-x-2"
+                  >
+                    <span className="truncate text-[10.5px] uppercase tracking-[0.08em] text-muted-foreground">
+                      {t.key}
+                    </span>
+                    <span className="block h-[7px] overflow-hidden rounded-full bg-muted/70">
+                      <span
+                        className="block h-full rounded-full transition-[width] duration-500"
+                        style={{ width: `${(t.v / max) * 100}%`, background: t.color }}
+                      />
+                    </span>
+                    <span className="text-right font-mono text-[11.5px] tabular-nums text-foreground">
+                      {t.v}%
+                    </span>
+                  </div>
+                ))}
+              </div>
             </li>
           );
         })}
@@ -880,6 +884,7 @@ export function ComparisonTracks({
     </div>
   );
 }
+
 
 /* ───────────────── EXPOSURE — overlap composition ───────────────── */
 
