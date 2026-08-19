@@ -35,7 +35,7 @@ import {
   ProjectionChart,
   SERIES_COLORS,
   EffectivenessDial,
-  EffectivenessHeatmap,
+  ScenarioMatrix,
   StressScenarios,
   PeerRails,
   type ExposureGroup,
@@ -50,6 +50,8 @@ import {
   blendedCostFromDiagnostics,
   costDrag,
   stressScenarios,
+  baselineSip,
+  resolveHorizon,
   STEP_UP_ROWS,
   type ScenarioKey,
 } from "@/lib/portfolio-analyzer/effectiveness";
