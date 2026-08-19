@@ -35,7 +35,7 @@ import {
   ProjectionChart,
   SERIES_COLORS,
   EffectivenessDial,
-  EffectivenessHeatmap,
+  ScenarioMatrix,
   StressScenarios,
   PeerRails,
   type ExposureGroup,
@@ -50,6 +50,8 @@ import {
   blendedCostFromDiagnostics,
   costDrag,
   stressScenarios,
+  baselineSip,
+  resolveHorizon,
   STEP_UP_ROWS,
   type ScenarioKey,
 } from "@/lib/portfolio-analyzer/effectiveness";
@@ -800,8 +802,7 @@ const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "profile", label: "You vs NitiCore™" },
   { id: "effectiveness", label: "Effectiveness" },
   { id: "xray", label: "X-Ray" },
-  { id: "peers", label: "Peers" },
-  { id: "risk", label: "Risk & health" },
+  { id: "peers", label: "Peers & stress" },
   { id: "actions", label: "Next moves" },
   { id: "guide", label: "NitiGuide™" },
 ];
@@ -939,8 +940,6 @@ function ReportView({
   const exposure = useMemo(() => buildExposureGroups(report), [report]);
   const overlap = useMemo(() => detectOverlap(exposure), [exposure]);
   const largest = report.topHoldings[0];
-  const peerLargest = peer?.rows.find((r) => /largest holding/i.test(r.label));
-  const peerHoldings = peer?.rows.find((r) => /number of holdings/i.test(r.label));
   const equityValue = report.allocation.byAssetClass
     .filter((s) => /equity|index|etf|hybrid/i.test(s.label))
     .reduce((a, s) => a + s.value, 0);
@@ -961,7 +960,7 @@ function ReportView({
   const activeSection = useActiveSection(sectionIds);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={onBack}
@@ -1082,24 +1081,9 @@ function ReportView({
             <ComparisonTracks
               rows={alloc.map((r) => ({ label: r.label, you: r.you, recommended: r.recommended }))}
               peerNote={
-                <span className="flex flex-wrap gap-x-5 gap-y-1">
-                  {largest && peerLargest && (
-                    <span>
-                      Largest holding{" "}
-                      <span className="font-semibold text-foreground">{largest.pct}%</span> ·
-                      typical cohort {peerLargest.typical}%
-                    </span>
-                  )}
-                  {peerHoldings && (
-                    <span>
-                      Holdings{" "}
-                      <span className="font-semibold text-foreground">{report.holdingCount}</span> ·
-                      typical cohort {peerHoldings.typical}
-                    </span>
-                  )}
-                  <span>
-                    A gap matters only when it conflicts with your age, horizon and risk profile.
-                  </span>
+                <span>
+                  A gap matters only when it conflicts with your age, horizon and risk profile.
+                  Cohort structure is compared further down.
                 </span>
               }
             />
@@ -1257,52 +1241,43 @@ function ReportView({
         )}
       </section>
 
-      {/* 5. PEER COMPARISON */}
-      {peer && peer.rows.length > 0 && (
-        <section id="pr-peers" className="scroll-mt-24">
-          <SectionHeading
-            icon={<ShieldCheck className="h-4 w-4 text-primary" />}
-            title="Peer comparison"
-            subtitle="How your investing behaviour and portfolio structure compare with people at a similar life stage."
-          />
-          <PeerComparison peer={peer} />
-        </section>
-      )}
-
-      {/* 6. STRESS TEST + HEALTH */}
-      <section id="pr-risk" className="scroll-mt-24">
+      {/* 5. PEER COMPARISON + STRESS TEST */}
+      <section id="pr-peers" className="scroll-mt-24">
         <SectionHeading
-          icon={<AlertTriangle className="h-4 w-4 text-primary" />}
-          title="Risk & portfolio health"
-          subtitle="How this portfolio behaves when markets fall, and where its structure is strong or weak."
+          icon={<ShieldCheck className="h-4 w-4 text-primary" />}
+          title="Peer comparison & stress test"
+          subtitle="How your structure compares with people at a similar life stage — and how it behaves when markets fall."
         />
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <div className="mt-4 grid items-start gap-4 xl:grid-cols-2">
+          {peer && peer.rows.length > 0 ? (
+            <PeerComparison peer={peer} />
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
+              Cohort comparison needs a completed NitiCore™ profile.
+            </div>
+          )}
           <ChartCard
-            title="How would your portfolio behave under stress?"
-            note="Hypothetical scenarios applied to today's holdings — not predictions."
+            title="If markets fall from here"
+            note="Hypothetical drawdowns applied to today's holdings — not predictions."
           >
             <StressScenarios rows={stress} formatValue={formatInr} />
           </ChartCard>
-          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
-            <h4 className="font-display text-base tracking-tight text-foreground">
-              Portfolio health
-            </h4>
-            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-              Deterministic NitiCore™ checks. Open one for the reasoning.
-            </p>
-            {diagnostics.length > 0 ? (
-              <div className="mt-5 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
-                {diagnostics.map((d) => (
-                  <DiagnosticChip key={d.id} d={d} />
-                ))}
-              </div>
-            ) : (
-              <p className="mt-5 text-sm text-muted-foreground">
-                Diagnostics not available for this analysis.
-              </p>
-            )}
-          </div>
         </div>
+
+        {/* Compact deterministic health strip — the detail lives behind each chip. */}
+        {diagnostics.length > 0 && (
+          <div className="mt-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              NitiCore™ health checks — open any one for the reasoning
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {diagnostics.map((d) => (
+                <DiagnosticChip key={d.id} d={d} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {insights.length > 0 && (
           <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
@@ -1318,6 +1293,7 @@ function ReportView({
           </details>
         )}
       </section>
+
 
       {/* 7. NEXT MOVES */}
       <section id="pr-actions" className="scroll-mt-24">
@@ -2152,7 +2128,7 @@ function PeerComparison({
   })();
 
   return (
-    <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
+    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11px] text-muted-foreground">{peer.cohort}</p>
         <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
