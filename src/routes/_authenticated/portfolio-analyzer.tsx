@@ -940,8 +940,6 @@ function ReportView({
   const exposure = useMemo(() => buildExposureGroups(report), [report]);
   const overlap = useMemo(() => detectOverlap(exposure), [exposure]);
   const largest = report.topHoldings[0];
-  const peerLargest = peer?.rows.find((r) => /largest holding/i.test(r.label));
-  const peerHoldings = peer?.rows.find((r) => /number of holdings/i.test(r.label));
   const equityValue = report.allocation.byAssetClass
     .filter((s) => /equity|index|etf|hybrid/i.test(s.label))
     .reduce((a, s) => a + s.value, 0);
