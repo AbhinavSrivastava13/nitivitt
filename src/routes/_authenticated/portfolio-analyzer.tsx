@@ -802,8 +802,7 @@ const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "profile", label: "You vs NitiCore™" },
   { id: "effectiveness", label: "Effectiveness" },
   { id: "xray", label: "X-Ray" },
-  { id: "peers", label: "Peers" },
-  { id: "risk", label: "Risk & health" },
+  { id: "peers", label: "Peers & stress" },
   { id: "actions", label: "Next moves" },
   { id: "guide", label: "NitiGuide™" },
 ];
@@ -963,7 +962,7 @@ function ReportView({
   const activeSection = useActiveSection(sectionIds);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={onBack}
@@ -1084,24 +1083,9 @@ function ReportView({
             <ComparisonTracks
               rows={alloc.map((r) => ({ label: r.label, you: r.you, recommended: r.recommended }))}
               peerNote={
-                <span className="flex flex-wrap gap-x-5 gap-y-1">
-                  {largest && peerLargest && (
-                    <span>
-                      Largest holding{" "}
-                      <span className="font-semibold text-foreground">{largest.pct}%</span> ·
-                      typical cohort {peerLargest.typical}%
-                    </span>
-                  )}
-                  {peerHoldings && (
-                    <span>
-                      Holdings{" "}
-                      <span className="font-semibold text-foreground">{report.holdingCount}</span> ·
-                      typical cohort {peerHoldings.typical}
-                    </span>
-                  )}
-                  <span>
-                    A gap matters only when it conflicts with your age, horizon and risk profile.
-                  </span>
+                <span>
+                  A gap matters only when it conflicts with your age, horizon and risk profile.
+                  Cohort structure is compared further down.
                 </span>
               }
             />
@@ -2146,7 +2130,7 @@ function PeerComparison({
   })();
 
   return (
-    <div className="mt-4 rounded-3xl border border-border bg-card p-6 shadow-soft md:p-7">
+    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11px] text-muted-foreground">{peer.cohort}</p>
         <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
