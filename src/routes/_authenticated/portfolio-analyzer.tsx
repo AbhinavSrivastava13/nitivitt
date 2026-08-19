@@ -1259,52 +1259,43 @@ function ReportView({
         )}
       </section>
 
-      {/* 5. PEER COMPARISON */}
-      {peer && peer.rows.length > 0 && (
-        <section id="pr-peers" className="scroll-mt-24">
-          <SectionHeading
-            icon={<ShieldCheck className="h-4 w-4 text-primary" />}
-            title="Peer comparison"
-            subtitle="How your investing behaviour and portfolio structure compare with people at a similar life stage."
-          />
-          <PeerComparison peer={peer} />
-        </section>
-      )}
-
-      {/* 6. STRESS TEST + HEALTH */}
-      <section id="pr-risk" className="scroll-mt-24">
+      {/* 5. PEER COMPARISON + STRESS TEST */}
+      <section id="pr-peers" className="scroll-mt-24">
         <SectionHeading
-          icon={<AlertTriangle className="h-4 w-4 text-primary" />}
-          title="Risk & portfolio health"
-          subtitle="How this portfolio behaves when markets fall, and where its structure is strong or weak."
+          icon={<ShieldCheck className="h-4 w-4 text-primary" />}
+          title="Peer comparison & stress test"
+          subtitle="How your structure compares with people at a similar life stage — and how it behaves when markets fall."
         />
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <div className="mt-4 grid items-start gap-4 xl:grid-cols-2">
+          {peer && peer.rows.length > 0 ? (
+            <PeerComparison peer={peer} />
+          ) : (
+            <div className="rounded-3xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
+              Cohort comparison needs a completed NitiCore™ profile.
+            </div>
+          )}
           <ChartCard
-            title="How would your portfolio behave under stress?"
-            note="Hypothetical scenarios applied to today's holdings — not predictions."
+            title="If markets fall from here"
+            note="Hypothetical drawdowns applied to today's holdings — not predictions."
           >
             <StressScenarios rows={stress} formatValue={formatInr} />
           </ChartCard>
-          <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
-            <h4 className="font-display text-base tracking-tight text-foreground">
-              Portfolio health
-            </h4>
-            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-              Deterministic NitiCore™ checks. Open one for the reasoning.
-            </p>
-            {diagnostics.length > 0 ? (
-              <div className="mt-5 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
-                {diagnostics.map((d) => (
-                  <DiagnosticChip key={d.id} d={d} />
-                ))}
-              </div>
-            ) : (
-              <p className="mt-5 text-sm text-muted-foreground">
-                Diagnostics not available for this analysis.
-              </p>
-            )}
-          </div>
         </div>
+
+        {/* Compact deterministic health strip — the detail lives behind each chip. */}
+        {diagnostics.length > 0 && (
+          <div className="mt-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              NitiCore™ health checks — open any one for the reasoning
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {diagnostics.map((d) => (
+                <DiagnosticChip key={d.id} d={d} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {insights.length > 0 && (
           <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
@@ -1320,6 +1311,7 @@ function ReportView({
           </details>
         )}
       </section>
+
 
       {/* 7. NEXT MOVES */}
       <section id="pr-actions" className="scroll-mt-24">
