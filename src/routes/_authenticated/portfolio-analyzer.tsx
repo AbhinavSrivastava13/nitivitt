@@ -1688,26 +1688,31 @@ function ActionRow({
         : "text-muted-foreground";
   return (
     <li
-      className={`rounded-2xl border bg-card p-6 shadow-soft ${lead ? "border-foreground/25 md:p-8" : "border-border"}`}
+      className={`rounded-2xl border bg-card shadow-soft ${lead ? "border-foreground/25" : "border-border"}`}
     >
-      <div className="flex items-start gap-5">
-        <span
-          className={`shrink-0 font-mono tabular-nums leading-none ${lead ? "text-2xl text-foreground" : "text-lg text-muted-foreground"}`}
-        >
-          {String(index + 1).padStart(2, "0")}
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <p
-              className={`font-display leading-snug text-foreground ${lead ? "text-xl md:text-2xl" : "text-base"}`}
-            >
-              {r.title}
-            </p>
-            <span className={`text-[10px] font-bold uppercase tracking-[0.16em] ${chip}`}>
-              {r.priority}
+      <details className="group px-5 py-4 md:px-6 md:py-5">
+        <summary className="flex cursor-pointer list-none items-start gap-4">
+          <span
+            className={`shrink-0 font-mono tabular-nums leading-none ${lead ? "text-xl text-foreground" : "text-base text-muted-foreground"}`}
+          >
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <span
+                className={`font-display leading-snug text-foreground ${lead ? "text-lg md:text-xl" : "text-[15px]"}`}
+              >
+                {r.title}
+              </span>
+              <span className={`text-[10px] font-bold uppercase tracking-[0.16em] ${chip}`}>
+                {r.priority}
+              </span>
             </span>
-          </div>
-          <dl className="mt-4 space-y-2 text-[13px] leading-relaxed">
+          </span>
+          <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+        </summary>
+        <div className="mt-3 border-t border-border/60 pt-3 md:pl-10">
+          <dl className="space-y-2 text-[13px] leading-relaxed">
             <div>
               <dt className="inline font-semibold text-foreground/80">Why. </dt>
               <dd className="inline text-muted-foreground">{r.reason}</dd>
@@ -1737,10 +1742,11 @@ function ActionRow({
             </p>
           )}
         </div>
-      </div>
+      </details>
     </li>
   );
 }
+
 
 function InsightCard({
   insight,
