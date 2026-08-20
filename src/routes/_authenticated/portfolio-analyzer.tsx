@@ -1370,18 +1370,6 @@ function ReportView({
   );
 }
 
-function VerdictNote({ label, body, accent }: { label: string; body: string; accent?: boolean }) {
-  return (
-    <div>
-      <p
-        className={`text-[10px] font-bold uppercase tracking-[0.18em] ${accent ? "text-primary" : "text-muted-foreground"}`}
-      >
-        {label}
-      </p>
-      <p className="mt-1.5 text-[13.5px] leading-relaxed text-foreground/90">{body}</p>
-    </div>
-  );
-}
 
 function GuideBriefing({ text }: { text: string }) {
   const paras = text.split(/\n{2,}/).filter(Boolean);
