@@ -627,10 +627,12 @@ export function ProjectionChart({
   data,
   format,
   series,
+  height = 320,
 }: {
   data: { year: number; base: number; alternative: number; third?: number }[];
   format: (n: number) => string;
   series: { key: "base" | "alternative" | "third"; label: string; color: string; dash?: string }[];
+  height?: number;
 }) {
   const labelOf = (k: string) => series.find((s) => s.key === k)?.label ?? k;
   return (
@@ -638,7 +640,8 @@ export function ProjectionChart({
       <ChartLegend
         items={series.map((s) => ({ label: s.label, color: s.color, dashed: Boolean(s.dash) }))}
       />
-      <div className="mt-5 h-[320px] w-full">
+      <div className="mt-4 w-full" style={{ height }}>
+
         <ResponsiveContainer>
           <LineChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
             <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
