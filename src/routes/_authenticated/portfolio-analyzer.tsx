@@ -1892,45 +1892,71 @@ function EffectivenessSection({
         ? "The shortfall here is a contribution question, not a market question: your structure is sounder than your funding pace. Raising what you invest moves this more than assuming a better return."
         : "Contributions are doing their job — structure is the constraint. Fixing concentration and allocation moves this score more than adding rupees.";
 
+  const gapToReference = result.reference - result.projected;
+
   return (
     <div className="mt-4 space-y-3">
-      <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-7">
-        <div className="grid gap-7 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] lg:gap-10">
-          {/* Score + the numbers it is made of */}
+      <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:gap-8">
+          {/* Score, what it is made of, and one interpretation */}
           <div>
             <EffectivenessDial score={result.score} delta={result.score - current.score} />
-            <dl className="mt-5 space-y-2 border-t border-border/70 pt-4 text-[12px]">
+            <dl className="mt-4 space-y-1.5 border-t border-border/70 pt-3.5 text-[12px]">
               <EffStat
-                label="Current plan"
-                value={`₹${baseSip.toLocaleString("en-IN")}/mo · 0% step-up · Base · ${baseYears} yrs`}
+                label={`Projected in ${years} years`}
+                value={inrShort(result.projected)}
+                strong
               />
-              <EffStat
-                label="This scenario"
-                value={`₹${monthlySip.toLocaleString("en-IN")}/mo · ${stepUpPct}% step-up · ${SCENARIOS.find((s) => s.key === scenario)?.label} · ${years} yrs`}
-              />
-              <EffStat label={`Projected in ${years} years`} value={inrShort(result.projected)} strong />
               <EffStat
                 label={`NitiCore™ reference (${baseYears} yrs)`}
                 value={inrShort(result.reference)}
               />
               <EffStat
-                label="Readiness · structure"
-                value={`${readiness}% · ${result.structure}/100`}
+                label="Gap"
+                value={
+                  gapToReference > 0
+                    ? `${inrShort(gapToReference)} short · ${readiness}% funded`
+                    : `Ahead by ${inrShort(Math.abs(gapToReference))}`
+                }
               />
+              <EffStat label="Structural health" value={`${result.structure}/100`} />
             </dl>
-            <p className="mt-3 text-[10.5px] leading-relaxed text-muted-foreground">
-              Effectiveness = 65% readiness against the NitiCore™ reference path + 35% deterministic
-              structural health.{" "}
-              {basis.sipSource === "profile"
-                ? "Your current plan uses the contribution recorded in your profile."
-                : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}
-            </p>
             <p className="mt-3 text-[13px] leading-relaxed text-foreground/85">{interpretation}</p>
+            <details className="group mt-3">
+              <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
+                How this score is built
+              </summary>
+              <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+                Effectiveness = 65% readiness against the NitiCore™ reference path + 35%
+                deterministic structural health.{" "}
+                {basis.sipSource === "profile"
+                  ? "Your current plan uses the contribution recorded in your profile."
+                  : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}
+              </p>
+            </details>
           </div>
 
-          {/* Controls + scenario matrix side by side on desktop */}
-          <div className="space-y-5">
-            <div className="grid gap-5 sm:grid-cols-2">
+          {/* Scenario controls */}
+          <div className="rounded-2xl border border-border/70 bg-surface/60 p-4 md:p-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Scenario controls
+              </p>
+              {changed && (
+                <button
+                  onClick={() => {
+                    setMonthlySip(baseSip);
+                    setStepUpPct(0);
+                    setYears(baseYears);
+                    setScenario("base");
+                  }}
+                  className="text-[11px] font-semibold text-primary hover:underline"
+                >
+                  Reset to current plan
+                </button>
+              )}
+            </div>
+            <div className="mt-4 grid gap-5 sm:grid-cols-2">
               <Slider
                 label="Monthly contribution"
                 value={`₹${monthlySip.toLocaleString("en-IN")}`}
@@ -1966,9 +1992,7 @@ function EffectivenessSection({
                 hint={basis.horizonBasis}
               />
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Return scenario
-                </p>
+                <p className="text-[12px] font-semibold text-foreground">Return scenario</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {SCENARIOS.map((s) => (
                     <button
@@ -1990,51 +2014,73 @@ function EffectivenessSection({
                 </p>
               </div>
             </div>
-
-            <div className="border-t border-border/70 pt-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Projected value at {years} years · contribution vs return
-                </p>
-                {changed && (
-                  <button
-                    onClick={() => {
-                      setMonthlySip(baseSip);
-                      setStepUpPct(0);
-                      setYears(baseYears);
-                      setScenario("base");
-                    }}
-                    className="text-[11px] font-semibold text-primary hover:underline"
-                  >
-                    Reset to current plan
-                  </button>
-                )}
-              </div>
-              <div className="mt-3">
-                <ScenarioMatrix
-                  cells={grid}
-                  rows={STEP_UP_ROWS}
-                  columns={SCENARIOS.map((s) => ({ key: s.key, label: s.label }))}
-                  activeStepUp={stepUpPct}
-                  activeScenario={scenario}
-                  formatValue={inrShort}
-                  onSelect={(st: number, sc: string) => {
-                    setStepUpPct(st);
-                    setScenario(sc as ScenarioKey);
-                  }}
-                />
-              </div>
-              {lever && (
-                <p className="mt-3 text-[11.5px] leading-relaxed text-foreground/85">{lever}</p>
-              )}
-            </div>
           </div>
         </div>
 
-        <div className="mt-6 border-t border-border/70 pt-5">
+        {/* Projected outcome — three headline values */}
+        <div className="mt-5 grid gap-3 border-t border-border/70 pt-5 sm:grid-cols-3">
+          {[
+            {
+              label: "Current plan",
+              value: inrShort(current.projected),
+              sub: `₹${baseSip.toLocaleString("en-IN")}/mo · 0% step-up · ${baseYears} yrs`,
+            },
+            {
+              label: "Your scenario",
+              value: inrShort(result.projected),
+              sub: `₹${monthlySip.toLocaleString("en-IN")}/mo · ${stepUpPct}% step-up · ${SCENARIOS.find((s) => s.key === scenario)?.label} · ${years} yrs`,
+              strong: true,
+            },
+            {
+              label: "NitiCore™ reference",
+              value: inrShort(result.reference),
+              sub: `Suggested contribution over ${baseYears} yrs`,
+            },
+          ].map((c) => (
+            <div
+              key={c.label}
+              className={`rounded-2xl border px-4 py-3 ${c.strong ? "border-foreground/25 bg-surface/70" : "border-border/70"}`}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {c.label}
+              </p>
+              <p className="mt-1 font-display text-xl tracking-tight text-foreground">{c.value}</p>
+              <p className="mt-0.5 font-mono text-[10.5px] tabular-nums text-muted-foreground">
+                {c.sub}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Contribution × return matrix */}
+        <div className="mt-5 border-t border-border/70 pt-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Contribution × return · projected value at {years} years
+          </p>
+          <div className="mt-3 -mx-1 overflow-x-auto px-1">
+            <div className="min-w-[420px]">
+              <ScenarioMatrix
+                cells={grid}
+                rows={STEP_UP_ROWS}
+                columns={SCENARIOS.map((s) => ({ key: s.key, label: s.label }))}
+                activeStepUp={stepUpPct}
+                activeScenario={scenario}
+                formatValue={inrShort}
+                onSelect={(st: number, sc: string) => {
+                  setStepUpPct(st);
+                  setScenario(sc as ScenarioKey);
+                }}
+              />
+            </div>
+          </div>
+          {lever && <p className="mt-3 text-[11.5px] leading-relaxed text-foreground/85">{lever}</p>}
+        </div>
+
+        <div className="mt-5 border-t border-border/70 pt-4">
           <ProjectionChart
             data={series}
             format={inrShort}
+            height={220}
             series={[
               { key: "base", label: "Current plan", color: SERIES_COLORS.you },
               {
@@ -2045,7 +2091,7 @@ function EffectivenessSection({
               },
             ]}
           />
-          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
+          <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
             Illustrative scenarios, not guaranteed returns. Contributed over the period:{" "}
             {inrShort(result.contributed)} — the rest of the projected total is compounding, not
             money you paid in.
@@ -2055,7 +2101,7 @@ function EffectivenessSection({
 
       <details className="group rounded-2xl border border-border bg-surface px-5 py-3.5">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
-          What this means in plain language
+          What this means
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
         </summary>
         <ul className="mt-4 space-y-3">
@@ -2070,6 +2116,7 @@ function EffectivenessSection({
     </div>
   );
 }
+
 
 
 function EffStat({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
