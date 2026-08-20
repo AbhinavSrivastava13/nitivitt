@@ -1160,55 +1160,84 @@ export function StressScenarios({
 
 /* ───────────────── PEER — paired comparison rails ───────────────── */
 
+/**
+ * Compact peer comparison table: metric, your value against the cohort value on
+ * one shared rail, and a one-word status. The full deterministic verdict stays
+ * available as the row title so no engine text is lost.
+ */
 export function PeerRails({
   rows,
 }: {
   rows: { label: string; you: number; typical: number; unit: string; verdict: string }[];
 }) {
   return (
-    <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-      {rows.map((r) => {
-        const max = Math.max(r.you, r.typical, 1) * 1.15;
-        return (
-          <li key={r.label}>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[12.5px] font-semibold text-foreground">{r.label}</span>
-              <span className="font-mono text-[11.5px] tabular-nums text-muted-foreground">
+    <div>
+      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem_minmax(0,5rem)] items-center gap-x-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <span>Metric</span>
+        <span className="text-right">You · cohort</span>
+        <span className="text-right">Status</span>
+      </div>
+      <ul className="divide-y divide-border/60">
+        {rows.map((r) => {
+          const max = Math.max(r.you, r.typical, 1) * 1.15;
+          const diff = r.you - r.typical;
+          const tolerance = Math.max(2, r.typical * 0.1);
+          const status =
+            Math.abs(diff) <= tolerance ? "In line" : diff > 0 ? "Above typical" : "Below typical";
+          const statusClass =
+            status === "In line"
+              ? "text-muted-foreground"
+              : diff > 0
+                ? "text-foreground"
+                : "text-foreground/70";
+          return (
+            <li
+              key={r.label}
+              title={r.verdict}
+              className="grid grid-cols-[minmax(0,1fr)_5.5rem_minmax(0,5rem)] items-center gap-x-3 py-2.5"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-[12.5px] font-medium text-foreground">{r.label}</p>
+                <div className="mt-1.5 space-y-[3px]">
+                  <span className="block h-[5px] w-full overflow-hidden rounded-full bg-muted/70">
+                    <span
+                      className="block h-full rounded-full"
+                      style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
+                    />
+                  </span>
+                  <span className="block h-[5px] w-full overflow-hidden rounded-full bg-muted/40">
+                    <span
+                      className="block h-full rounded-full"
+                      style={{
+                        width: `${(r.typical / max) * 100}%`,
+                        background: SERIES_COLORS.peer,
+                        opacity: 0.7,
+                      }}
+                    />
+                  </span>
+                </div>
+              </div>
+              <span className="text-right font-mono text-[11.5px] tabular-nums">
                 <span className="font-semibold text-foreground">
                   {r.you}
                   {r.unit}
                 </span>
-                <span className="px-1.5">vs</span>
+                <span className="px-1 text-muted-foreground">·</span>
                 <span style={{ color: SERIES_COLORS.peer }}>
                   {r.typical}
                   {r.unit}
                 </span>
               </span>
-            </div>
-            <div className="mt-2 space-y-1">
-              <span className="block h-[6px] w-full overflow-hidden rounded-full bg-muted/70">
-                <span
-                  className="block h-full rounded-full"
-                  style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
-                />
+              <span
+                className={`text-right text-[10px] font-semibold uppercase tracking-[0.1em] ${statusClass}`}
+              >
+                {status}
               </span>
-              <span className="block h-[6px] w-full overflow-hidden rounded-full bg-muted/40">
-                <span
-                  className="block h-full rounded-full"
-                  style={{
-                    width: `${(r.typical / max) * 100}%`,
-                    background: SERIES_COLORS.peer,
-                    opacity: 0.7,
-                  }}
-                />
-              </span>
-            </div>
-            <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
-              {r.verdict}
-            </p>
-          </li>
-        );
-      })}
-    </ul>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
+
