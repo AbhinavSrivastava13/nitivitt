@@ -999,8 +999,8 @@ function ReportView({
 
       {/* 1. VERDICT */}
       <section id="pr-verdict" className="scroll-mt-24">
-        <div className="rounded-3xl border border-border bg-card px-6 py-7 shadow-soft md:px-9 md:py-8">
-          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div className="rounded-3xl border border-border bg-card px-5 py-6 shadow-soft md:px-8 md:py-7">
+          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 Portfolio verdict
@@ -1036,12 +1036,13 @@ function ReportView({
             </p>
           </div>
 
-          <p className="mt-5 max-w-3xl text-[15px] leading-[1.65] text-foreground/90">
+          <p className="mt-4 max-w-3xl text-[14.5px] leading-[1.6] text-foreground/90">
             {hero?.verdict ?? execSummary}
           </p>
 
-          <div className="mt-6 grid gap-x-10 gap-y-5 border-t border-border/70 pt-6 md:grid-cols-3">
-            <VerdictNote
+          <div className="mt-5 grid gap-x-6 gap-y-4 border-t border-border/70 pt-5 md:grid-cols-3">
+            <InsightTile
+              tone="good"
               label="What's working"
               body={
                 report.biggestStrength ??
@@ -1049,7 +1050,8 @@ function ReportView({
                 "You are invested and contributing consistently."
               }
             />
-            <VerdictNote
+            <InsightTile
+              tone="risk"
               label="What's holding you back"
               body={
                 report.largestRisk ??
@@ -1058,15 +1060,16 @@ function ReportView({
                   : (report.gaps[0]?.title ?? "Nothing material flagged."))
               }
             />
-            <VerdictNote
+            <InsightTile
+              tone="act"
               label="Highest-impact move"
               body={
                 report.recommendations[0]?.title ?? "Keep contributing and review in six months."
               }
-              accent
             />
           </div>
         </div>
+
       </section>
 
       {/* 2. YOU VS NITICORE */}
