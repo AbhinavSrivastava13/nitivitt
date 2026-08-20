@@ -1266,36 +1266,41 @@ function ReportView({
             <StressScenarios rows={stress} formatValue={formatInr} />
           </ChartCard>
         </div>
+      </section>
 
-        {/* Compact deterministic health strip — the detail lives behind each chip. */}
-        {diagnostics.length > 0 && (
-          <div className="mt-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              NitiCore™ health checks — open any one for the reasoning
-            </p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      {/* 6. PORTFOLIO HEALTH */}
+      {(diagnostics.length > 0 || insights.length > 0) && (
+        <section id="pr-health" className="scroll-mt-24">
+          <SectionHeading
+            icon={<GaugeIcon className="h-4 w-4 text-primary" />}
+            title="Portfolio health"
+            subtitle="Six deterministic NitiCore™ checks. Open any card for the reasoning behind it."
+          />
+          {diagnostics.length > 0 && (
+            <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
               {diagnostics.map((d) => (
                 <DiagnosticChip key={d.id} d={d} />
               ))}
             </div>
-          </div>
-        )}
+          )}
 
-        {insights.length > 0 && (
-          <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
-              What could hurt you — {insights.length} structural{" "}
-              {insights.length === 1 ? "observation" : "observations"}
-              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
-            </summary>
-            <ul className="mt-4 grid gap-3 lg:grid-cols-2">
-              {insights.map((i) => (
-                <InsightCard key={i.id} insight={i} />
-              ))}
-            </ul>
-          </details>
-        )}
-      </section>
+          {insights.length > 0 && (
+            <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
+                What could hurt you — {insights.length} structural{" "}
+                {insights.length === 1 ? "observation" : "observations"}
+                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+              </summary>
+              <ul className="mt-4 grid gap-3 lg:grid-cols-2">
+                {insights.map((i) => (
+                  <InsightCard key={i.id} insight={i} />
+                ))}
+              </ul>
+            </details>
+          )}
+        </section>
+      )}
+
 
 
       {/* 7. NEXT MOVES */}
