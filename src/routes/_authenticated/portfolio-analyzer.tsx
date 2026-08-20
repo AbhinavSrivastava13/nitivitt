@@ -803,6 +803,8 @@ const SECTION_STEPS: { id: string; label: string }[] = [
   { id: "effectiveness", label: "Effectiveness" },
   { id: "xray", label: "X-Ray" },
   { id: "peers", label: "Peers & stress" },
+  { id: "health", label: "Health" },
+
   { id: "actions", label: "Next moves" },
   { id: "guide", label: "NitiGuide™" },
 ];
