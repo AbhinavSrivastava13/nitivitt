@@ -1273,7 +1273,7 @@ function ReportView({
             title="If markets fall from here"
             note="Hypothetical drawdowns applied to today's holdings — not predictions."
           >
-            <StressScenarios rows={stress} formatValue={formatInr} />
+            <StressWaterfall rows={stress} total={report.totalValue} formatValue={formatInr} />
           </ChartCard>
         </div>
       </section>
@@ -1288,7 +1288,10 @@ function ReportView({
           />
           {diagnostics.length > 0 && (
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-              {diagnostics.map((d) => (
+              {diagnostics.slice(0, 3).map((d) => (
+                <DiagnosticGauge key={d.id} d={d} />
+              ))}
+              {diagnostics.slice(3).map((d) => (
                 <DiagnosticChip key={d.id} d={d} />
               ))}
             </div>
