@@ -1482,6 +1482,61 @@ function SnapItem({ label, value, sub }: { label: string; value: string; sub?: s
 
 /* ─────────── diagnostics ─────────── */
 
+const DIAGNOSTIC_TONE = {
+  good: { dot: SERIES_COLORS.positive, chip: "text-success", word: "Healthy" },
+  watch: { dot: SERIES_COLORS.attention, chip: "text-warning", word: "Watch" },
+  action: { dot: SERIES_COLORS.action, chip: "text-destructive", word: "Act" },
+} as const;
+
+/**
+ * Gauge presentation of the same deterministic diagnostic — used for the first
+ * few checks so the health grid opens with a visual read. Scores and statuses
+ * are the engine's, unchanged.
+ */
+function DiagnosticGauge({
+  d,
+}: {
+  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+}) {
+  const map = DIAGNOSTIC_TONE[d.status];
+  return (
+    <details className="group rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft transition-colors open:bg-surface/60">
+      <summary className="flex cursor-pointer list-none items-center gap-4">
+        <HealthGauge score={d.score} color={map.dot}>
+          <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            /100
+          </span>
+        </HealthGauge>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline justify-between gap-2">
+            <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
+            <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+          </span>
+          <span className="mt-1 block font-mono text-[11.5px] tabular-nums text-foreground">
+            {d.valueLabel}
+          </span>
+          <span
+            className={`mt-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}
+          >
+            {map.word}
+          </span>
+        </span>
+      </summary>
+      <div className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed">
+        <p>
+          <strong className="font-semibold text-foreground/80">Why it matters. </strong>
+          <span className="text-muted-foreground">{d.detail}</span>
+        </p>
+        <p>
+          <strong className="font-semibold text-foreground/80">Target. </strong>
+          <span className="text-muted-foreground">{d.targetLabel}</span>
+        </p>
+      </div>
+    </details>
+  );
+}
+
+
 /**
  * Compact health chip. Status + measured value are glanceable; the reasoning
  * expands only on interaction so the matrix stays a strip, not six blocks.
