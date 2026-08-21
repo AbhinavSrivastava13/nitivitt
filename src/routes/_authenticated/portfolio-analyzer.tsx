@@ -36,7 +36,8 @@ import {
   SERIES_COLORS,
   EffectivenessDial,
   ScenarioMatrix,
-  StressScenarios,
+  StressWaterfall,
+  HealthGauge,
   PeerRails,
   type ExposureGroup,
 } from "@/components/portfolio/charts";
@@ -1199,10 +1200,13 @@ function ReportView({
           <ChartCard
             title="Sector mix"
             note="Sector exposure across holdings matched to verified security data."
+            className="xl:col-span-2"
           >
             <SectorTreemap
               slices={report.allocation.bySector}
               formatValue={formatInr}
+              height={340}
+              columns={3}
               empty="Sector exposure appears once a holding is matched to a listed security. These positions are held through instruments that do not publish a single sector."
             />
           </ChartCard>
@@ -1210,26 +1214,31 @@ function ReportView({
             <ChartCard
               title="Cost drag"
               note="What the portfolio pays every year, and what that compounds into."
+              className="xl:col-span-2"
             >
-              <p className="font-display text-3xl leading-none tracking-tight text-foreground">
-                {blendedCost}%
-              </p>
-              <p className="mt-1.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Blended portfolio cost
-              </p>
-              {drag && drag.difference > 0 ? (
-                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-foreground/85">
-                  At your current contribution rate, this cost could reduce long-term wealth by
-                  roughly <span className="font-semibold">{inrShort(drag.difference)}</span> over{" "}
-                  {report.projection?.defaultHorizonYears} years compared with a 0.4% low-cost
-                  equivalent, holding every other assumption constant.
-                </p>
-              ) : (
-                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-muted-foreground">
-                  This is already at or below the cost of a low-cost index equivalent, so expense
-                  drag is not materially reducing your outcome.
-                </p>
-              )}
+              <div className="grid items-center gap-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-8">
+                <div className="shrink-0 rounded-2xl border border-border/70 bg-surface/60 px-5 py-3.5">
+                  <p className="font-display text-3xl leading-none tracking-tight text-foreground">
+                    {blendedCost}%
+                  </p>
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Blended portfolio cost
+                  </p>
+                </div>
+                {drag && drag.difference > 0 ? (
+                  <p className="text-[12.5px] leading-relaxed text-foreground/85">
+                    At your current contribution rate, this cost could reduce long-term wealth by
+                    roughly <span className="font-semibold">{inrShort(drag.difference)}</span> over{" "}
+                    {report.projection?.defaultHorizonYears} years compared with a 0.4% low-cost
+                    equivalent, holding every other assumption constant.
+                  </p>
+                ) : (
+                  <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+                    This is already at or below the cost of a low-cost index equivalent, so expense
+                    drag is not materially reducing your outcome.
+                  </p>
+                )}
+              </div>
             </ChartCard>
           )}
         </div>
@@ -1265,7 +1274,7 @@ function ReportView({
             title="If markets fall from here"
             note="Hypothetical drawdowns applied to today's holdings — not predictions."
           >
-            <StressScenarios rows={stress} formatValue={formatInr} />
+            <StressWaterfall rows={stress} total={report.totalValue} formatValue={formatInr} />
           </ChartCard>
         </div>
       </section>
@@ -1280,7 +1289,10 @@ function ReportView({
           />
           {diagnostics.length > 0 && (
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-              {diagnostics.map((d) => (
+              {diagnostics.slice(0, 3).map((d) => (
+                <DiagnosticGauge key={d.id} d={d} />
+              ))}
+              {diagnostics.slice(3).map((d) => (
                 <DiagnosticChip key={d.id} d={d} />
               ))}
             </div>
@@ -1410,13 +1422,17 @@ function ChartCard({
   title,
   note,
   children,
+  className = "",
 }: {
   title: string;
   note?: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+    <div
+      className={`rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6 ${className}`}
+    >
       <h4 className="font-display text-base tracking-tight text-foreground">{title}</h4>
       {note && (
         <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>
@@ -1465,6 +1481,61 @@ function SnapItem({ label, value, sub }: { label: string; value: string; sub?: s
 }
 
 /* ─────────── diagnostics ─────────── */
+
+const DIAGNOSTIC_TONE = {
+  good: { dot: SERIES_COLORS.positive, chip: "text-success", word: "Healthy" },
+  watch: { dot: SERIES_COLORS.attention, chip: "text-warning", word: "Watch" },
+  action: { dot: SERIES_COLORS.action, chip: "text-destructive", word: "Act" },
+} as const;
+
+/**
+ * Gauge presentation of the same deterministic diagnostic — used for the first
+ * few checks so the health grid opens with a visual read. Scores and statuses
+ * are the engine's, unchanged.
+ */
+function DiagnosticGauge({
+  d,
+}: {
+  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+}) {
+  const map = DIAGNOSTIC_TONE[d.status];
+  return (
+    <details className="group rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft transition-colors open:bg-surface/60">
+      <summary className="flex cursor-pointer list-none items-center gap-4">
+        <HealthGauge score={d.score} color={map.dot}>
+          <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            /100
+          </span>
+        </HealthGauge>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline justify-between gap-2">
+            <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
+            <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+          </span>
+          <span className="mt-1 block font-mono text-[11.5px] tabular-nums text-foreground">
+            {d.valueLabel}
+          </span>
+          <span
+            className={`mt-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}
+          >
+            {map.word}
+          </span>
+        </span>
+      </summary>
+      <div className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed">
+        <p>
+          <strong className="font-semibold text-foreground/80">Why it matters. </strong>
+          <span className="text-muted-foreground">{d.detail}</span>
+        </p>
+        <p>
+          <strong className="font-semibold text-foreground/80">Target. </strong>
+          <span className="text-muted-foreground">{d.targetLabel}</span>
+        </p>
+      </div>
+    </details>
+  );
+}
+
 
 /**
  * Compact health chip. Status + measured value are glanceable; the reasoning
@@ -1894,25 +1965,136 @@ function EffectivenessSection({
 
   const gapToReference = result.reference - result.projected;
 
+  const scenarioLabel = SCENARIOS.find((s) => s.key === scenario)?.label ?? "Base";
+
   return (
     <div className="mt-4 space-y-3">
       <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:gap-8">
-          {/* Score, what it is made of, and one interpretation */}
-          <div>
+        {/* Scenario controls — one compact strip above the two analysis columns */}
+        <div className="rounded-2xl border border-border/70 bg-surface/60 p-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Scenario controls
+            </p>
+            {changed && (
+              <button
+                onClick={() => {
+                  setMonthlySip(baseSip);
+                  setStepUpPct(0);
+                  setYears(baseYears);
+                  setScenario("base");
+                }}
+                className="text-[11px] font-semibold text-primary hover:underline"
+              >
+                Reset to current plan
+              </button>
+            )}
+          </div>
+          <div className="mt-3.5 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-4">
+            <Slider
+              label="Monthly contribution"
+              value={`₹${monthlySip.toLocaleString("en-IN")}`}
+              min={0}
+              max={Math.max(50000, (baseSip + basis.suggestedSipUplift) * 3)}
+              step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
+              current={monthlySip}
+              onChange={setMonthlySip}
+              hint={
+                basis.sipSource === "profile"
+                  ? `Recorded · ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
+                  : `NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month`
+              }
+            />
+            <Slider
+              label="Annual step-up"
+              value={`${stepUpPct}%`}
+              min={0}
+              max={20}
+              step={1}
+              current={stepUpPct}
+              onChange={setStepUpPct}
+              hint="Most salaried investors can raise contributions with each increment."
+            />
+            <Slider
+              label="Years to retirement"
+              value={`${years} years`}
+              min={3}
+              max={40}
+              step={1}
+              current={years}
+              onChange={setYears}
+              hint={basis.horizonBasis}
+            />
+            <div>
+              <p className="text-[12px] font-semibold text-foreground">Return scenario</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {SCENARIOS.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => setScenario(s.key)}
+                    className={`rounded-full px-2.5 py-1 text-[10.5px] font-semibold transition-colors ${
+                      scenario === s.key
+                        ? "bg-foreground text-background"
+                        : "border border-border text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {s.label} · {scenarioReturn(basis.expectedReturnPct, s.key)}%
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
+                ±2 percentage points on your blended {basis.expectedReturnPct}% assumption.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Left: score + outcomes · Right: contribution × return matrix */}
+        <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,330px)_minmax(0,1fr)] lg:gap-8">
+          <div className="min-w-0">
             <EffectivenessDial score={result.score} delta={result.score - current.score} />
-            <dl className="mt-4 space-y-1.5 border-t border-border/70 pt-3.5 text-[12px]">
+            <div className="mt-4 space-y-2 border-t border-border/70 pt-4">
+              {[
+                {
+                  label: "Current plan",
+                  value: inrShort(current.projected),
+                  sub: `₹${baseSip.toLocaleString("en-IN")}/mo · 0% step-up · ${baseYears} yrs`,
+                },
+                {
+                  label: "Your scenario",
+                  value: inrShort(result.projected),
+                  sub: `₹${monthlySip.toLocaleString("en-IN")}/mo · ${stepUpPct}% step-up · ${scenarioLabel} · ${years} yrs`,
+                  strong: true,
+                },
+                {
+                  label: "NitiCore™ reference",
+                  value: inrShort(result.reference),
+                  sub: `Suggested contribution over ${baseYears} yrs`,
+                },
+              ].map((c) => (
+                <div
+                  key={c.label}
+                  className={`flex items-baseline justify-between gap-3 rounded-xl border px-3.5 py-2.5 ${
+                    c.strong ? "border-foreground/25 bg-surface/70" : "border-border/70"
+                  }`}
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      {c.label}
+                    </span>
+                    <span className="mt-0.5 block truncate font-mono text-[10.5px] tabular-nums text-muted-foreground">
+                      {c.sub}
+                    </span>
+                  </span>
+                  <span className="shrink-0 font-display text-lg tracking-tight text-foreground">
+                    {c.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <dl className="mt-3 space-y-1.5 border-t border-border/70 pt-3 text-[12px]">
               <EffStat
-                label={`Projected in ${years} years`}
-                value={inrShort(result.projected)}
-                strong
-              />
-              <EffStat
-                label={`NitiCore™ reference (${baseYears} yrs)`}
-                value={inrShort(result.reference)}
-              />
-              <EffStat
-                label="Gap"
+                label="Gap to reference"
                 value={
                   gapToReference > 0
                     ? `${inrShort(gapToReference)} short · ${readiness}% funded`
@@ -1921,8 +2103,8 @@ function EffectivenessSection({
               />
               <EffStat label="Structural health" value={`${result.structure}/100`} />
             </dl>
-            <p className="mt-3 text-[13px] leading-relaxed text-foreground/85">{interpretation}</p>
-            <details className="group mt-3">
+            <p className="mt-3 text-[12.5px] leading-relaxed text-foreground/85">{interpretation}</p>
+            <details className="group mt-2.5">
               <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
                 How this score is built
               </summary>
@@ -1936,151 +2118,40 @@ function EffectivenessSection({
             </details>
           </div>
 
-          {/* Scenario controls */}
-          <div className="rounded-2xl border border-border/70 bg-surface/60 p-4 md:p-5">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Scenario controls
-              </p>
-              {changed && (
-                <button
-                  onClick={() => {
-                    setMonthlySip(baseSip);
-                    setStepUpPct(0);
-                    setYears(baseYears);
-                    setScenario("base");
+          <div className="flex min-w-0 flex-col rounded-2xl border border-border/70 bg-surface/40 p-4 md:p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Contribution × return · projected value at {years} years
+            </p>
+            <div className="mt-3 -mx-1 flex-1 overflow-x-auto px-1">
+              <div className="min-w-[420px]">
+                <ScenarioMatrix
+                  cells={grid}
+                  rows={STEP_UP_ROWS}
+                  columns={SCENARIOS.map((s) => ({ key: s.key, label: s.label }))}
+                  activeStepUp={stepUpPct}
+                  activeScenario={scenario}
+                  formatValue={inrShort}
+                  onSelect={(st: number, sc: string) => {
+                    setStepUpPct(st);
+                    setScenario(sc as ScenarioKey);
                   }}
-                  className="text-[11px] font-semibold text-primary hover:underline"
-                >
-                  Reset to current plan
-                </button>
-              )}
-            </div>
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
-              <Slider
-                label="Monthly contribution"
-                value={`₹${monthlySip.toLocaleString("en-IN")}`}
-                min={0}
-                max={Math.max(50000, (baseSip + basis.suggestedSipUplift) * 3)}
-                step={Math.max(500, Math.round(basis.suggestedSipUplift / 5) || 500)}
-                current={monthlySip}
-                onChange={setMonthlySip}
-                hint={
-                  basis.sipSource === "profile"
-                    ? `Recorded contribution · ₹${basis.monthlySip.toLocaleString("en-IN")}/month`
-                    : `Starting point · NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month`
-                }
-              />
-              <Slider
-                label="Annual step-up"
-                value={`${stepUpPct}%`}
-                min={0}
-                max={20}
-                step={1}
-                current={stepUpPct}
-                onChange={setStepUpPct}
-                hint="Most salaried investors can raise contributions with each annual increment."
-              />
-              <Slider
-                label="Years to retirement"
-                value={`${years} years`}
-                min={3}
-                max={40}
-                step={1}
-                current={years}
-                onChange={setYears}
-                hint={basis.horizonBasis}
-              />
-              <div>
-                <p className="text-[12px] font-semibold text-foreground">Return scenario</p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {SCENARIOS.map((s) => (
-                    <button
-                      key={s.key}
-                      onClick={() => setScenario(s.key)}
-                      className={`rounded-full px-3 py-1.5 text-[11px] font-semibold transition-colors ${
-                        scenario === s.key
-                          ? "bg-foreground text-background"
-                          : "border border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {s.label} · {scenarioReturn(basis.expectedReturnPct, s.key)}%
-                    </button>
-                  ))}
-                </div>
-                <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
-                  Scenarios apply ±2 percentage points to your blended {basis.expectedReturnPct}%
-                  assumption.
-                </p>
+                />
               </div>
             </div>
+            {lever && (
+              <p className="mt-3 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed text-foreground/85">
+                {lever}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Projected outcome — three headline values */}
-        <div className="mt-5 grid gap-3 border-t border-border/70 pt-5 sm:grid-cols-3">
-          {[
-            {
-              label: "Current plan",
-              value: inrShort(current.projected),
-              sub: `₹${baseSip.toLocaleString("en-IN")}/mo · 0% step-up · ${baseYears} yrs`,
-            },
-            {
-              label: "Your scenario",
-              value: inrShort(result.projected),
-              sub: `₹${monthlySip.toLocaleString("en-IN")}/mo · ${stepUpPct}% step-up · ${SCENARIOS.find((s) => s.key === scenario)?.label} · ${years} yrs`,
-              strong: true,
-            },
-            {
-              label: "NitiCore™ reference",
-              value: inrShort(result.reference),
-              sub: `Suggested contribution over ${baseYears} yrs`,
-            },
-          ].map((c) => (
-            <div
-              key={c.label}
-              className={`rounded-2xl border px-4 py-3 ${c.strong ? "border-foreground/25 bg-surface/70" : "border-border/70"}`}
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                {c.label}
-              </p>
-              <p className="mt-1 font-display text-xl tracking-tight text-foreground">{c.value}</p>
-              <p className="mt-0.5 font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                {c.sub}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Contribution × return matrix */}
-        <div className="mt-5 border-t border-border/70 pt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Contribution × return · projected value at {years} years
-          </p>
-          <div className="mt-3 -mx-1 overflow-x-auto px-1">
-            <div className="min-w-[420px]">
-              <ScenarioMatrix
-                cells={grid}
-                rows={STEP_UP_ROWS}
-                columns={SCENARIOS.map((s) => ({ key: s.key, label: s.label }))}
-                activeStepUp={stepUpPct}
-                activeScenario={scenario}
-                formatValue={inrShort}
-                onSelect={(st: number, sc: string) => {
-                  setStepUpPct(st);
-                  setScenario(sc as ScenarioKey);
-                }}
-              />
-            </div>
-          </div>
-          {lever && <p className="mt-3 text-[11.5px] leading-relaxed text-foreground/85">{lever}</p>}
-        </div>
-
+        {/* Projected growth — full width beneath both columns */}
         <div className="mt-5 border-t border-border/70 pt-4">
           <ProjectionChart
             data={series}
             format={inrShort}
-            height={220}
+            height={260}
             series={[
               { key: "base", label: "Current plan", color: SERIES_COLORS.you },
               {
@@ -2098,6 +2169,7 @@ function EffectivenessSection({
           </p>
         </div>
       </div>
+
 
       <details className="group rounded-2xl border border-border bg-surface px-5 py-3.5">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
