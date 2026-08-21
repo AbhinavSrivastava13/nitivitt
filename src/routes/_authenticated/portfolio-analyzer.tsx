@@ -36,7 +36,8 @@ import {
   SERIES_COLORS,
   EffectivenessDial,
   ScenarioMatrix,
-  StressScenarios,
+  StressWaterfall,
+  HealthGauge,
   PeerRails,
   type ExposureGroup,
 } from "@/components/portfolio/charts";
