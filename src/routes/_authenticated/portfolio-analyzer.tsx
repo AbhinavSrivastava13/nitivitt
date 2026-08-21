@@ -1215,25 +1215,29 @@ function ReportView({
               note="What the portfolio pays every year, and what that compounds into."
               className="xl:col-span-2"
             >
-              <p className="font-display text-3xl leading-none tracking-tight text-foreground">
-                {blendedCost}%
-              </p>
-              <p className="mt-1.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                Blended portfolio cost
-              </p>
-              {drag && drag.difference > 0 ? (
-                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-foreground/85">
-                  At your current contribution rate, this cost could reduce long-term wealth by
-                  roughly <span className="font-semibold">{inrShort(drag.difference)}</span> over{" "}
-                  {report.projection?.defaultHorizonYears} years compared with a 0.4% low-cost
-                  equivalent, holding every other assumption constant.
-                </p>
-              ) : (
-                <p className="mt-4 border-t border-border/70 pt-3 text-[12.5px] leading-relaxed text-muted-foreground">
-                  This is already at or below the cost of a low-cost index equivalent, so expense
-                  drag is not materially reducing your outcome.
-                </p>
-              )}
+              <div className="grid items-center gap-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-8">
+                <div className="shrink-0 rounded-2xl border border-border/70 bg-surface/60 px-5 py-3.5">
+                  <p className="font-display text-3xl leading-none tracking-tight text-foreground">
+                    {blendedCost}%
+                  </p>
+                  <p className="mt-1.5 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Blended portfolio cost
+                  </p>
+                </div>
+                {drag && drag.difference > 0 ? (
+                  <p className="text-[12.5px] leading-relaxed text-foreground/85">
+                    At your current contribution rate, this cost could reduce long-term wealth by
+                    roughly <span className="font-semibold">{inrShort(drag.difference)}</span> over{" "}
+                    {report.projection?.defaultHorizonYears} years compared with a 0.4% low-cost
+                    equivalent, holding every other assumption constant.
+                  </p>
+                ) : (
+                  <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+                    This is already at or below the cost of a low-cost index equivalent, so expense
+                    drag is not materially reducing your outcome.
+                  </p>
+                )}
+              </div>
             </ChartCard>
           )}
         </div>
