@@ -1244,3 +1244,132 @@ export function PeerRails({
   );
 }
 
+
+/* ───────────────── STRESS — drawdown ladder ───────────────── */
+
+/**
+ * Premium stress visualisation: one rail per scenario where the shaded band is
+ * the value that survives the fall and the notched segment is the loss. Numbers
+ * lead, explanation follows. Same data as StressScenarios — presentation only.
+ */
+export function StressWaterfall({
+  rows,
+  total,
+  formatValue,
+}: {
+  rows: { label: string; detail: string; impact: number; after: number; pctOfPortfolio: number }[];
+  total: number;
+  formatValue: (n: number) => string;
+}) {
+  const base = Math.max(1, total);
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-4 border-b border-border/60 pb-2">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Today
+        </span>
+        <span className="font-mono text-[13px] font-semibold tabular-nums text-foreground">
+          {formatValue(total)}
+        </span>
+      </div>
+      <ul className="mt-3 space-y-3.5">
+        {rows.map((r) => {
+          const keepPct = Math.max(0, Math.min(100, (r.after / base) * 100));
+          return (
+            <li key={r.label}>
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+                <span className="text-[12.5px] font-semibold text-foreground">{r.label}</span>
+                <span className="font-mono text-[11.5px] tabular-nums">
+                  <span style={{ color: SERIES_COLORS.action }}>−{formatValue(r.impact)}</span>
+                  <span className="px-1.5 text-muted-foreground">·</span>
+                  <span className="text-muted-foreground">{r.pctOfPortfolio}%</span>
+                </span>
+              </div>
+              <div className="mt-1.5 flex h-7 w-full items-stretch overflow-hidden rounded-lg bg-muted/50">
+                <span
+                  className="flex items-center justify-end pr-2 transition-[width] duration-500"
+                  style={{ width: `${keepPct}%`, background: SERIES_COLORS.you }}
+                >
+                  <span className="truncate font-mono text-[11px] font-semibold tabular-nums text-background">
+                    {formatValue(r.after)}
+                  </span>
+                </span>
+                <span
+                  className="flex-1"
+                  style={{
+                    background: `repeating-linear-gradient(135deg, color-mix(in oklab, ${SERIES_COLORS.action} 28%, var(--card)) 0 5px, var(--card) 5px 10px)`,
+                  }}
+                />
+              </div>
+              <p className="mt-1 text-[10.5px] leading-relaxed text-muted-foreground">{r.detail}</p>
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-3 flex items-center gap-3 border-t border-border/60 pt-2.5 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span
+            className="h-2.5 w-4 rounded-[2px]"
+            style={{ background: SERIES_COLORS.you }}
+          />
+          Value remaining
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span
+            className="h-2.5 w-4 rounded-[2px]"
+            style={{
+              background: `repeating-linear-gradient(135deg, color-mix(in oklab, ${SERIES_COLORS.action} 40%, var(--card)) 0 4px, var(--card) 4px 8px)`,
+            }}
+          />
+          Loss
+        </span>
+      </p>
+    </div>
+  );
+}
+
+/* ───────────────── HEALTH — compact semicircular gauge ───────────────── */
+
+export function HealthGauge({
+  score,
+  color,
+  size = 108,
+  children,
+}: {
+  score: number;
+  color: string;
+  size?: number;
+  children?: React.ReactNode;
+}) {
+  const v = Math.max(0, Math.min(100, score));
+  const r = (size - 12) / 2;
+  const c = Math.PI * r;
+  return (
+    <div className="relative" style={{ width: size, height: size / 2 + 16 }}>
+      <svg width={size} height={size / 2 + 8} viewBox={`0 0 ${size} ${size / 2 + 8}`}>
+        <path
+          d={`M 6 ${size / 2} A ${r} ${r} 0 0 1 ${size - 6} ${size / 2}`}
+          fill="none"
+          stroke="var(--muted)"
+          strokeWidth={7}
+          strokeLinecap="round"
+        />
+        <path
+          d={`M 6 ${size / 2} A ${r} ${r} 0 0 1 ${size - 6} ${size / 2}`}
+          fill="none"
+          stroke={color}
+          strokeWidth={7}
+          strokeLinecap="round"
+          strokeDasharray={`${(v / 100) * c} ${c}`}
+          style={{ transition: "stroke-dasharray 400ms ease" }}
+        />
+      </svg>
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
+        <span className="font-display text-[1.6rem] leading-none tracking-tight tabular-nums text-foreground">
+          {v}
+        </span>
+        {children}
+      </div>
+    </div>
+  );
+}
