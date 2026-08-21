@@ -502,10 +502,14 @@ export function SectorTreemap({
   slices,
   formatValue,
   empty,
+  height = 260,
+  columns = 2,
 }: {
   slices: Slice[];
   formatValue: (n: number) => string;
   empty?: string;
+  height?: number;
+  columns?: 2 | 3;
 }) {
   const data = slices
     .filter((s) => s.pct > 0)
@@ -513,7 +517,7 @@ export function SectorTreemap({
   if (data.length === 0) return <NoData>{empty}</NoData>;
   return (
     <div>
-      <div className="h-[260px] w-full">
+      <div className="w-full" style={{ height }}>
         <ResponsiveContainer>
           <Treemap
             data={data}
@@ -529,8 +533,10 @@ export function SectorTreemap({
           </Treemap>
         </ResponsiveContainer>
       </div>
-      <ul className="mt-5 grid gap-x-8 gap-y-1.5 sm:grid-cols-2">
-        {data.slice(0, 8).map((s, i) => (
+      <ul
+        className={`mt-5 grid gap-x-8 gap-y-1.5 sm:grid-cols-2 ${columns === 3 ? "lg:grid-cols-3" : ""}`}
+      >
+        {data.slice(0, columns === 3 ? 9 : 8).map((s, i) => (
           <li key={s.name} className="flex items-baseline gap-2.5 border-b border-border/50 pb-1.5">
             <span
               className="h-2.5 w-2.5 shrink-0 translate-y-[1px] rounded-[3px]"
