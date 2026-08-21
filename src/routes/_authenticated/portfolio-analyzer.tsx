@@ -1410,13 +1410,17 @@ function ChartCard({
   title,
   note,
   children,
+  className = "",
 }: {
   title: string;
   note?: string;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+    <div
+      className={`rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6 ${className}`}
+    >
       <h4 className="font-display text-base tracking-tight text-foreground">{title}</h4>
       {note && (
         <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>
