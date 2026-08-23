@@ -51,7 +51,7 @@ function AuthPage() {
       const parsedEmail = emailSchema.parse(email);
       const parsedPwd = passwordSchema.parse(password);
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: parsedEmail,
           password: parsedPwd,
           options: {
@@ -60,14 +60,28 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+
+        // No session means email confirmation is required — do not pretend the
+        // account is ready to onboard.
+        if (!data.session) {
+          toast.success("Check your email to confirm your account, then sign in.");
+          setMode("signin");
+          setPassword("");
+          return;
+        }
+
         toast.success("Account created. Welcome to NitiVitt.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: parsedEmail,
-          password: parsedPwd,
-        });
-        if (error) throw error;
+        // New account → straight into onboarding (the auth gate keeps users
+        // there until onboarding_completed flips true).
+        navigate({ to: "/onboarding", replace: true });
+        return;
       }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: parsedEmail,
+        password: parsedPwd,
+      });
+      if (error) throw error;
       navigate({ to: search.redirect ?? "/dashboard" });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
@@ -76,6 +90,7 @@ function AuthPage() {
       setSubmitting(false);
     }
   }
+
 
   async function handleGoogle() {
     setSubmitting(true);
