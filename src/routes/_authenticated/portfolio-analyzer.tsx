@@ -2049,58 +2049,107 @@ function EffectivenessSection({
           </div>
         </div>
 
-        {/* Left: score + outcomes · Right: contribution × return matrix */}
-        <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,330px)_minmax(0,1fr)] lg:gap-8">
-          <div className="min-w-0">
-            <EffectivenessDial score={result.score} delta={result.score - current.score} />
-            <div className="mt-4 space-y-2 border-t border-border/70 pt-4">
+        {/* Left 55: Your Plan · Right 45: Scenario Lab */}
+        <div className="mt-5 grid gap-5 lg:grid-cols-[55fr_45fr] lg:gap-6">
+          {/* ── YOUR PLAN ── */}
+          <div className="min-w-0 rounded-2xl border border-border/70 bg-surface/40 p-4 md:p-5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Your plan · where am I going?
+            </p>
+            <div className="mt-3 grid gap-5 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
+              <EffectivenessDial score={result.score} delta={result.score - current.score} />
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+                {[
+                  {
+                    label: "Monthly contribution",
+                    value: `₹${monthlySip.toLocaleString("en-IN")}`,
+                  },
+                  { label: "Annual step-up", value: `${stepUpPct}%` },
+                  { label: "Years to retirement", value: `${years} yrs` },
+                  { label: "Return scenario", value: `${scenarioLabel} · ${result.returnPct}%` },
+                ].map((s) => (
+                  <div key={s.label} className="min-w-0">
+                    <dt className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+                      {s.label}
+                    </dt>
+                    <dd className="mt-0.5 truncate font-mono text-[13px] font-semibold tabular-nums text-foreground">
+                      {s.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <div className="mt-4 grid gap-2 border-t border-border/70 pt-4 sm:grid-cols-3">
               {[
                 {
-                  label: "Current plan",
-                  value: inrShort(current.projected),
-                  sub: `₹${baseSip.toLocaleString("en-IN")}/mo · 0% step-up · ${baseYears} yrs`,
-                },
-                {
-                  label: "Your scenario",
+                  label: "Projected corpus",
                   value: inrShort(result.projected),
-                  sub: `₹${monthlySip.toLocaleString("en-IN")}/mo · ${stepUpPct}% step-up · ${scenarioLabel} · ${years} yrs`,
                   strong: true,
                 },
+                { label: "NitiCore™ reference", value: inrShort(result.reference) },
                 {
-                  label: "NitiCore™ reference",
-                  value: inrShort(result.reference),
-                  sub: `Suggested contribution over ${baseYears} yrs`,
+                  label: gapToReference > 0 ? "Gap to reference" : "Surplus vs reference",
+                  value:
+                    gapToReference > 0
+                      ? `−${inrShort(gapToReference)}`
+                      : `+${inrShort(Math.abs(gapToReference))}`,
                 },
               ].map((c) => (
                 <div
                   key={c.label}
-                  className={`flex items-baseline justify-between gap-3 rounded-xl border px-3.5 py-2.5 ${
+                  className={`rounded-xl border px-3.5 py-2.5 ${
                     c.strong ? "border-foreground/25 bg-surface/70" : "border-border/70"
                   }`}
                 >
-                  <span className="min-w-0">
-                    <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      {c.label}
-                    </span>
-                    <span className="mt-0.5 block truncate font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                      {c.sub}
-                    </span>
-                  </span>
-                  <span className="shrink-0 font-display text-lg tracking-tight text-foreground">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+                    {c.label}
+                  </p>
+                  <p className="mt-1 font-display text-lg leading-none tracking-tight text-foreground">
                     {c.value}
-                  </span>
+                  </p>
                 </div>
               ))}
             </div>
-            <dl className="mt-3 space-y-1.5 border-t border-border/70 pt-3 text-[12px]">
-              <EffStat
-                label="Gap to reference"
-                value={
-                  gapToReference > 0
-                    ? `${inrShort(gapToReference)} short · ${readiness}% funded`
-                    : `Ahead by ${inrShort(Math.abs(gapToReference))}`
-                }
-              />
+
+            {/* Contribution vs growth */}
+            {result.projected > 0 && (
+              <div className="mt-4 border-t border-border/70 pt-3.5">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Contribution vs growth
+                  </p>
+                  <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                    {Math.round(
+                      (Math.min(result.contributed, result.projected) / result.projected) * 100,
+                    )}
+                    % paid in ·{" "}
+                    {100 -
+                      Math.round(
+                        (Math.min(result.contributed, result.projected) / result.projected) * 100,
+                      )}
+                    % compounding
+                  </p>
+                </div>
+                <div className="mt-2 flex h-6 w-full items-stretch overflow-hidden rounded-lg bg-muted/50">
+                  <span
+                    className="transition-[width] duration-500"
+                    style={{
+                      width: `${Math.max(0, Math.min(100, (result.contributed / result.projected) * 100))}%`,
+                      background: SERIES_COLORS.you,
+                    }}
+                  />
+                  <span className="flex-1" style={{ background: SERIES_COLORS.recommended }} />
+                </div>
+                <p className="mt-1.5 font-mono text-[10.5px] tabular-nums text-muted-foreground">
+                  {inrShort(result.contributed)} contributed ·{" "}
+                  {inrShort(Math.max(0, result.projected - result.contributed))} from compounding
+                </p>
+              </div>
+            )}
+
+            <dl className="mt-3.5 space-y-1.5 border-t border-border/70 pt-3 text-[12px]">
+              <EffStat label="Readiness" value={`${readiness}% funded`} />
               <EffStat label="Structural health" value={`${result.structure}/100`} />
             </dl>
             <p className="mt-3 text-[12.5px] leading-relaxed text-foreground/85">{interpretation}</p>
@@ -2113,16 +2162,22 @@ function EffectivenessSection({
                 deterministic structural health.{" "}
                 {basis.sipSource === "profile"
                   ? "Your current plan uses the contribution recorded in your profile."
-                  : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}
+                  : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}{" "}
+                Current plan reference: {inrShort(current.projected)} at ₹
+                {baseSip.toLocaleString("en-IN")}/mo over {baseYears} yrs.
               </p>
             </details>
           </div>
 
+          {/* ── SCENARIO LAB ── */}
           <div className="flex min-w-0 flex-col rounded-2xl border border-border/70 bg-surface/40 p-4 md:p-5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Scenario lab · what can I change?
+            </p>
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               Contribution × return · projected value at {years} years
             </p>
-            <div className="mt-3 -mx-1 flex-1 overflow-x-auto px-1">
+            <div className="mt-3 -mx-1 overflow-x-auto px-1">
               <div className="min-w-[420px]">
                 <ScenarioMatrix
                   cells={grid}
@@ -2138,35 +2193,38 @@ function EffectivenessSection({
                 />
               </div>
             </div>
+
+            <div className="mt-4 border-t border-border/70 pt-3.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Projected growth
+              </p>
+              <div className="mt-2">
+                <ProjectionChart
+                  data={series}
+                  format={inrShort}
+                  height={170}
+                  series={[
+                    { key: "base", label: "Current plan", color: SERIES_COLORS.you },
+                    {
+                      key: "alternative",
+                      label: "Your scenario",
+                      color: SERIES_COLORS.recommended,
+                      dash: "6 4",
+                    },
+                  ]}
+                />
+              </div>
+              <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+                Illustrative scenarios, not guaranteed returns.
+              </p>
+            </div>
+
             {lever && (
               <p className="mt-3 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed text-foreground/85">
                 {lever}
               </p>
             )}
           </div>
-        </div>
-
-        {/* Projected growth — full width beneath both columns */}
-        <div className="mt-5 border-t border-border/70 pt-4">
-          <ProjectionChart
-            data={series}
-            format={inrShort}
-            height={260}
-            series={[
-              { key: "base", label: "Current plan", color: SERIES_COLORS.you },
-              {
-                key: "alternative",
-                label: "Your scenario",
-                color: SERIES_COLORS.recommended,
-                dash: "6 4",
-              },
-            ]}
-          />
-          <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
-            Illustrative scenarios, not guaranteed returns. Contributed over the period:{" "}
-            {inrShort(result.contributed)} — the rest of the projected total is compounding, not
-            money you paid in.
-          </p>
         </div>
       </div>
 
