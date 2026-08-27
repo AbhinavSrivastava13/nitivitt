@@ -679,6 +679,15 @@ function MetricDialog({
   totalLiabilities: number;
   topRecs: Recommendation[];
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
   if (!kind) return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent />
@@ -694,7 +703,7 @@ function MetricDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto">
         {kind === "score" && (
           <>
             <DialogHeader>
