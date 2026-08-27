@@ -679,6 +679,15 @@ function MetricDialog({
   totalLiabilities: number;
   topRecs: Recommendation[];
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, onClose]);
+
   if (!kind) return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent />
@@ -694,7 +703,15 @@ function MetricDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90dvh] overflow-y-auto">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close NitiAge detail"
+          className="sticky top-0 z-20 ml-auto flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-card/95 text-foreground shadow-soft transition-colors hover:bg-muted hover:text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          <X className="h-4 w-4" />
+        </button>
         {kind === "score" && (
           <>
             <DialogHeader>
