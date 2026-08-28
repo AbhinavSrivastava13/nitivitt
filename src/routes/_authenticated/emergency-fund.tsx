@@ -4,7 +4,7 @@ import { PageShell, ModulePlaceholder } from "@/components/page-shell";
 export const Route = createFileRoute("/_authenticated/emergency-fund")({
   head: () => ({
     meta: [
-      { title: "Emergency fund planner — NitiVitt" },
+      { title: "Emergency fund planner - NitiVitt" },
       {
         name: "description",
         content:
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/emergency-fund")({
     >
       <ModulePlaceholder
         module="NitiVitt Emergency Fund"
-        description="6 months of essential expenses, parked in liquid instruments — calculated from your real spending, not generic rules of thumb."
+        description="6 months of essential expenses, parked in liquid instruments - calculated from your real spending, not generic rules of thumb."
         features={[
           "Target = monthly essentials × 6 (configurable for variable income)",
           "Months-of-runway tracker linked to NitiScore",

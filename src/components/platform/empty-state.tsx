@@ -2,7 +2,7 @@ import { type ComponentType, type ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 
 /**
- * EmptyState — canonical "nothing here yet" surface for lists, analyzers
+ * EmptyState - canonical "nothing here yet" surface for lists, analyzers
  * and reports. Standardises padding, iconography and CTA layout.
  */
 interface EmptyStateProps {

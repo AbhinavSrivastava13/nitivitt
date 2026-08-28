@@ -1,5 +1,5 @@
 /**
- * NitiTax™ — deterministic Tax Decision Engine (V1).
+ * NitiTax™ - deterministic Tax Decision Engine (V1).
  *
  * FY 2025-26 / AY 2026-27. Every rupee below is formula-driven. The AI layer
  * never computes tax; it only explains what this file produced.
@@ -133,7 +133,7 @@ function employerNpsAllowed(input: TaxInput, regime: TaxRegime): number {
 }
 
 function chapterVIA(input: TaxInput, regime: TaxRegime): number {
-  const empNps = employerNpsAllowed(input, regime); // 80CCD(2) — both regimes
+  const empNps = employerNpsAllowed(input, regime); // 80CCD(2) - both regimes
   if (regime === "new") return empNps;
   const o = input.otherDeductions;
   const savingsInterest = input.ageYears >= 60
@@ -689,7 +689,7 @@ export function analyzeTax(input: TaxInput): TaxReport {
   const chosen = recommended === "new" ? newR : oldR;
   const other = recommended === "new" ? oldR : newR;
 
-  // Zero-deduction baseline in the same regime — quantifies what the
+  // Zero-deduction baseline in the same regime - quantifies what the
   // deductions currently claimed are actually worth.
   const baselineInput: TaxInput = {
     ...input,

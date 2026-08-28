@@ -1,5 +1,5 @@
 /**
- * NitiLoan™ — deterministic Loan Intelligence engine.
+ * NitiLoan™ - deterministic Loan Intelligence engine.
  *
  * Same input → same output. All math lives here. Nothing invented, no AI.
  * The AI narration (NitiGuide) is produced separately from this report.
@@ -74,11 +74,11 @@ function simulate(opts: {
 }
 
 function scoreLabelFor(s: number): string {
-  if (s >= 85) return "Excellent — this loan sits comfortably in your plan";
-  if (s >= 70) return "Healthy — minor tuning will make it even better";
-  if (s >= 50) return "Manageable but strained — plan a few corrections";
-  if (s >= 30) return "Under pressure — this loan is holding back your plan";
-  return "Critical — this loan is destabilising your finances";
+  if (s >= 85) return "Excellent - this loan sits comfortably in your plan";
+  if (s >= 70) return "Healthy - minor tuning will make it even better";
+  if (s >= 50) return "Manageable but strained - plan a few corrections";
+  if (s >= 30) return "Under pressure - this loan is holding back your plan";
+  return "Critical - this loan is destabilising your finances";
 }
 
 function debtQualityBadge(input: LoanInput): DebtQualityBadge {
@@ -100,7 +100,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
   const monthlyIncome = Math.max(0, input.monthlyIncome);
   const annualPrepay = Math.max(0, Number(loan.annualPrepayment ?? 0));
 
-  // Remaining tenure — respect user's value if provided, else solve
+  // Remaining tenure - respect user's value if provided, else solve
   const remainingMonths = loan.remainingMonths && loan.remainingMonths > 0
     ? Math.round(loan.remainingMonths)
     : monthsFromEmi(outstanding, monthlyRate, emi);
@@ -196,7 +196,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
     });
   }
 
-  // Optimised strategy — chosen by prepayment intelligence below.
+  // Optimised strategy - chosen by prepayment intelligence below.
   // If invest is better (expected return > effective cost), a smaller +5% EMI + invest surplus is proposed.
   // If prepay is better, combine both prior levers.
   const expectedReturnGross = NITI_CORE_CONFIG.equityReturn * 100; // 12% p.a.
@@ -210,21 +210,21 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
   let opportunityCostNote: string;
   if (spread >= 1) {
     verdict = "prepay";
-    headline = "Prepayment likely wins — this loan is expensive money.";
-    reasoning = `The post-tax cost of this loan (${effectiveCost.toFixed(2)}%) exceeds the realistic post-tax return on equity (~${expectedReturnNet.toFixed(1)}%). Every extra rupee against principal earns a guaranteed ${effectiveCost.toFixed(2)}% — better than most investable alternatives at similar risk.`;
+    headline = "Prepayment likely wins - this loan is expensive money.";
+    reasoning = `The post-tax cost of this loan (${effectiveCost.toFixed(2)}%) exceeds the realistic post-tax return on equity (~${expectedReturnNet.toFixed(1)}%). Every extra rupee against principal earns a guaranteed ${effectiveCost.toFixed(2)}% - better than most investable alternatives at similar risk.`;
     tradeOffs = ["Ties up liquidity that could compound in the market", "Rebuilding investment corpus takes time"];
-    opportunityCostNote = "You give up potential upside on the invested surplus, but avoid guaranteed high interest — a better risk-adjusted trade.";
+    opportunityCostNote = "You give up potential upside on the invested surplus, but avoid guaranteed high interest - a better risk-adjusted trade.";
   } else if (spread <= -1.5) {
     verdict = "invest";
-    headline = "Investing likely wins — the loan is cheaper than your alternatives.";
+    headline = "Investing likely wins - the loan is cheaper than your alternatives.";
     reasoning = `Post-tax cost (${effectiveCost.toFixed(2)}%) is meaningfully below the realistic post-tax return on equity (~${expectedReturnNet.toFixed(1)}%). Aggressive prepayment would trade a higher-return future for a lower-cost present.`;
     tradeOffs = ["Requires SIP discipline for a decade+", "Emotional discomfort of carrying debt while investing"];
     opportunityCostNote = "Prepaying now feels safe but caps long-term wealth. Only right if you are undisciplined with SIPs or emergency fund is thin.";
   } else {
     verdict = "split";
-    headline = "Split the surplus — the two options are roughly even.";
+    headline = "Split the surplus - the two options are roughly even.";
     reasoning = `Loan cost (${effectiveCost.toFixed(2)}%) and expected investment return (~${expectedReturnNet.toFixed(1)}%) are within 1.5%. A 50/50 split reduces regret in both directions.`;
-    tradeOffs = ["Marginal wins either way", "Adds a decision every year — automate it"];
+    tradeOffs = ["Marginal wins either way", "Adds a decision every year - automate it"];
     opportunityCostNote = "Neither choice is clearly wrong. The behavioural benefit of a fixed split usually outweighs optimising the last rupee.";
   }
 
@@ -250,7 +250,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
     const desc =
       verdict === "prepay" ? "Higher EMI + annual prepayment aggressively closes an expensive loan."
         : verdict === "invest" ? "Small EMI bump for behavioural momentum; direct surplus into SIPs."
-          : "A gentle EMI bump plus a half-sized annual prepayment — a balanced middle path.";
+          : "A gentle EMI bump plus a half-sized annual prepayment - a balanced middle path.";
     strategies.push({
       id: "optimized",
       name: "NitiLoan™ optimised strategy",
@@ -267,7 +267,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
         verdict === "prepay"
           ? ["Reduces surplus available for equity SIPs.", "Should only follow a full emergency fund and adequate insurance."]
           : verdict === "invest"
-            ? ["Requires you to actually invest the surplus — automate it or it disappears."]
+            ? ["Requires you to actually invest the surplus - automate it or it disappears."]
             : ["Sacrifices some optimality in exchange for behavioural robustness."],
     });
   }
@@ -347,7 +347,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
   if (DEBT_QUALITY_BY_CATEGORY[loan.category] === "poor") {
     recommendations.push({
       id: "close-poor-debt",
-      title: "Close this loan on priority — it is poor-quality debt",
+      title: "Close this loan on priority - it is poor-quality debt",
       priority: effectiveCost >= 14 ? "high" : "medium",
       reason: `${LOAN_CATEGORY_LABEL[loan.category]} at ${effectiveCost.toFixed(2)}% funds consumption and quietly erodes long-term wealth.`,
       expectedBenefit: "Frees cash flow, improves credit health, and unlocks investment capacity.",
@@ -359,7 +359,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
     risks.push({
       id: "prepay-vs-buffer",
       tone: "warning",
-      title: "Emergency buffer is thin — don't over-prepay yet",
+      title: "Emergency buffer is thin - don't over-prepay yet",
       detail: "Aggressive prepayment while the emergency fund is below 3 months' expenses is risky. A missed EMI hurts more than saved interest helps.",
     });
     recommendations.push({
@@ -398,7 +398,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
         id: "invest-surplus",
         title: "Keep EMI as-is and direct surplus to equity SIPs",
         priority: "medium",
-        reason: `Loan is cheap money — post-tax cost ${effectiveCost.toFixed(2)}% vs. expected equity returns ~${expectedReturnNet.toFixed(1)}%.`,
+        reason: `Loan is cheap money - post-tax cost ${effectiveCost.toFixed(2)}% vs. expected equity returns ~${expectedReturnNet.toFixed(1)}%.`,
         expectedBenefit: "Higher long-term wealth despite carrying the loan for longer.",
         tradeOffs: ["Requires SIP discipline for a decade+.", "Emotionally harder than the certainty of prepayment."],
       });
@@ -412,7 +412,7 @@ export function analyzeLoan({ loan, input, context }: EngineInput): LoanReport {
       id: "plan-savings",
       tone: emiToIncome > 40 ? "danger" : "warning",
       title: `EMI-to-income at ${Math.round(emiToIncome)}% pushes down savings rate`,
-      detail: "Every percentage point of EMI above 30% typically comes out of investable savings — slowing retirement corpus growth.",
+      detail: "Every percentage point of EMI above 30% typically comes out of investable savings - slowing retirement corpus growth.",
     });
   }
   if (context.protectionPosture !== "protected" && outstanding > 20_00_000) {

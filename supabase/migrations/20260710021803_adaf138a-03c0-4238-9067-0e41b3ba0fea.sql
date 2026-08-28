@@ -10,7 +10,7 @@ ALTER TABLE public.financial_profiles
   ADD COLUMN IF NOT EXISTS income_breakdown jsonb,
   ADD COLUMN IF NOT EXISTS expense_breakdown jsonb;
 
--- 2) Financial snapshots — one per successful Review Profile submission
+-- 2) Financial snapshots - one per successful Review Profile submission
 CREATE TABLE IF NOT EXISTS public.financial_snapshots (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

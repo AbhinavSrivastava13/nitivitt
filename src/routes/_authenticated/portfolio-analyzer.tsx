@@ -85,7 +85,7 @@ import { derivePortfolioRating, ratingClasses } from "@/lib/ratings";
 export const Route = createFileRoute("/_authenticated/portfolio-analyzer")({
   head: () => ({
     meta: [
-      { title: "NitiInvest™ — Portfolio Analyzer — NitiVitt" },
+      { title: "NitiInvest™ - Portfolio Analyzer - NitiVitt" },
       {
         name: "description",
         content:
@@ -111,7 +111,7 @@ function PortfolioAnalyzerPage() {
     <PageShell
       eyebrow="Service · NitiInvest™"
       title="Portfolio Analyzer"
-      lede="Upload broker screenshots. Every portfolio is saved here so NitiCore™ can evaluate your investments in the context of your whole financial life — not just the pie chart."
+      lede="Upload broker screenshots. Every portfolio is saved here so NitiCore™ can evaluate your investments in the context of your whole financial life - not just the pie chart."
     >
       <div className="mx-auto max-w-5xl space-y-6">
         {view.kind === "workspace" && (
@@ -367,7 +367,7 @@ function UploadFlow({
         <h2 className="font-display text-2xl text-foreground">Add your holdings</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Upload one or more screenshots from your broker or tracker. NitiInvest™ never stores the
-          images — only the extracted holdings.
+          images - only the extracted holdings.
         </p>
       </div>
 
@@ -587,10 +587,10 @@ function ConfirmFlow({
           title="Building your portfolio report"
           subtitle="NitiInvest™ is analyzing your holdings and grounding every finding in your NitiCore™ context."
           reassurances={[
-            "Still working — market data for some securities takes longer to confirm.",
+            "Still working - market data for some securities takes longer to confirm.",
             "Matching each holding against sector, market-cap and exposure references.",
             "Running NitiCore™ analysis across allocation, concentration and cost.",
-            "Finishing up — your report opens only when every section is complete.",
+            "Finishing up - your report opens only when every section is complete.",
           ]}
           steps={[
             { id: "read", label: "Reading portfolio" },
@@ -618,7 +618,7 @@ function ConfirmFlow({
         <div>
           <h2 className="font-display text-2xl text-foreground">Review extracted holdings</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            NitiInvest™ shows exactly what it saw. Correct anything that looks wrong — extraction
+            NitiInvest™ shows exactly what it saw. Correct anything that looks wrong - extraction
             never invents values.
           </p>
         </div>
@@ -754,7 +754,7 @@ function ConfirmFlow({
             {busy ? "Analyzing…" : "Analyze portfolio"}
           </button>
           <p className="text-[11px] text-muted-foreground">
-            Analysis uses NitiCore™ deterministically. AI only narrates — it never picks stocks or
+            Analysis uses NitiCore™ deterministically. AI only narrates - it never picks stocks or
             funds.
           </p>
         </div>
@@ -846,7 +846,7 @@ function factValue(
 ): string | null {
   const f = facts?.find((x) => re.test(x.label));
   const v = f?.value?.trim();
-  if (!v || /^(not available|unknown|n\/a|—)$/i.test(v)) return null;
+  if (!v || /^(not available|unknown|n\/a|-)$/i.test(v)) return null;
   return v;
 }
 
@@ -1108,7 +1108,7 @@ function ReportView({
           <SectionHeading
             icon={<GaugeIcon className="h-4 w-4 text-primary" />}
             title="Portfolio effectiveness"
-            subtitle="See how today's decisions change your future. Illustrative scenarios built on NitiCore™ assumptions — never a forecast."
+            subtitle="See how today's decisions change your future. Illustrative scenarios built on NitiCore™ assumptions - never a forecast."
           />
           <EffectivenessSection basis={report.projection} diagnostics={diagnostics} />
         </section>
@@ -1119,7 +1119,7 @@ function ReportView({
         <SectionHeading
           icon={<Layers className="h-4 w-4 text-primary" />}
           title="Portfolio X-Ray"
-          subtitle="See what you actually own — beyond the number of holdings."
+          subtitle="See what you actually own - beyond the number of holdings."
         />
 
         {overlap && (
@@ -1251,7 +1251,7 @@ function ReportView({
         {holdings.length > 0 && (
           <details className="group mt-4 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
-              Fund &amp; stock intelligence — {holdings.length}{" "}
+              Fund &amp; stock intelligence - {holdings.length}{" "}
               {holdings.length === 1 ? "holding" : "holdings"}
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
             </summary>
@@ -1265,7 +1265,7 @@ function ReportView({
         <SectionHeading
           icon={<ShieldCheck className="h-4 w-4 text-primary" />}
           title="Peer comparison & stress test"
-          subtitle="How your structure compares with people at a similar life stage — and how it behaves when markets fall."
+          subtitle="How your structure compares with people at a similar life stage - and how it behaves when markets fall."
         />
         <div className="mt-4 grid items-start gap-4 xl:grid-cols-2">
           {peer && peer.rows.length > 0 ? (
@@ -1277,7 +1277,7 @@ function ReportView({
           )}
           <ChartCard
             title="If markets fall from here"
-            note="Hypothetical drawdowns applied to today's holdings — not predictions."
+            note="Hypothetical drawdowns applied to today's holdings - not predictions."
           >
             <StressWaterfall rows={stress} total={report.totalValue} formatValue={formatInr} />
           </ChartCard>
@@ -1306,7 +1306,7 @@ function ReportView({
           {insights.length > 0 && (
             <details className="group mt-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-[12px] font-semibold text-foreground">
-                What could hurt you — {insights.length} structural{" "}
+                What could hurt you - {insights.length} structural{" "}
                 {insights.length === 1 ? "observation" : "observations"}
                 <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
               </summary>
@@ -1327,7 +1327,7 @@ function ReportView({
         <SectionHeading
           icon={<Target className="h-4 w-4 text-primary" />}
           title="Your next 3 moves · NitiPath™"
-          subtitle="What to do, why it matters, what happens if you don't — and the least disruptive way to do it."
+          subtitle="What to do, why it matters, what happens if you don't - and the least disruptive way to do it."
         />
         {report.recommendations.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
@@ -1494,7 +1494,7 @@ const DIAGNOSTIC_TONE = {
 } as const;
 
 /**
- * Gauge presentation of the same deterministic diagnostic — used for the first
+ * Gauge presentation of the same deterministic diagnostic - used for the first
  * few checks so the health grid opens with a visual read. Scores and statuses
  * are the engine's, unchanged.
  */
@@ -1714,7 +1714,7 @@ function HoldingsExplorer({
                   </div>
                   <p className="mt-5 border-t border-border/60 pt-3 text-[12.5px] text-foreground/85">
                     <strong className="font-semibold">Role in your portfolio.</strong>{" "}
-                    {shortRole(h.suggestedRole)} — {h.suggestedRole}
+                    {shortRole(h.suggestedRole)} - {h.suggestedRole}
                   </p>
                   {h.aiSummary && (
                     <p className="mt-3 flex gap-2 rounded-xl bg-primary-soft/30 p-3 text-xs leading-relaxed text-foreground/85">
@@ -1896,7 +1896,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Qualitative rating only — NitiVitt no longer surfaces an "out of 100" score. */
+/** Qualitative rating only - NitiVitt no longer surfaces an "out of 100" score. */
 function RatingPill({ score }: { score: number }) {
   const r = derivePortfolioRating(score);
   const t = ratingClasses(r.tone);
@@ -1966,7 +1966,7 @@ function EffectivenessSection({
       ? "This plan already clears the NitiCore™ reference path for your runway. Remaining upside now comes from portfolio structure, not from taking more market risk."
       : result.structure >= readiness
         ? "The shortfall here is a contribution question, not a market question: your structure is sounder than your funding pace. Raising what you invest moves this more than assuming a better return."
-        : "Contributions are doing their job — structure is the constraint. Fixing concentration and allocation moves this score more than adding rupees.";
+        : "Contributions are doing their job - structure is the constraint. Fixing concentration and allocation moves this score more than adding rupees.";
 
   const gapToReference = result.reference - result.projected;
 
@@ -1975,7 +1975,7 @@ function EffectivenessSection({
   return (
     <div className="mt-4 space-y-3">
       <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
-        {/* Scenario controls — one compact strip above the two analysis columns */}
+        {/* Scenario controls - one compact strip above the two analysis columns */}
         <div className="rounded-2xl border border-border/70 bg-surface/60 p-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -2307,7 +2307,7 @@ function PeerComparison({
         Math.abs(conc.you - conc.typical) <= 5
           ? "and concentration sits in the usual range"
           : conc.you > conc.typical
-            ? `but concentration is materially higher — ${conc.you}% in one holding against a typical ${conc.typical}%`
+            ? `but concentration is materially higher - ${conc.you}% in one holding against a typical ${conc.typical}%`
             : "and concentration is lower than typical",
       );
     return bits.length ? `${bits.join(", ")}.` : "";
@@ -2342,7 +2342,7 @@ function PeerComparison({
       )}
       <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
         {peer.note} City-level benchmarks are not shown because NitiVitt has no reliable location
-        data to compare against — behaviour and structure are the comparisons that matter here.
+        data to compare against - behaviour and structure are the comparisons that matter here.
       </p>
     </div>
   );

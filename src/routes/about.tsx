@@ -4,11 +4,11 @@ import { PageShell } from "@/components/page-shell";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About NitiVitt — Wise Wealth" },
+      { title: "About NitiVitt - Wise Wealth" },
       {
         name: "description",
         content:
-          "NitiVitt — niti (wisdom) + vitt (wealth). We're building India's most trusted financial guidance platform.",
+          "NitiVitt - niti (wisdom) + vitt (wealth). We're building India's most trusted financial guidance platform.",
       },
     ],
   }),

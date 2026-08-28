@@ -39,7 +39,7 @@ import type { NitiCoreInput } from "@/lib/niti-core";
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({
     meta: [
-      { title: "Onboarding — NitiVitt" },
+      { title: "Onboarding - NitiVitt" },
       { name: "description", content: "Set up your NitiVitt financial profile in six focused steps." },
     ],
   }),
@@ -481,7 +481,7 @@ function OnboardingWizard() {
         raw_input: input as unknown,
       });
     } catch (snapErr) {
-      // Snapshot is additive — never block the primary save flow.
+      // Snapshot is additive - never block the primary save flow.
       console.warn("Failed to record financial snapshot", snapErr);
     }
   }
@@ -492,7 +492,7 @@ function OnboardingWizard() {
     try {
       await persist();
       await qc.invalidateQueries();
-      setAnalyzing(true); // full-screen sequence — navigates on complete
+      setAnalyzing(true); // full-screen sequence - navigates on complete
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save profile");
       setSubmitting(false);
@@ -582,7 +582,7 @@ function OnboardingWizard() {
                   <FieldNumber label="Real estate" value={s.assets.real_estate} onChange={(v) => updateAsset("real_estate", v)} />
                   <FieldNumber label="Other assets" value={s.assets.other} onChange={(v) => updateAsset("other", v)} />
                 </Section>
-                <Section title="Liabilities — outstanding (₹)">
+                <Section title="Liabilities - outstanding (₹)">
                   <FieldNumber label="Home loan" value={s.liabilities.home_loan} onChange={(v) => updateLiability("home_loan", v)} />
                   <FieldNumber label="Car loan" value={s.liabilities.car_loan} onChange={(v) => updateLiability("car_loan", v)} />
                   <FieldNumber label="Personal loan" value={s.liabilities.personal_loan} onChange={(v) => updateLiability("personal_loan", v)} />
@@ -624,7 +624,7 @@ function OnboardingWizard() {
             {step === 4 && (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  Add every meaningful goal. Goals guide NitiPath™ and NitiSim™ — they do not affect your NitiScore™.
+                  Add every meaningful goal. Goals guide NitiPath™ and NitiSim™ - they do not affect your NitiScore™.
                 </p>
                 {s.goals.length === 0 && (
                   <div className="rounded-xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
@@ -668,8 +668,8 @@ function OnboardingWizard() {
                   Review the summary below. Clicking <b>Finish</b> runs the NitiCore™ engine across your entire profile and takes you to your Dashboard.
                 </p>
                 <ReviewGrid>
-                  <Metric label="Full name" value={s.full_name || "—"} />
-                  <Metric label="City" value={s.city || "—"} />
+                  <Metric label="Full name" value={s.full_name || "-"} />
+                  <Metric label="City" value={s.city || "-"} />
                   <Metric label="Monthly income" value={`₹${totalIncome.toLocaleString("en-IN")}`} />
                   <Metric label="Monthly expenses" value={`₹${totalExpenses.toLocaleString("en-IN")}`} />
                   <Metric label="Savings rate" value={`${savingsRate.toFixed(1)}%`} />
@@ -774,7 +774,7 @@ function FieldSelect({ label, value, onChange, options }: { label: string; value
       <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
       <select className={baseInput()} value={value} onChange={(e) => onChange(e.target.value)}>
         {options.map((o) => (
-          <option key={o} value={o}>{o ? o.charAt(0).toUpperCase() + o.slice(1).replace(/_/g, " ") : "—"}</option>
+          <option key={o} value={o}>{o ? o.charAt(0).toUpperCase() + o.slice(1).replace(/_/g, " ") : "-"}</option>
         ))}
       </select>
     </label>

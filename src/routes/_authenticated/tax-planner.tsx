@@ -29,9 +29,9 @@ import {
 export const Route = createFileRoute("/_authenticated/tax-planner")({
   head: () => ({
     meta: [
-      { title: "NitiTax™ — Tax Decision Engine — NitiVitt" },
-      { name: "description", content: "Old vs new regime, deductions, capital gains and a year-end action plan — decided deterministically, explained like a tax consultation." },
-      { property: "og:title", content: "NitiTax™ — Tax Decision Engine — NitiVitt" },
+      { title: "NitiTax™ - Tax Decision Engine - NitiVitt" },
+      { name: "description", content: "Old vs new regime, deductions, capital gains and a year-end action plan - decided deterministically, explained like a tax consultation." },
+      { property: "og:title", content: "NitiTax™ - Tax Decision Engine - NitiVitt" },
       { property: "og:description", content: "Pay the least tax legally possible, and make smarter money decisions all year." },
     ],
   }),
@@ -52,7 +52,7 @@ function TaxPlannerPage() {
     <PageShell
       eyebrow="Service · NitiTax™"
       title="Tax Planner"
-      lede="NitiTax™ is not a calculator. It is a decision engine — it works out the regime, the deductions and the year-end moves that legally leave the most money with you."
+      lede="NitiTax™ is not a calculator. It is a decision engine - it works out the regime, the deductions and the year-end moves that legally leave the most money with you."
     >
       <div className="mx-auto max-w-5xl space-y-6">
         {view.kind === "workspace" && (
@@ -170,7 +170,7 @@ function Workspace({ onAddNew, onOpen, onUpdate }: {
           icon={Receipt}
           eyebrow="NitiTax™"
           title="No tax review yet"
-          description="NitiTax™ compares both regimes on your actual numbers, finds the deductions you are leaving on the table, and gives you an ordered checklist before 31 March. No score, no grade — just better decisions."
+          description="NitiTax™ compares both regimes on your actual numbers, finds the deductions you are leaving on the table, and gives you an ordered checklist before 31 March. No score, no grade - just better decisions."
           action={
             <button
               onClick={onAddNew}
@@ -363,7 +363,7 @@ function TaxForm({ replaceId, initial, initialName, onCancel, onDone }: {
             </ul>
             {prefilled.missing.length > 0 && (
               <p className="mt-2 text-muted-foreground">
-                Still needed from you: {prefilled.missing.join(", ")}. Salary splits are estimates — correct them if your payslip differs.
+                Still needed from you: {prefilled.missing.join(", ")}. Salary splits are estimates - correct them if your payslip differs.
               </p>
             )}
           </div>
@@ -433,18 +433,18 @@ function TaxForm({ replaceId, initial, initialName, onCancel, onDone }: {
           <MoneyField label="Children's tuition fees" value={input.d80c.childTuition} onChange={(v) => patch((d) => { d.d80c.childTuition = v; })} />
           <MoneyField label="Home-loan principal repaid" value={input.d80c.homeLoanPrincipal} onChange={(v) => patch((d) => { d.d80c.homeLoanPrincipal = v; })} />
           <MoneyField label="NSC / other 80C" value={input.d80c.other80c} onChange={(v) => patch((d) => { d.d80c.other80c = v; })} />
-          <MoneyField label="NPS Tier-1, your own — 80CCD(1B)" value={input.d80ccd.additionalNps} onChange={(v) => patch((d) => { d.d80ccd.additionalNps = v; })} />
+          <MoneyField label="NPS Tier-1, your own - 80CCD(1B)" value={input.d80ccd.additionalNps} onChange={(v) => patch((d) => { d.d80ccd.additionalNps = v; })} />
         </FormSection>
 
         <FormSection title="Health, home and other deductions">
           <MoneyField label="Health premium (self + family)" value={input.d80d.selfFamilyPremium} onChange={(v) => patch((d) => { d.d80d.selfFamilyPremium = v; })} />
           <MoneyField label="Health premium (parents)" value={input.d80d.parentsPremium} onChange={(v) => patch((d) => { d.d80d.parentsPremium = v; })} />
           <MoneyField label="Preventive health check-up" value={input.d80d.preventiveHealthCheck} onChange={(v) => patch((d) => { d.d80d.preventiveHealthCheck = v; })} />
-          <MoneyField label="Home-loan interest — Sec 24(b)" value={input.otherDeductions.homeLoanInterestSelf} onChange={(v) => patch((d) => { d.otherDeductions.homeLoanInterestSelf = v; })} />
-          <MoneyField label="Education-loan interest — 80E" value={input.otherDeductions.educationLoanInterest} onChange={(v) => patch((d) => { d.otherDeductions.educationLoanInterest = v; })} />
-          <MoneyField label="Donations — 80G" value={input.otherDeductions.charity80G} onChange={(v) => patch((d) => { d.otherDeductions.charity80G = v; })} />
+          <MoneyField label="Home-loan interest - Sec 24(b)" value={input.otherDeductions.homeLoanInterestSelf} onChange={(v) => patch((d) => { d.otherDeductions.homeLoanInterestSelf = v; })} />
+          <MoneyField label="Education-loan interest - 80E" value={input.otherDeductions.educationLoanInterest} onChange={(v) => patch((d) => { d.otherDeductions.educationLoanInterest = v; })} />
+          <MoneyField label="Donations - 80G" value={input.otherDeductions.charity80G} onChange={(v) => patch((d) => { d.otherDeductions.charity80G = v; })} />
           <MoneyField
-            label={input.ageYears >= 60 ? "Interest deduction — 80TTB" : "Savings interest — 80TTA"}
+            label={input.ageYears >= 60 ? "Interest deduction - 80TTB" : "Savings interest - 80TTA"}
             value={input.ageYears >= 60 ? input.otherDeductions.seniorInterest80TTB : input.otherDeductions.savingsInterest80TTA}
             onChange={(v) => patch((d) => {
               if (d.ageYears >= 60) d.otherDeductions.seniorInterest80TTB = v;
@@ -471,7 +471,7 @@ function TaxForm({ replaceId, initial, initialName, onCancel, onDone }: {
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {busy ? "Analyzing…" : replaceId ? "Update and re-analyze" : "Run tax review"}
           </button>
-          <p className="text-[11px] text-muted-foreground">Every rupee is deterministic. AI only explains the result — it never computes your tax.</p>
+          <p className="text-[11px] text-muted-foreground">Every rupee is deterministic. AI only explains the result - it never computes your tax.</p>
         </div>
       </div>
     </>
@@ -634,7 +634,7 @@ function ReportView({ report, onBack }: { report: TaxReport; onBack: () => void 
 
       {/* 3 · INCOME BREAKDOWN */}
       <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <SectionHeading icon={<Wallet className="h-4 w-4 text-primary" />} title="Where your income comes from" subtitle="Different income heads are taxed very differently — this is the starting point of every tax decision." />
+        <SectionHeading icon={<Wallet className="h-4 w-4 text-primary" />} title="Where your income comes from" subtitle="Different income heads are taxed very differently - this is the starting point of every tax decision." />
         <div className="mt-6 grid gap-8 md:grid-cols-[320px_1fr] md:items-center">
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -743,7 +743,7 @@ function ReportView({ report, onBack }: { report: TaxReport; onBack: () => void 
 
       {/* 7 · STRATEGIES & FINANCIAL IMPACT */}
       <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <SectionHeading icon={<Scale className="h-4 w-4 text-primary" />} title="Optimisation strategies and their real cost" subtitle="Tax saved is only half the picture — cash locked away is the other half." />
+        <SectionHeading icon={<Scale className="h-4 w-4 text-primary" />} title="Optimisation strategies and their real cost" subtitle="Tax saved is only half the picture - cash locked away is the other half." />
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead className="bg-surface text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -769,8 +769,8 @@ function ReportView({ report, onBack }: { report: TaxReport; onBack: () => void 
                       </ul>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-right font-mono text-success">{s.estimatedAnnualSaving > 0 ? inr(s.estimatedAnnualSaving) : "—"}</td>
-                  <td className="px-3 py-2 text-right font-mono">{s.cashRequired > 0 ? inr(s.cashRequired) : "—"}</td>
+                  <td className="px-3 py-2 text-right font-mono text-success">{s.estimatedAnnualSaving > 0 ? inr(s.estimatedAnnualSaving) : "-"}</td>
+                  <td className="px-3 py-2 text-right font-mono">{s.cashRequired > 0 ? inr(s.cashRequired) : "-"}</td>
                   <td className="px-3 py-2 text-[12px] text-muted-foreground">{s.lockIn}</td>
                 </tr>
               ))}
@@ -871,7 +871,7 @@ function AskBox({ report }: { report: TaxReport }) {
 
   return (
     <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-      <SectionHeading icon={<MessageCircleQuestion className="h-4 w-4 text-primary" />} title="Ask a what-if" subtitle="Consequences, sequencing and trade-offs — answered against this exact analysis." />
+      <SectionHeading icon={<MessageCircleQuestion className="h-4 w-4 text-primary" />} title="Ask a what-if" subtitle="Consequences, sequencing and trade-offs - answered against this exact analysis." />
       <div className="mt-4 flex flex-wrap gap-2">
         {suggestions.map((s) => (
           <button key={s} onClick={() => { setQ(s); void ask(s); }} className="rounded-full border border-border px-3 py-1.5 text-[11px] font-semibold text-muted-foreground hover:border-primary/50 hover:text-primary">

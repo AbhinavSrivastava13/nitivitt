@@ -1,5 +1,5 @@
 /**
- * NitiInvest™ — server functions.
+ * NitiInvest™ - server functions.
  *
  * - `extractPortfolioFromScreenshots`: Gemini Vision extracts holdings from
  *   uploaded broker screenshots. Never invents values.
@@ -43,10 +43,10 @@ export const extractPortfolioFromScreenshots = createServerFn({ method: "POST" }
     const lovableKey = getRuntimeEnv("LOVABLE_API_KEY");
     const geminiKey = getRuntimeEnv("GEMINI_API_KEY");
     if (!lovableKey && !geminiKey) {
-      return { holdings: [], usedAi: false, note: "AI extraction unavailable — please add holdings manually." };
+      return { holdings: [], usedAi: false, note: "AI extraction unavailable - please add holdings manually." };
     }
 
-    const system = `You extract investment holdings from Indian broker/tracker screenshots (Groww, Zerodha, INDmoney, Upstox, Angel One, Paytm Money, etc.). Extract ONLY what is clearly visible. Never invent values. When a field is unclear, leave it null and add its exact JSON key to lowConfidenceFields for that holding. Return ONE strict JSON object — no markdown, no commentary.`;
+    const system = `You extract investment holdings from Indian broker/tracker screenshots (Groww, Zerodha, INDmoney, Upstox, Angel One, Paytm Money, etc.). Extract ONLY what is clearly visible. Never invent values. When a field is unclear, leave it null and add its exact JSON key to lowConfidenceFields for that holding. Return ONE strict JSON object - no markdown, no commentary.`;
 
     const shape = `{
   "holdings": [
@@ -71,7 +71,7 @@ export const extractPortfolioFromScreenshots = createServerFn({ method: "POST" }
       let raw = "";
       if (lovableKey) raw = await extractWithLovable(lovableKey, system, userText, data.screenshots);
       if (!raw && geminiKey) raw = await extractWithGeminiDirect(geminiKey, system, userText, data.screenshots);
-      if (!raw) return { holdings: [], usedAi: false, note: "Extraction returned nothing — please add holdings manually." };
+      if (!raw) return { holdings: [], usedAi: false, note: "Extraction returned nothing - please add holdings manually." };
 
       const parsed = safeParseJson(raw);
       const list = Array.isArray(parsed?.holdings) ? parsed!.holdings : [];
@@ -353,7 +353,7 @@ export const analyzePortfolio = createServerFn({ method: "POST" })
   });
 
 /**
- * Gemini enriches — never calculates. Adds one plain-language summary per
+ * Gemini enriches - never calculates. Adds one plain-language summary per
  * major holding on top of the deterministic facts already computed.
  */
 async function enrichHoldingIntelligence(report: PortfolioReport): Promise<void> {

@@ -1,5 +1,5 @@
 /**
- * NitiInvest™ — Portfolio Analyzer V1 types.
+ * NitiInvest™ - Portfolio Analyzer V1 types.
  *
  * Extraction never invents values. Deterministic analysis lives in engine.ts.
  * Market enrichment lives behind the MarketDataProvider interface.
@@ -44,7 +44,7 @@ export interface Holding {
   /** User-visible name as it appears on the broker screenshot. */
   name: string;
   assetClass: AssetClass;
-  /** ISIN / scheme code / ticker if visible — helps enrichment. */
+  /** ISIN / scheme code / ticker if visible - helps enrichment. */
   identifier: string | null;
   units: number | null;
   averageCost: number | null;
@@ -55,7 +55,7 @@ export interface Holding {
   pnlPct: number | null;
   /** Free-form platform tag: groww / zerodha / indmoney / … */
   platform: string | null;
-  /** Enriched market data — engine + market provider may populate. */
+  /** Enriched market data - engine + market provider may populate. */
   enrichment?: HoldingEnrichment;
   lowConfidenceFields?: string[];
 }
@@ -181,7 +181,7 @@ export interface AllocationComparisonRow {
   label: string;      // "Equity", "Debt", "Gold"
   you: number;        // %
   recommended: number; // %
-  peer?: number;       // % — typical cohort average
+  peer?: number;       // % - typical cohort average
 }
 
 
@@ -198,7 +198,7 @@ export interface SimilarInvestor {
   metrics: SimilarInvestorMetric[];
 }
 
-/* ─────────────── V2 — Portfolio Intelligence ─────────────── */
+/* ─────────────── V2 - Portfolio Intelligence ─────────────── */
 
 export type DiagnosticStatus = "good" | "watch" | "action";
 
@@ -249,7 +249,7 @@ export interface PortfolioInsight {
   action: string;
 }
 
-/* ─────────────── V3 — Portfolio Projection ─────────────── */
+/* ─────────────── V3 - Portfolio Projection ─────────────── */
 
 export interface ProjectionPoint {
   year: number;
@@ -259,7 +259,7 @@ export interface ProjectionPoint {
 }
 
 export interface ProjectionBasis {
-  /** Actual portfolio value — the projection always starts here. */
+  /** Actual portfolio value - the projection always starts here. */
   currentValue: number;
   /** Existing monthly contribution from the NitiCore™ profile (0 when unknown). */
   monthlySip: number;
@@ -295,7 +295,7 @@ export interface PortfolioReport {
   recommendations: PortfolioRecommendation[];
   contextSummary: string;
   mentorSummary?: string;
-  // V2 additions — all optional so older saved reports still render.
+  // V2 additions - all optional so older saved reports still render.
   executiveSummary?: string;
   snapshot?: PortfolioSnapshot;
   riskMeter?: RiskMeter;
@@ -306,7 +306,7 @@ export interface PortfolioReport {
   allocationComparison?: AllocationComparisonRow[];
   similarInvestor?: SimilarInvestor;
   portfolioQuality?: PortfolioQualityFinding[];
-  // NitiInvest™ V2 — Portfolio Intelligence platform.
+  // NitiInvest™ V2 - Portfolio Intelligence platform.
   diagnostics?: PortfolioDiagnostic[];
   holdingIntelligence?: HoldingIntelligence[];
   peerBenchmark?: PeerBenchmark;
@@ -314,7 +314,7 @@ export interface PortfolioReport {
   largestRisk?: string;
   biggestStrength?: string;
   isPrimary?: boolean;
-  /** NitiInvest™ V3 — deterministic projection basis for the what-if simulator. */
+  /** NitiInvest™ V3 - deterministic projection basis for the what-if simulator. */
   projection?: ProjectionBasis;
 }
 

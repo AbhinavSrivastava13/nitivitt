@@ -1,5 +1,5 @@
 /**
- * NitiCore™ Recommendation Engine — v3 (CFP-style holistic reasoning).
+ * NitiCore™ Recommendation Engine - v3 (CFP-style holistic reasoning).
  *
  * Evolution over v2:
  *   • v1: each pillar generated its own recommendation.
@@ -11,7 +11,7 @@
  *     articulate: financial objective, short-term impact, long-term impact,
  *     explicit trade-offs, dependencies, and opportunity cost.
  *
- * All existing consumers keep working — new fields are optional. The engine
+ * All existing consumers keep working - new fields are optional. The engine
  * remains fully deterministic. AI never enters this file.
  */
 import type { MetricResult, NitiCoreInput, Recommendation, Priority } from "./types";
@@ -33,8 +33,8 @@ type Rule = (input: NitiCoreInput, ctx: FinancialContext) => Recommendation | nu
  *   priority     ∈ {high, medium, low}
  *   severity     ∈ {critical, warning, info, success}
  *   effort       ∈ {low, medium, high}
- *   pillarWeight (0..1) — how much the pillar affects the composite NitiScore
- *   contextBoost — situational adjustment reflecting life stage + flags
+ *   pillarWeight (0..1) - how much the pillar affects the composite NitiScore
+ *   contextBoost - situational adjustment reflecting life stage + flags
  */
 function computeImpactScore(args: {
   priority: Priority;
@@ -365,7 +365,7 @@ const portfolioConcentrationRule: Rule = (input, ctx) => {
       "Small STCG/LTCG impact depending on holding period.",
     ],
     dependencies: [],
-    opportunityCost: "Slightly lower upside if the concentrated holding keeps outperforming — in exchange for materially lower downside.",
+    opportunityCost: "Slightly lower upside if the concentrated holding keeps outperforming - in exchange for materially lower downside.",
     confidenceLevel: "deterministic",
     contextTag: `concentration=${conc}/100`,
   };
@@ -431,7 +431,7 @@ function prioritiseCrossPillar(
     return 2;
   }
 
-  // Contextual cross-pillar note — how this action interacts with the others.
+  // Contextual cross-pillar note - how this action interacts with the others.
   function noteFor(r: Recommendation): string | undefined {
     if (r.category === "Emergency" && bufferThin) {
       return "Fund the buffer before increasing SIPs - otherwise a small shock forces you to redeem investments at the wrong time.";

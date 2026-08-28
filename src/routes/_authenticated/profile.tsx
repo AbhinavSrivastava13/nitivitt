@@ -12,7 +12,7 @@ import { formatINR } from "@/lib/finance/core";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
-      { title: "Financial profile — NitiVitt" },
+      { title: "Financial profile - NitiVitt" },
       {
         name: "description",
         content:
@@ -43,7 +43,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-border/60 py-2 last:border-b-0">
       <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</dt>
-      <dd className="text-right text-sm font-semibold text-foreground">{value ?? "—"}</dd>
+      <dd className="text-right text-sm font-semibold text-foreground">{value ?? "-"}</dd>
     </div>
   );
 }
@@ -107,7 +107,7 @@ function ProfilePage() {
             <Row label="Occupation" value={profile?.occupation} />
             <Row label="Marital status" value={profile?.marital_status} />
             <Row label="Dependents" value={profile?.dependents ?? 0} />
-            <Row label="Earning members" value={(fp as { earning_members?: number | null } | null)?.earning_members ?? "—"} />
+            <Row label="Earning members" value={(fp as { earning_members?: number | null } | null)?.earning_members ?? "-"} />
           </Section>
 
           <Section title="Income & Retirement">
@@ -116,8 +116,8 @@ function ProfilePage() {
             <Row label="Monthly SIP" value={formatINR(Number((fp as { monthly_sip?: number | null } | null)?.monthly_sip ?? 0))} />
             <Row label="Existing portfolio" value={formatINR(Number((fp as { existing_portfolio?: number | null } | null)?.existing_portfolio ?? 0))} />
             <Row label="Risk profile" value={fp?.risk_profile} />
-            <Row label="Planned retirement age" value={fp?.retirement_age ?? "—"} />
-            <Row label="Retirement lifestyle" value={(fp as { retirement_lifestyle?: string | null } | null)?.retirement_lifestyle ?? "—"} />
+            <Row label="Planned retirement age" value={fp?.retirement_age ?? "-"} />
+            <Row label="Retirement lifestyle" value={(fp as { retirement_lifestyle?: string | null } | null)?.retirement_lifestyle ?? "-"} />
             <Row label="Retirement corpus target" value={formatINR(Number((fp as { retirement_corpus_target?: number | null } | null)?.retirement_corpus_target ?? 0))} />
           </Section>
 

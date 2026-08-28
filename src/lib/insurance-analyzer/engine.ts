@@ -1,5 +1,5 @@
 /**
- * Insurance Analyzer — deterministic analysis engine (V1).
+ * Insurance Analyzer - deterministic analysis engine (V1).
  *
  * Given the extracted policy + the user's NitiCore FinancialContext, compute
  * strengths, gaps, observations and CFP-style recommendations. Zero AI. No
@@ -130,7 +130,7 @@ function analyzeTerm({ policy, policyType, input, context, existingPortfolio }: 
         reason: `Your dependents need income replacement of roughly ${inr(recommendedCover)}. Present cover is ${inr(totalTerm)}.`,
         expectedBenefit: `Closes the ${inr(gap)} protection gap so a single event does not force lifestyle downgrades or debt on your family.`,
         tradeOffs: [
-          "Additional annual premium (typically 0.1–0.2% of the added cover in your 30s).",
+          "Additional annual premium (typically 0.1-0.2% of the added cover in your 30s).",
           "Underwriting requires medicals if the new sum insured is high.",
         ],
         financialImpact: `Adds ~${inr(gap)} of income-replacement capacity.`,
@@ -293,16 +293,16 @@ function analyzeHealth({ policy, policyType, input, context, existingPortfolio }
       id: "room-rent-cap",
       severity: "gap",
       title: "Room-rent capping detected",
-      detail: `Detected limit: "${policy.roomRentLimit}". Room-rent caps proportionately reduce every other claim line item — a known reason for shortfalls at claim time.`,
+      detail: `Detected limit: "${policy.roomRentLimit}". Room-rent caps proportionately reduce every other claim line item - a known reason for shortfalls at claim time.`,
     });
     recs.push({
       id: "remove-room-cap",
       title: "Prefer a policy without room-rent capping",
       priority: "medium",
-      reason: "Capping proportionately shrinks doctor fees, ICU and consumables — the entire hospital bill.",
+      reason: "Capping proportionately shrinks doctor fees, ICU and consumables - the entire hospital bill.",
       expectedBenefit: "Full claim settlement without co-payment surprises.",
       tradeOffs: ["Uncapped variants carry a slightly higher premium."],
-      financialImpact: "Prevents 20–40% claim shortfalls in a large hospitalisation.",
+      financialImpact: "Prevents 20-40% claim shortfalls in a large hospitalisation.",
     });
   }
 
@@ -334,7 +334,7 @@ function analyzeHealth({ policy, policyType, input, context, existingPortfolio }
       severity: "observation",
       title: "Multiple health policies detected",
       detail:
-        "Holding multiple base health policies for the same members rarely doubles protection — insurers coordinate claims. Consider consolidating into one base + a super top-up.",
+        "Holding multiple base health policies for the same members rarely doubles protection - insurers coordinate claims. Consider consolidating into one base + a super top-up.",
     });
   }
 
@@ -422,7 +422,7 @@ function analyzePersonalAccident({ policy, policyType, input, context, existingP
       id: "term-missing",
       severity: "gap",
       title: "Term insurance missing",
-      detail: "PA cover complements — but does not replace — term insurance for your dependents.",
+      detail: "PA cover complements - but does not replace - term insurance for your dependents.",
     });
   }
 
@@ -470,7 +470,7 @@ function analyzeCriticalIllness({ policy, policyType, input, context, existingPo
       id: "raise-ci",
       title: `Consider raising critical-illness cover to about ${inr(recommended)}`,
       priority: "low",
-      reason: "CI pays a lump sum on diagnosis of listed conditions — useful for income loss during recovery.",
+      reason: "CI pays a lump sum on diagnosis of listed conditions - useful for income loss during recovery.",
       expectedBenefit: "Covers non-medical expenses (household, EMIs) during a long recovery.",
       tradeOffs: ["Premium rises steeply with age; buy while young if the family history warrants it."],
       financialImpact: `Adds ${inr(Math.max(0, recommended - sum))} of CI cover.`,
@@ -482,7 +482,7 @@ function analyzeCriticalIllness({ policy, policyType, input, context, existingPo
       id: "no-health-with-ci",
       severity: "gap",
       title: "Base health cover missing",
-      detail: "Critical-illness is a supplement — it does not replace hospitalisation cover.",
+      detail: "Critical-illness is a supplement - it does not replace hospitalisation cover.",
     });
   }
 
@@ -516,7 +516,7 @@ function analyzeGeneric({ policy, policyType, context }: EngineInput): AnalysisR
       {
         id: "unknown-policy",
         severity: "observation",
-        title: `${POLICY_TYPE_LABEL[policyType]} — limited automated analysis`,
+        title: `${POLICY_TYPE_LABEL[policyType]} - limited automated analysis`,
         detail: "This policy type is captured for your records. Deeper analysis will arrive in future versions.",
       },
     ],
@@ -529,19 +529,19 @@ function analyzeGeneric({ policy, policyType, context }: EngineInput): AnalysisR
 
 function coverageSummary(policy: ExtractedPolicy): string[] {
   const rows: string[] = [];
-  if (policy.insurer) rows.push(`Insurer — ${policy.insurer}`);
-  if (policy.policyNumber) rows.push(`Policy number — ${policy.policyNumber}`);
-  if (policy.sumInsured) rows.push(`Sum insured — ${inr(policy.sumInsured)}`);
-  if (policy.premiumAnnual) rows.push(`Annual premium — ${inr(policy.premiumAnnual)}`);
-  if (policy.policyTermYears) rows.push(`Policy term — ${policy.policyTermYears} years`);
+  if (policy.insurer) rows.push(`Insurer - ${policy.insurer}`);
+  if (policy.policyNumber) rows.push(`Policy number - ${policy.policyNumber}`);
+  if (policy.sumInsured) rows.push(`Sum insured - ${inr(policy.sumInsured)}`);
+  if (policy.premiumAnnual) rows.push(`Annual premium - ${inr(policy.premiumAnnual)}`);
+  if (policy.policyTermYears) rows.push(`Policy term - ${policy.policyTermYears} years`);
   if (policy.coverageStart || policy.coverageEnd)
-    rows.push(`Coverage — ${policy.coverageStart ?? "—"} to ${policy.coverageEnd ?? "—"}`);
-  if (policy.nominee) rows.push(`Nominee — ${policy.nominee}`);
-  if (policy.roomRentLimit) rows.push(`Room rent — ${policy.roomRentLimit}`);
-  if (policy.copayPct != null) rows.push(`Co-payment — ${policy.copayPct}%`);
-  if (policy.deductible != null) rows.push(`Deductible — ${inr(policy.deductible)}`);
-  if (policy.riders.length) rows.push(`Riders — ${policy.riders.join(", ")}`);
-  if (policy.addOns.length) rows.push(`Add-ons — ${policy.addOns.join(", ")}`);
+    rows.push(`Coverage - ${policy.coverageStart ?? "-"} to ${policy.coverageEnd ?? "-"}`);
+  if (policy.nominee) rows.push(`Nominee - ${policy.nominee}`);
+  if (policy.roomRentLimit) rows.push(`Room rent - ${policy.roomRentLimit}`);
+  if (policy.copayPct != null) rows.push(`Co-payment - ${policy.copayPct}%`);
+  if (policy.deductible != null) rows.push(`Deductible - ${inr(policy.deductible)}`);
+  if (policy.riders.length) rows.push(`Riders - ${policy.riders.join(", ")}`);
+  if (policy.addOns.length) rows.push(`Add-ons - ${policy.addOns.join(", ")}`);
   return rows;
 }
 

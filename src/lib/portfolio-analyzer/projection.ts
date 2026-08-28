@@ -1,5 +1,5 @@
 /**
- * NitiInvest™ V3 — Portfolio Projection.
+ * NitiInvest™ V3 - Portfolio Projection.
  *
  * Deterministic. Zero AI. The projection starts from the user's ACTUAL
  * portfolio value and their existing monthly contribution (from NitiCore™),
@@ -84,7 +84,7 @@ export function inrShort(n: number): string {
 }
 
 /**
- * NitiCore™ contextual guidance for the projection — plain sentences, no new
+ * NitiCore™ contextual guidance for the projection - plain sentences, no new
  * score, no rating. Purely derived from the deterministic basis.
  */
 export function projectionGuidance(basis: ProjectionBasis, horizonYears: number): string[] {
@@ -113,7 +113,7 @@ export function projectionGuidance(basis: ProjectionBasis, horizonYears: number)
     years: horizonYears,
   });
   out.push(
-    `Increasing your monthly investment by ₹${basis.suggestedSipUplift.toLocaleString("en-IN")} could lift the projected outcome to about ${inrShort(upliftFv)} — a difference of roughly ${inrShort(upliftFv - baseFv)} that comes purely from contribution, not from market luck.`,
+    `Increasing your monthly investment by ₹${basis.suggestedSipUplift.toLocaleString("en-IN")} could lift the projected outcome to about ${inrShort(upliftFv)} - a difference of roughly ${inrShort(upliftFv - baseFv)} that comes purely from contribution, not from market luck.`,
   );
 
   const longerFv = projectValue({

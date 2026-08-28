@@ -11,7 +11,7 @@ import { formatINR } from "@/lib/finance/core";
 export const Route = createFileRoute("/_authenticated/simulator")({
   head: () => ({
     meta: [
-      { title: "NitiSim™ — Simulate any financial decision — NitiVitt" },
+      { title: "NitiSim™ - Simulate any financial decision - NitiVitt" },
       { name: "description", content: "Ask any 'what if' about your money. NitiSim thinks through the scenario, runs NitiCore™, and explains the impact like a financial mentor." },
     ],
   }),
@@ -57,7 +57,7 @@ function saveHistory(turns: ChatTurn[]) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(turns.slice(-40)));
   } catch {
-    /* quota — ignore */
+    /* quota - ignore */
   }
 }
 
@@ -177,7 +177,7 @@ function Simulator() {
         },
       });
       setTurns((t) => [...t, { id: crypto.randomUUID(), role: "assistant-sim", result }]);
-      // Simulation completed — reset scenario anchor + slots for next question.
+      // Simulation completed - reset scenario anchor + slots for next question.
       setRootQuestion("");
       setSlots({});
     } catch (err) {
@@ -214,7 +214,7 @@ function Simulator() {
             </div>
             <h1 className="mt-3 font-display text-4xl text-foreground md:text-5xl">Explore any financial decision.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Ask any "what if" in plain language. NitiSim thinks through your scenario like a financial advisor — asking follow-ups where needed — then runs NitiCore™ and explains the impact.
+              Ask any "what if" in plain language. NitiSim thinks through your scenario like a financial advisor - asking follow-ups where needed - then runs NitiCore™ and explains the impact.
             </p>
           </div>
           {turns.length > 0 && (
@@ -260,7 +260,7 @@ function Simulator() {
                     ))}
                   </div>
                   <p className="mt-4 text-[11px] text-muted-foreground">
-                    NitiSim will ask follow-ups if your question is missing key details (timing, financing, down payment). Every simulation is deterministic — NitiCore™ does the math; the AI only explains what it means.
+                    NitiSim will ask follow-ups if your question is missing key details (timing, financing, down payment). Every simulation is deterministic - NitiCore™ does the math; the AI only explains what it means.
                   </p>
                 </div>
               </div>
@@ -298,7 +298,7 @@ function Simulator() {
                             <li key={i} className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground">{q}</li>
                           ))}
                         </ul>
-                        <p className="mt-3 text-[11px] text-muted-foreground">Type your answers in one message below — you can combine them.</p>
+                        <p className="mt-3 text-[11px] text-muted-foreground">Type your answers in one message below - you can combine them.</p>
                       </div>
                     </div>
                   </div>
@@ -364,7 +364,7 @@ function Simulator() {
         </div>
 
         <p className="mt-4 text-[11px] italic text-muted-foreground">
-          NitiSim explains updated NitiCore™ metrics — it never invents them. All history is stored locally in your browser.
+          NitiSim explains updated NitiCore™ metrics - it never invents them. All history is stored locally in your browser.
         </p>
       </main>
       <SiteFooter />

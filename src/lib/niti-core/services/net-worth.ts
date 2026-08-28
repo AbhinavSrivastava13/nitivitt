@@ -14,7 +14,7 @@ export function calculateNetWorth(input: NitiCoreInput): MetricResult {
     priority: value < 0 ? "high" : "low",
     suggestedNextStep:
       value < 0
-        ? "Bring liabilities below assets — prepay costly debt first."
+        ? "Bring liabilities below assets - prepay costly debt first."
         : "Grow productive assets (equity/index) and track quarterly.",
     aiPayload: { value },
   };

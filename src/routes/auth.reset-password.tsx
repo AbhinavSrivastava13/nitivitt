@@ -8,7 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 export const Route = createFileRoute("/auth/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset password — NitiVitt" },
+      { title: "Reset password - NitiVitt" },
       { name: "description", content: "Set a new password for your NitiVitt account." },
     ],
   }),
@@ -49,7 +49,7 @@ function ResetPasswordPage() {
         >
           <h1 className="font-display text-3xl">Set a new password</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Choose a strong password — at least 8 characters.
+            Choose a strong password - at least 8 characters.
           </p>
           <label className="mt-6 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             New password

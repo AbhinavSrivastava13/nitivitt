@@ -1,5 +1,5 @@
 /**
- * NitiCore™ — the deterministic financial engine.
+ * NitiCore™ - the deterministic financial engine.
  *
  * Single source of truth for every financial calculation in NitiVitt.
  * No calculation lives in React components. No calculation lives in AI

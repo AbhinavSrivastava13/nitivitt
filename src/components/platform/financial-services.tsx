@@ -1,5 +1,5 @@
 /**
- * Financial Services section — shared implementation for the public homepage and
+ * Financial Services section - shared implementation for the public homepage and
  * the signed-in dashboard.
  *
  * All copy, icons, statuses and CTA wording come from `@/content/services`
@@ -53,7 +53,7 @@ function formatShortDate(iso: string): string {
   return `${String(d.getUTCDate()).padStart(2, "0")} ${MONTHS[d.getUTCMonth()]}`;
 }
 
-/** Short dashboard labels — the marketing names stay on the public surfaces. */
+/** Short dashboard labels - the marketing names stay on the public surfaces. */
 const SHORT_NAMES: Record<string, string> = {
   "insurance-analyzer": "Insurance",
   "portfolio-analyzer": "Portfolio",
@@ -88,7 +88,7 @@ export function FinancialServicesSection({
 
   return (
     <section className={className}>
-      {/* Header — heading and description sit on the same top line */}
+      {/* Header - heading and description sit on the same top line */}
       <div className="flex flex-col items-start gap-6 md:flex-row md:items-start md:justify-between md:gap-12">
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-secondary">
@@ -172,7 +172,7 @@ function MinimalServicesSection({
             background:
               "radial-gradient(120% 100% at 0% 0%, oklch(0.42 0.14 258) 0%, oklch(0.28 0.10 258) 55%, oklch(0.22 0.08 258) 100%)",
           }}
-          aria-label={authenticated ? s.ctaActive : `${s.name} — ${GUEST_CTA}`}
+          aria-label={authenticated ? s.ctaActive : `${s.name} - ${GUEST_CTA}`}
         >
           {/* Soft ambient glow */}
           <div
@@ -249,7 +249,7 @@ function MinimalServicesSection({
   );
 }
 
-/* ─────────────── Featured — Financial Advisor ─────────────── */
+/* ─────────────── Featured - Financial Advisor ─────────────── */
 
 function FeaturedAdvisorCard({ authenticated }: { authenticated: boolean }) {
   const s = ADVISOR_SERVICE;
@@ -323,7 +323,7 @@ function FeaturedAdvisorCard({ authenticated }: { authenticated: boolean }) {
       params={{ slug: s.slug }}
       className={cls}
       style={style}
-      aria-label={`${s.name} — ${GUEST_CTA}`}
+      aria-label={`${s.name} - ${GUEST_CTA}`}
     >
       {inner}
     </Link>
@@ -382,7 +382,7 @@ function AnalyzerCard({
           ) : (
             <div className="mt-1 flex items-baseline gap-1.5">
               <span className="font-display text-3xl font-semibold leading-none text-foreground">
-                {stat?.score ?? "—"}
+                {stat?.score ?? "-"}
               </span>
               <span className="text-xs text-muted-foreground">/ 100</span>
             </div>
@@ -477,7 +477,7 @@ function CompactServicesSection({
             Financial services
           </p>
           <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
-            Your financial analyses, advisor access and latest status — in one place.
+            Your financial analyses, advisor access and latest status - in one place.
           </p>
         </div>
         <Link
@@ -552,7 +552,7 @@ function CompactServicesSection({
                 <AnalyzerLink
                   key={s.slug}
                   service={s}
-                  ariaLabel={`${SHORT_NAMES[s.slug] ?? s.name} — ${state}`}
+                  ariaLabel={`${SHORT_NAMES[s.slug] ?? s.name} - ${state}`}
                   className={`group flex flex-col gap-0.5 px-5 py-3 transition-colors hover:bg-muted/40 sm:border-t sm:border-border/70 ${
                     i % 2 === 1 ? "sm:border-l" : ""
                   } lg:border-l lg:first:border-l-0 lg:[&:nth-child(3)]:border-l`}
@@ -583,7 +583,7 @@ function CompactServicesSection({
 
                   <div className="mt-1 flex items-center justify-between gap-2">
                     <span className="truncate text-[11px] text-muted-foreground">
-                      {hasData && stat?.lastReviewed ? `Last reviewed · ${formatShortDate(stat.lastReviewed)}` : "—"}
+                      {hasData && stat?.lastReviewed ? `Last reviewed · ${formatShortDate(stat.lastReviewed)}` : "-"}
                     </span>
                     <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-primary">
                       {hasData ? "Open" : "Start"}

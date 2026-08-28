@@ -1,5 +1,5 @@
 /**
- * Financial Advisor — server functions.
+ * Financial Advisor - server functions.
  *
  * Contract:
  *   client → auth-gated server fn → NitiCore™ briefing built from the user's
@@ -318,7 +318,7 @@ export const submitAdvisorRequest = createServerFn({ method: "POST" })
       throw new Error(`Advisor request could not be saved: ${message}`);
     }
 
-    // Ops notification — never blocks the user's confirmation.
+    // Ops notification - never blocks the user's confirmation.
     try {
       const { deliverAdvisorNotification } = await import("./notify.server");
       const delivered = await deliverAdvisorNotification({

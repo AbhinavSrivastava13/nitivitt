@@ -1,5 +1,5 @@
 /**
- * Financial Advisor (V1) — shared types & catalogue.
+ * Financial Advisor (V1) - shared types & catalogue.
  *
  * The Financial Advisor is NitiVitt's first human-assisted layer. Everything
  * deterministic (scores, ratings, NitiPath actions) is attached automatically
@@ -27,10 +27,10 @@ export interface AdvisorTopic {
 export const ADVISOR_TOPICS: AdvisorTopic[] = [
   { id: "tax_planning", label: "Tax Planning & Filing", description: "Regime choice, deductions, capital gains, ITR filing support." },
   { id: "investments", label: "Investments & Portfolio", description: "Fund selection, allocation, rebalancing, consolidation." },
-  { id: "insurance", label: "Insurance & Protection", description: "Term, health, critical illness — adequacy and claim readiness." },
+  { id: "insurance", label: "Insurance & Protection", description: "Term, health, critical illness - adequacy and claim readiness." },
   { id: "loans_debt", label: "Loans & Debt", description: "Prepayment strategy, refinancing, EMI restructuring." },
   { id: "retirement", label: "Retirement Planning", description: "Corpus target, withdrawal strategy, NPS and EPF decisions." },
-  { id: "goal_planning", label: "Goal Planning", description: "Home, education, marriage, sabbatical — funding roadmaps." },
+  { id: "goal_planning", label: "Goal Planning", description: "Home, education, marriage, sabbatical - funding roadmaps." },
   { id: "nri", label: "NRI Finances", description: "NRE/NRO, repatriation, DTAA, India-side investments." },
   { id: "business_finance", label: "Business & Freelance Finance", description: "Cashflow, advance tax, presumptive taxation, GST basics." },
   { id: "estate_planning", label: "Estate & Succession", description: "Nominations, will basics, family protection." },
@@ -67,7 +67,7 @@ export const ADVISOR_PACKAGES: AdvisorPackage[] = [
     name: "Tax Filing Assistance",
     priceInr: 199,
     duration: "45-minute session + filing help",
-    tagline: "Pay the least tax the law allows — correctly.",
+    tagline: "Pay the least tax the law allows - correctly.",
     includes: [
       "45-minute session with a tax specialist",
       "Old vs New regime decision reviewed against your NitiTax™ analysis",
@@ -112,10 +112,10 @@ export interface AdvisorPreferredSlot {
 export type AdvisorSlotWindow = "morning" | "afternoon" | "evening" | "late_evening";
 
 export const SLOT_WINDOWS: { id: AdvisorSlotWindow; label: string; hint: string }[] = [
-  { id: "morning", label: "Morning", hint: "9:00 – 12:00" },
-  { id: "afternoon", label: "Afternoon", hint: "12:00 – 16:00" },
-  { id: "evening", label: "Evening", hint: "16:00 – 19:00" },
-  { id: "late_evening", label: "Late evening", hint: "19:00 – 21:30" },
+  { id: "morning", label: "Morning", hint: "9:00 - 12:00" },
+  { id: "afternoon", label: "Afternoon", hint: "12:00 - 16:00" },
+  { id: "evening", label: "Evening", hint: "16:00 - 19:00" },
+  { id: "late_evening", label: "Late evening", hint: "19:00 - 21:30" },
 ];
 
 export function slotLabel(slot: AdvisorPreferredSlot): string {

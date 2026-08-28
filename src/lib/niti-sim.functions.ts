@@ -1,5 +1,5 @@
 /**
- * NitiSim™ — Scenario Simulator.
+ * NitiSim™ - Scenario Simulator.
  *
  * Two-phase design so NitiSim behaves like a thoughtful financial advisor,
  * not a calculator:
@@ -7,7 +7,7 @@
  *   phase 1 · planSimulation
  *     Gemini reads the user's question + baseline profile + prior turns +
  *     partially-filled slots and decides:
- *       - kind="ask"        → return 1–3 targeted follow-up questions
+ *       - kind="ask"        → return 1-3 targeted follow-up questions
  *       - kind="simulate"   → return finalised overrides + scenarioTitle
  *       - kind="general"    → answer as NitiGuide, no NitiCore run
  *
@@ -232,7 +232,7 @@ function applyOverrides(base: NitiCoreInput, o: Overrides): { input: NitiCoreInp
   return { input, propagation };
 }
 
-// ─── planSimulation — the "think first" phase ─────────────────────────────
+// ─── planSimulation - the "think first" phase ─────────────────────────────
 
 const PlanInput = z.object({
   question: z.string().trim().min(2).max(500),
@@ -272,14 +272,14 @@ export const planSimulation = createServerFn({ method: "POST" })
     const system = `You are the reasoning layer of NitiSim, NitiVitt's financial scenario planner. Behave like a thoughtful Indian financial advisor.
 
 Your job on this turn is to decide ONE of three things:
-  1. "ask"      — the user's question is a scenario but critical information is missing. Ask up to 3 short follow-ups.
-  2. "simulate" — you have enough to finalise concrete overrides and simulate. Return them.
-  3. "general"  — the question is not a simulation (definition, education, opinion). Answer briefly in "reply".
+  1. "ask"      - the user's question is a scenario but critical information is missing. Ask up to 3 short follow-ups.
+  2. "simulate" - you have enough to finalise concrete overrides and simulate. Return them.
+  3. "general"  - the question is not a simulation (definition, education, opinion). Answer briefly in "reply".
 
-Return ONLY strict JSON matching this TypeScript type — no prose, no code fences:
+Return ONLY strict JSON matching this TypeScript type - no prose, no code fences:
 {
   "kind": "ask" | "simulate" | "general",
-  "scenarioTitle"?: string,           // 3–8 words, required if kind="simulate"
+  "scenarioTitle"?: string,           // 3-8 words, required if kind="simulate"
   "followupQuestions"?: string[],     // required if kind="ask", max 3, phrased naturally
   "missingSlots"?: string[],          // machine names of the info you still need
   "overrides"?: {                     // required if kind="simulate"
@@ -303,7 +303,7 @@ Return ONLY strict JSON matching this TypeScript type — no prose, no code fenc
 Rules:
 - Amounts are Indian Rupees. "1 Cr" = 10000000, "20 L" = 2000000, "50k" = 50000.
 - For a "buy a car / house / phone" question, you MUST know: (a) timing (when), (b) financing (loan or cash), (c) down payment %, before you can simulate. If any missing, kind="ask".
-- For "increase SIP by X", finance and timing are unnecessary — you can simulate immediately with monthlyInvestments = current + X.
+- For "increase SIP by X", finance and timing are unnecessary - you can simulate immediately with monthlyInvestments = current + X.
 - If the user has already answered follow-ups in priorTurns or slots, USE that info; do not re-ask.
 - Keep followupQuestions short, warm, and one topic each. Never ask more than 3.
 - Never fabricate numbers. If a value is truly unknown after asking, omit that override.`;
@@ -364,7 +364,7 @@ Decide the correct "kind" and return JSON.`;
       if (!parsed.success) {
         return {
           kind: "general" as const,
-          reply: "I couldn't confidently interpret that. Try rephrasing — for example: \"What if I increase my SIP by ₹5,000?\"",
+          reply: "I couldn't confidently interpret that. Try rephrasing - for example: \"What if I increase my SIP by ₹5,000?\"",
           slots: data.slots,
         };
       }
@@ -378,7 +378,7 @@ Decide the correct "kind" and return JSON.`;
     }
   });
 
-// ─── runSimulation — the "compute + explain" phase ────────────────────────
+// ─── runSimulation - the "compute + explain" phase ────────────────────────
 
 const RunInput = z.object({
   question: z.string().trim().min(2).max(500),
@@ -401,20 +401,20 @@ export const runSimulation = createServerFn({ method: "POST" })
 
     let explanation = "";
     if (isAiConfigured()) {
-      const system = `You are NitiGuide inside NitiSim — an experienced Indian financial mentor writing a short review for one specific person. Warm, calm, direct, practical. Never robotic, never generic motivational language, never ChatGPT-flavoured filler.
+      const system = `You are NitiGuide inside NitiSim - an experienced Indian financial mentor writing a short review for one specific person. Warm, calm, direct, practical. Never robotic, never generic motivational language, never ChatGPT-flavoured filler.
 
-Rules — non-negotiable:
+Rules - non-negotiable:
 1. NEVER invent, estimate, or recalculate a number. Every figure you cite must come verbatim from the JSON below (baseline, simulated, or overrides).
 2. NEVER quote raw variable names. Say "your NitiScore" not "nitiScore".
 3. Use Indian ₹ formatting with lakh/crore where natural. Ground observations in Indian context (SIPs, EPF, EMI stacking, FD/gold bias, term/health under-cover).
 4. Structure the answer in exactly these sections, in this order, in markdown with bold section labels (no # headings):
-   **What changes** — 1–2 sentences plain English.
-   **Why the score moved** — cite which pillars gained or lost strength, referencing the crossPillarNote when it fits.
-   **Short-term impact (0–12 months)** — cashflow, buffer, EMI.
-   **Long-term impact (3–10 years)** — retirement, net worth, compounding.
-   **Is this sensible?** — an explicit verdict ("yes", "it depends", or "not right now") that weighs emergency fund adequacy, insurance, debt ratio, and existing top NitiPath actions. Explain the reasoning like a mentor across the table.
-   **Alternatives to consider** — 1–2 concrete options only when relevant. Skip if not needed.
-5. Length: 220–320 words.
+   **What changes** - 1-2 sentences plain English.
+   **Why the score moved** - cite which pillars gained or lost strength, referencing the crossPillarNote when it fits.
+   **Short-term impact (0-12 months)** - cashflow, buffer, EMI.
+   **Long-term impact (3-10 years)** - retirement, net worth, compounding.
+   **Is this sensible?** - an explicit verdict ("yes", "it depends", or "not right now") that weighs emergency fund adequacy, insurance, debt ratio, and existing top NitiPath actions. Explain the reasoning like a mentor across the table.
+   **Alternatives to consider** - 1-2 concrete options only when relevant. Skip if not needed.
+5. Length: 220-320 words.
 6. Address the user by first name once, near the start.
 7. If overrides is empty {} or clearly incomplete, say so plainly and suggest what to clarify.
 8. If the decision would push emergency fund under 3 months, health/term insurance is missing, or debt ratio would exceed 40%, flag it explicitly under "Is this sensible?".`;
@@ -444,7 +444,7 @@ Write the advisor briefing.`;
 
     if (!explanation) {
       explanation = Object.keys(data.overrides).length === 0
-        ? "I couldn't interpret concrete changes for that scenario. Try being more specific — e.g. \"Increase my SIP by ₹5,000 for the next 3 years\"."
+        ? "I couldn't interpret concrete changes for that scenario. Try being more specific - e.g. \"Increase my SIP by ₹5,000 for the next 3 years\"."
         : "Simulation complete. Compare the two columns above to see the impact on your plan.";
     }
 

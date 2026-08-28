@@ -11,14 +11,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 /**
- * useConfirm — canonical replacement for window.confirm().
+ * useConfirm - canonical replacement for window.confirm().
  *
  * Wrap the app in <ConfirmProvider /> once (already added in __root) then:
  *
  *   const confirm = useConfirm();
  *   if (await confirm({ title: "Delete policy?", tone: "destructive" })) { … }
  *
- * Never call window.confirm() directly — it is not theme-aware and cannot be
+ * Never call window.confirm() directly - it is not theme-aware and cannot be
  * styled to match the NitiVitt design system.
  */
 

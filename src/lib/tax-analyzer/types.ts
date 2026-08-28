@@ -1,5 +1,5 @@
 /**
- * NitiTax™ — Tax Decision Engine types (V1).
+ * NitiTax™ - Tax Decision Engine types (V1).
  *
  * NitiTax deliberately produces NO score, rating or grade. Tax is about
  * decisions, not a number. Everything below is deterministic output from
@@ -62,7 +62,7 @@ export interface Deductions80C {
 
 export interface Deductions80CCD {
   employeeNps: number;      // 80CCD(1) inside 80C ceiling
-  additionalNps: number;    // 80CCD(1B) — extra 50k
+  additionalNps: number;    // 80CCD(1B) - extra 50k
   employerNps: number;      // 80CCD(2)
 }
 
@@ -209,7 +209,7 @@ export interface TaxReport {
   findings: TaxFinding[];
 
   contextSummary: string;
-  narrative?: string;          // NitiGuide™ (AI) — explanation only
+  narrative?: string;          // NitiGuide™ (AI) - explanation only
 }
 
 export function emptyTaxInput(): TaxInput {

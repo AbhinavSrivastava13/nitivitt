@@ -1,10 +1,10 @@
 /**
- * FinancialContext — the holistic situational read of a user's finances.
+ * FinancialContext - the holistic situational read of a user's finances.
  *
  * NitiCore™ services compute individual metrics. The recommendation engine
  * needs to reason ACROSS those metrics like an experienced Certified Financial
  * Planner would: understand life stage, protection posture, liquidity health,
- * monthly surplus, wealth-building capacity, and opportunity cost — BEFORE
+ * monthly surplus, wealth-building capacity, and opportunity cost - BEFORE
  * generating any recommendation.
  *
  * Everything here is deterministic. No AI. No randomness. Same input → same
@@ -17,10 +17,10 @@ import { calculateDebtRatio } from "./services/debt-ratio";
 import { calculateInsuranceAdequacy } from "./services/insurance";
 
 export type LifeStage =
-  | "early_career" // 18–29
-  | "family_building" // 30–44
-  | "peak_earning" // 45–54
-  | "pre_retirement" // 55–64
+  | "early_career" // 18-29
+  | "family_building" // 30-44
+  | "peak_earning" // 45-54
+  | "pre_retirement" // 55-64
   | "retirement"; // 65+
 
 export type ProtectionPosture = "unprotected" | "partial" | "protected";
@@ -33,12 +33,12 @@ export interface FinancialContext {
   protectionPosture: ProtectionPosture;
   liquidityHealth: LiquidityHealth;
 
-  /** Monthly cash left after expenses AND EMIs — the true investable surplus. */
+  /** Monthly cash left after expenses AND EMIs - the true investable surplus. */
   monthlySurplus: number;
-  /** Surplus as % of income (0–100). */
+  /** Surplus as % of income (0-100). */
   surplusPct: number;
 
-  /** Emergency months covered — cached from calc. */
+  /** Emergency months covered - cached from calc. */
   emergencyMonths: number;
   /** EMI-to-income ratio (%). */
   debtRatioPct: number;
@@ -60,9 +60,9 @@ export interface FinancialContext {
 export type ContextFlag =
   | "protection_gap" // no term or health cover, with dependents
   | "emergency_critical" // < 2 months buffer
-  | "emergency_thin" // 2–5 months buffer
+  | "emergency_thin" // 2-5 months buffer
   | "debt_overload" // EMI ratio > 40%
-  | "debt_elevated" // EMI ratio 20–40%
+  | "debt_elevated" // EMI ratio 20-40%
   | "cash_flow_tight" // surplus < 10% of income
   | "under_invested" // surplus healthy but investing < 10% of income
   | "over_liquid" // > 12 months buffer while investing < 10%
@@ -114,7 +114,7 @@ export function evaluateContext(input: NitiCoreInput): FinancialContext {
       ? input.dependentsCount > 0
       : input.ageYears >= 30; // reasonable Indian default
 
-  // Protection posture — CFP treats missing term/health with dependents as top-priority.
+  // Protection posture - CFP treats missing term/health with dependents as top-priority.
   let protectionPosture: ProtectionPosture = "protected";
   if (!input.hasTermInsurance && !input.hasHealthInsurance) protectionPosture = "unprotected";
   else if (!input.hasTermInsurance || !input.hasHealthInsurance || insuranceAdequacyPct < 60)
@@ -148,7 +148,7 @@ export function evaluateContext(input: NitiCoreInput): FinancialContext {
   )
     flags.push("wealth_building_ready");
 
-  // Cross-service intelligence — only when analyzers have run.
+  // Cross-service intelligence - only when analyzers have run.
   const cs = input.crossService;
   if (cs) {
     if (typeof cs.portfolioConcentrationScore === "number" && cs.portfolioConcentrationScore >= 60)
@@ -157,7 +157,7 @@ export function evaluateContext(input: NitiCoreInput): FinancialContext {
       flags.push("portfolio_weak");
     if (typeof cs.insuranceProtectionScore === "number" && cs.insuranceProtectionScore > 0 && cs.insuranceProtectionScore < 60)
       flags.push("insurance_reviewed_gap");
-    // Strong investments while insurance is missing — a common Indian pattern.
+    // Strong investments while insurance is missing - a common Indian pattern.
     const strongInvest = typeof cs.portfolioScore === "number" && cs.portfolioScore >= 65;
     const weakProtection =
       protectionPosture !== "protected" ||

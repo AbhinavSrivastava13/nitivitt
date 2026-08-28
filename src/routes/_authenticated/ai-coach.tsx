@@ -10,7 +10,7 @@ import { getNitiGuideBriefing } from "@/lib/niti-guide.functions";
 export const Route = createFileRoute("/_authenticated/ai-coach")({
   head: () => ({
     meta: [
-      { title: "NitiGuide™ — Your Financial Briefing — NitiVitt" },
+      { title: "NitiGuide™ - Your Financial Briefing - NitiVitt" },
       { name: "description", content: "A personalised financial briefing that helps you understand your NitiCore™ numbers in plain, mentor-style English." },
     ],
   }),
@@ -40,7 +40,7 @@ function NitiGuidePage() {
             </div>
             <h1 className="mt-3 font-display text-4xl text-foreground md:text-5xl">Your financial briefing.</h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              A calm, mentor-style read on where you stand — grounded entirely in your live NitiCore™ numbers. Not a chatbot.
+              A calm, mentor-style read on where you stand - grounded entirely in your live NitiCore™ numbers. Not a chatbot.
               For "what-if" questions, use NitiSim™.
             </p>
           </div>

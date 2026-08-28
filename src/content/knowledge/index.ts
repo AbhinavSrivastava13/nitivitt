@@ -3,7 +3,7 @@
  *
  * Today: static array of articles bundled with the app.
  * Tomorrow: swap the bodies of `listArticles` / `getArticleBySlug` for a
- * Supabase query or CMS fetch — the routes never change.
+ * Supabase query or CMS fetch - the routes never change.
  */
 import type { Article, ArticleSummary } from "./types";
 import { toSummary } from "./types";

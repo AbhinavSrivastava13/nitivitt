@@ -1,8 +1,8 @@
 /**
- * NitiScore™ — proprietary financial health score (0–100).
+ * NitiScore™ - proprietary financial health score (0-100).
  *
- * Per Master Bible §3.5–3.6: a transparent, pillar-based score where every
- * factor is explainable. AI never calculates — math does.
+ * Per Master Bible §3.5-3.6: a transparent, pillar-based score where every
+ * factor is explainable. AI never calculates - math does.
  *
  * Pillars (weights sum to 100):
  *   Savings (20) · Emergency (15) · Insurance (15) · Investments (20)
@@ -32,12 +32,12 @@ export interface FinancialProfileSnapshot {
 export interface PillarResult {
   pillar: string;
   weight: number;
-  score: number; // 0–100
+  score: number; // 0-100
   reason: string;
 }
 
 export interface NitiScoreResult {
-  score: number; // 0–100
+  score: number; // 0-100
   band: "Critical" | "Needs Work" | "Stable" | "Strong" | "Excellent";
   pillars: PillarResult[];
   strengths: string[];
@@ -89,7 +89,7 @@ export function calculateNitiScore(p: FinancialProfileSnapshot): NitiScoreResult
     reason: `Liquid savings cover ${months.toFixed(1)} months of essentials (target: 6).`,
   });
 
-  // Insurance: binary signal — both term + health required for full marks.
+  // Insurance: binary signal - both term + health required for full marks.
   const insuranceScore = (p.hasTermInsurance ? 50 : 0) + (p.hasHealthInsurance ? 50 : 0);
   pillars.push({
     pillar: "Insurance",

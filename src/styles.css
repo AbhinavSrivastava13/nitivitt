@@ -6,9 +6,9 @@
 
 /*
  * NitiVitt Design System
- * — Deep Blue (trust) · Emerald (growth) · Gold (premium accent)
- * — Inter for UI · Instrument Serif for editorial headlines
- * — Premium, calm, mathematically honest
+ * - Deep Blue (trust) · Emerald (growth) · Gold (premium accent)
+ * - Inter for UI · Instrument Serif for editorial headlines
+ * - Premium, calm, mathematically honest
  */
 
 @theme inline {
@@ -60,7 +60,7 @@
 :root {
   --radius: 0.875rem;
 
-  /* Neutrals — calm, paper-like */
+  /* Neutrals - calm, paper-like */
   --background: oklch(0.995 0.002 250);
   --foreground: oklch(0.18 0.03 255);
   --surface: oklch(0.985 0.004 250);
@@ -74,18 +74,18 @@
   --border: oklch(0.92 0.008 250);
   --input: oklch(0.92 0.008 250);
 
-  /* Brand — Deep Blue */
+  /* Brand - Deep Blue */
   --primary: oklch(0.32 0.11 258);
   --primary-foreground: oklch(0.985 0.004 250);
   --primary-soft: oklch(0.95 0.025 258);
   --ring: oklch(0.42 0.12 258);
 
-  /* Growth — Emerald */
+  /* Growth - Emerald */
   --secondary: oklch(0.58 0.14 162);
   --secondary-foreground: oklch(0.985 0.004 250);
   --secondary-soft: oklch(0.95 0.04 162);
 
-  /* Premium — Gold */
+  /* Premium - Gold */
   --accent: oklch(0.78 0.12 85);
   --accent-foreground: oklch(0.22 0.05 80);
 

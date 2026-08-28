@@ -1,11 +1,11 @@
 /**
- * NitiInvest™ V2 — Portfolio Intelligence layer.
+ * NitiInvest™ V2 - Portfolio Intelligence layer.
  *
  * Deterministic. Zero AI. Builds on top of the existing engine's computed
  * aggregates and turns them into: diagnostics, per-holding intelligence,
  * a real peer benchmark, and actionable insights (why / impact / action).
  *
- * Gemini may later attach `aiSummary` strings onto holding intelligence —
+ * Gemini may later attach `aiSummary` strings onto holding intelligence -
  * it never changes a number or a recommendation.
  */
 import type { FinancialContext, NitiCoreInput } from "@/lib/niti-core";
@@ -256,15 +256,15 @@ function risksFor(h: Holding, kind: HoldingIntelligence["kind"], pct: number): s
 
 function roleFor(h: Holding, kind: HoldingIntelligence["kind"], pct: number, a: IntelligenceInput): string {
   const e = h.enrichment ?? {};
-  if (h.assetClass === "index_fund" || h.assetClass === "etf") return "Core holding — this should be the largest, most boring part of the portfolio.";
-  if (e.marketCap === "large" || e.marketCapBias?.toLowerCase().includes("large")) return "Core holding — stability and compounding.";
-  if (e.marketCap === "multi" || e.marketCapBias?.toLowerCase().includes("across")) return "Core holding — one fund covering the whole market.";
-  if (e.marketCap === "small" || e.marketCap === "mid") return "Satellite holding — keep it a minority slice of equity, not the base.";
-  if (["debt_mf", "bond", "fd"].includes(h.assetClass)) return "Stabiliser — funds near-term goals and cushions equity drawdowns.";
-  if (["gold_etf", "sgb"].includes(h.assetClass)) return "Hedge — a 5-10% slice, not a growth engine.";
-  if (h.assetClass === "cash") return "Liquidity buffer — useful up to your emergency-fund need, a drag beyond it.";
-  if (kind === "stock") return pct >= 10 ? "Satellite — consider trimming toward a single-digit share." : "Satellite — a conviction position sized sensibly.";
-  return a.equityPct < a.targetEquityPct ? "Supporting holding — growth exposure is what this portfolio is short of." : "Supporting holding.";
+  if (h.assetClass === "index_fund" || h.assetClass === "etf") return "Core holding - this should be the largest, most boring part of the portfolio.";
+  if (e.marketCap === "large" || e.marketCapBias?.toLowerCase().includes("large")) return "Core holding - stability and compounding.";
+  if (e.marketCap === "multi" || e.marketCapBias?.toLowerCase().includes("across")) return "Core holding - one fund covering the whole market.";
+  if (e.marketCap === "small" || e.marketCap === "mid") return "Satellite holding - keep it a minority slice of equity, not the base.";
+  if (["debt_mf", "bond", "fd"].includes(h.assetClass)) return "Stabiliser - funds near-term goals and cushions equity drawdowns.";
+  if (["gold_etf", "sgb"].includes(h.assetClass)) return "Hedge - a 5-10% slice, not a growth engine.";
+  if (h.assetClass === "cash") return "Liquidity buffer - useful up to your emergency-fund need, a drag beyond it.";
+  if (kind === "stock") return pct >= 10 ? "Satellite - consider trimming toward a single-digit share." : "Satellite - a conviction position sized sensibly.";
+  return a.equityPct < a.targetEquityPct ? "Supporting holding - growth exposure is what this portfolio is short of." : "Supporting holding.";
 }
 
 /* ─────────────────────────── PEER BENCHMARK ─────────────────────────── */
@@ -306,12 +306,12 @@ export function buildPeerBenchmark(a: IntelligenceInput): PeerBenchmark {
       Math.abs(gap) <= tolerance
         ? "In line with peers"
         : gap > 0
-          ? `Above typical range — ${note}`
-          : `Below typical range — ${note}`;
+          ? `Above typical range - ${note}`
+          : `Below typical range - ${note}`;
     return { label, you: round1(you), typical: round1(typical), unit, verdict };
   };
 
-  // Deliberately structural — allocation-versus-target lives under Portfolio
+  // Deliberately structural - allocation-versus-target lives under Portfolio
   // Allocation. This section answers "how does my portfolio compare with
   // people at a similar stage of life?"
   const typicalHoldings = 8;
@@ -331,7 +331,7 @@ export function buildPeerBenchmark(a: IntelligenceInput): PeerBenchmark {
   return {
     cohort: `Age ${bandStart}-${bandStart + 4} · ${incomeBand} income · ${risk} risk · ${stage}`,
     rows,
-    note: "Educational reference based on NitiCore™ cohort assumptions — not a ranking, and not observed peer returns. Being different from your cohort only matters when it conflicts with your own horizon.",
+    note: "Educational reference based on NitiCore™ cohort assumptions - not a ranking, and not observed peer returns. Being different from your cohort only matters when it conflicts with your own horizon.",
   };
 
 

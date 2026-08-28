@@ -20,12 +20,12 @@ export const Route = createFileRoute("/services/$slug")({
   },
   head: ({ loaderData }) => {
     const s = loaderData?.service;
-    if (!s) return { meta: [{ title: "Service not found — NitiVitt" }, { name: "robots", content: "noindex" }] };
+    if (!s) return { meta: [{ title: "Service not found - NitiVitt" }, { name: "robots", content: "noindex" }] };
     return {
       meta: [
-        { title: `${s.name} — NitiVitt Services` },
+        { title: `${s.name} - NitiVitt Services` },
         { name: "description", content: s.shortDescription },
-        { property: "og:title", content: `${s.name} — NitiVitt` },
+        { property: "og:title", content: `${s.name} - NitiVitt` },
         { property: "og:description", content: s.shortDescription },
         { property: "og:type", content: "article" },
         { name: "twitter:card", content: "summary" },
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/services/$slug")({
   component: ServiceDetail,
 });
 
-/** Primary CTA — context-aware, identical wording across every service. */
+/** Primary CTA - context-aware, identical wording across every service. */
 function ServiceCta({ service, className = "" }: { service: Service; className?: string }) {
   const { isAuthenticated } = useAuth();
   const base = `inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-elevated ${className}`;

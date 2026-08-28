@@ -15,7 +15,7 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in — NitiVitt" },
+      { title: "Sign in - NitiVitt" },
       {
         name: "description",
         content: "Sign in or create your NitiVitt account to unlock your NitiScore™, personalised goals, and transparent financial guidance.",
@@ -61,7 +61,7 @@ function AuthPage() {
         });
         if (error) throw error;
 
-        // No session means email confirmation is required — do not pretend the
+        // No session means email confirmation is required - do not pretend the
         // account is ready to onboard.
         if (!data.session) {
           toast.success("Check your email to confirm your account, then sign in.");
@@ -232,7 +232,7 @@ function AuthPage() {
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             By continuing you agree to our{" "}
-            <Link to="/principles" className="underline">Principles</Link>. Your data is yours — end of story.
+            <Link to="/principles" className="underline">Principles</Link>. Your data is yours - end of story.
           </p>
         </div>
       </main>
