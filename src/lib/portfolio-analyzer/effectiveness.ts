@@ -1,12 +1,12 @@
 /**
- * NitiInvest™ — Portfolio Effectiveness (derived, deterministic).
+ * NitiInvest™ - Portfolio Effectiveness (derived, deterministic).
  *
  * Nothing here changes a NitiCore™ calculation. Every number is derived from
  * data the engine already produced: the projection basis, the deterministic
  * diagnostics, and the allocation the analyzer resolved.
  *
  * Effectiveness answers one question: "how far does today's plan get you,
- * relative to the NitiCore™ reference plan for the same horizon — and is the
+ * relative to the NitiCore™ reference plan for the same horizon - and is the
  * portfolio structurally sound enough to get there?"
  *
  *   effectiveness = 65% funding progress + 35% structural health
@@ -27,7 +27,7 @@ export const SCENARIOS: { key: ScenarioKey; label: string; delta: number }[] = [
   { key: "optimistic", label: "Optimistic", delta: 2 },
 ];
 
-/** Scenario returns are the blended expected return ± 2pp — a stated assumption, not a forecast. */
+/** Scenario returns are the blended expected return ± 2pp - a stated assumption, not a forecast. */
 export function scenarioReturn(baseReturnPct: number, scenario: ScenarioKey): number {
   const delta = SCENARIOS.find((s) => s.key === scenario)?.delta ?? 0;
   return Math.max(3, Math.round((baseReturnPct + delta) * 10) / 10);
@@ -41,7 +41,7 @@ export function structuralScore(diagnostics: PortfolioDiagnostic[]): number {
 /**
  * The contribution the "current plan" is measured from. When the profile has no
  * recorded SIP we fall back to the NitiCore™ suggested starting contribution so
- * the plan, the sliders, the reference path and the matrix all agree — and the
+ * the plan, the sliders, the reference path and the matrix all agree - and the
  * UI states which of the two it is using.
  */
 export function baselineSip(basis: ProjectionBasis): number {
@@ -156,7 +156,7 @@ export function effectivenessGrid(
 }
 
 /**
- * Which lever moves the outcome more — contributing more, or assuming a higher
+ * Which lever moves the outcome more - contributing more, or assuming a higher
  * return? Derived by comparing the two edges of the grid, never asserted.
  */
 export function highestImpactLever(grid: HeatCell[]): string {
@@ -168,7 +168,7 @@ export function highestImpactLever(grid: HeatCell[]): string {
   const returnGain = at(0, "optimistic") - base;
   if (contributionGain <= 0 && returnGain <= 0) return "";
   return contributionGain >= returnGain
-    ? "Highest-impact lever: raising your annual contribution moves the outcome more than assuming a higher return — and it is the one you actually control."
+    ? "Highest-impact lever: raising your annual contribution moves the outcome more than assuming a higher return - and it is the one you actually control."
     : "Highest-impact lever: at this contribution level the return assumption dominates the outcome, which is exactly the part of the plan you cannot control. Raising contributions is the more reliable route.";
 }
 
@@ -181,7 +181,7 @@ export interface OverlapFinding {
   severity: "High" | "Moderate";
 }
 
-/** Only reports overlap the exposure grouping actually found — never estimated. */
+/** Only reports overlap the exposure grouping actually found - never estimated. */
 export function detectOverlap(
   groups: { label: string; pct: number; members: { name: string; pct: number }[] }[],
 ): OverlapFinding | null {
@@ -238,7 +238,7 @@ export function stressScenarios(totalValue: number, equityValue: number): Stress
   const rows: { label: string; detail: string; base: number; drop: number }[] = [
     {
       label: "Broad market −10%",
-      detail: "A routine correction — these happen most years.",
+      detail: "A routine correction - these happen most years.",
       base: totalValue,
       drop: 0.1,
     },

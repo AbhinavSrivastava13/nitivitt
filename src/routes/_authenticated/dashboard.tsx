@@ -35,8 +35,8 @@ import { FinancialServicesSection } from "@/components/platform/financial-servic
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — NitiVitt" },
-      { name: "description", content: "Where you stand financially — NitiScore™, NitiAge™, Net Worth and your next best move." },
+      { title: "Dashboard - NitiVitt" },
+      { name: "description", content: "Where you stand financially - NitiScore™, NitiAge™, Net Worth and your next best move." },
     ],
   }),
   component: Dashboard,
@@ -263,9 +263,9 @@ function Dashboard() {
                   </div>
                   <p className="mt-3 text-[11px] text-muted-foreground">
                     {score.value >= 750 ? "Excellent overall financial health." :
-                      score.value >= 600 ? "Solid foundation — some pillars still need work." :
-                      score.value >= 400 ? "Under strain — a few high-impact fixes will move you fast." :
-                      "Fragile — focus on protection and buffer first."}
+                      score.value >= 600 ? "Solid foundation - some pillars still need work." :
+                      score.value >= 400 ? "Under strain - a few high-impact fixes will move you fast." :
+                      "Fragile - focus on protection and buffer first."}
                   </p>
                 </>
               }
@@ -324,7 +324,7 @@ function Dashboard() {
                     <div className="h-full bg-warning/70" style={{ width: `${100 - nwAssetsPct}%` }} />
                   </div>
                   <p className="mt-2 text-[11px] text-muted-foreground">
-                    {netWorth.value >= 0 ? "You own more than you owe — keep compounding." : "Liabilities exceed assets — prioritise debt paydown."}
+                    {netWorth.value >= 0 ? "You own more than you owe - keep compounding." : "Liabilities exceed assets - prioritise debt paydown."}
                   </p>
                 </>
               }
@@ -345,9 +345,9 @@ function Dashboard() {
                     <div className="h-full rounded-full bg-secondary transition-[width] duration-700" style={{ width: `${Math.min(100, (Number(emergency.value) / 6) * 100)}%` }} />
                   </div>
                   <p className="mt-2 text-[11px] text-muted-foreground">
-                    {Number(emergency.value) >= 6 ? "Buffer is full — you can invest with confidence."
-                      : Number(emergency.value) >= 3 ? "Partial cover — keep topping up monthly."
-                      : "Below safety line — prioritise the buffer above returns."}
+                    {Number(emergency.value) >= 6 ? "Buffer is full - you can invest with confidence."
+                      : Number(emergency.value) >= 3 ? "Partial cover - keep topping up monthly."
+                      : "Below safety line - prioritise the buffer above returns."}
                   </p>
                 </>
               }
@@ -583,7 +583,7 @@ function NitiGuideCard() {
         <Link to="/ai-coach" className="text-[11px] font-semibold text-primary hover:underline">Full briefing →</Link>
       </div>
       <p className="mt-3 font-display text-lg text-foreground">Your financial briefing.</p>
-      <p className="mt-1 text-[11px] text-muted-foreground">A calm read on where you stand — from your NitiCore™ snapshot.</p>
+      <p className="mt-1 text-[11px] text-muted-foreground">A calm read on where you stand - from your NitiCore™ snapshot.</p>
 
       <div className="relative mt-4">
         <div className="max-h-[220px] overflow-hidden pr-1">
@@ -707,7 +707,7 @@ function MetricDialog({
         {kind === "score" && (
           <>
             <DialogHeader>
-              <DialogTitle className="font-display text-2xl">NitiScore™ — {score.value}/1000 · Grade {score.grade}</DialogTitle>
+              <DialogTitle className="font-display text-2xl">NitiScore™ - {score.value}/1000 · Grade {score.grade}</DialogTitle>
               <DialogDescription>Measure of overall financial health across six pillars.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -737,7 +737,7 @@ function MetricDialog({
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions that will raise your score</p>
                   <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-foreground">
-                    {topRecs.map((r) => <li key={r.id}>{r.title} — <span className="text-muted-foreground">{r.nextAction}</span></li>)}
+                    {topRecs.map((r) => <li key={r.id}>{r.title} - <span className="text-muted-foreground">{r.nextAction}</span></li>)}
                   </ul>
                 </div>
               )}
@@ -754,7 +754,7 @@ function MetricDialog({
         {kind === "networth" && (
           <>
             <DialogHeader>
-              <DialogTitle className="font-display text-2xl">Net Worth — {formatINR(netWorth.value)}</DialogTitle>
+              <DialogTitle className="font-display text-2xl">Net Worth - {formatINR(netWorth.value)}</DialogTitle>
               <DialogDescription>Everything you own minus everything you owe.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3 text-sm">
@@ -773,7 +773,7 @@ function MetricDialog({
         {kind === "emergency" && (
           <>
             <DialogHeader>
-              <DialogTitle className="font-display text-2xl">Emergency Fund — {Number(emergency.value).toFixed(1)} months</DialogTitle>
+              <DialogTitle className="font-display text-2xl">Emergency Fund - {Number(emergency.value).toFixed(1)} months</DialogTitle>
               <DialogDescription>How many months of essential expenses you can cover without income.</DialogDescription>
             </DialogHeader>
             <div className="space-y-3 text-sm">
@@ -924,7 +924,7 @@ function ServiceGridCard({
             <p className={`mt-1 font-display text-2xl font-semibold leading-tight ${ratingCls}`}>{ratingText}</p>
           ) : (
             <div className="mt-1 flex items-baseline gap-1.5">
-              <span className="font-display text-3xl font-semibold leading-none text-foreground">{score ?? "—"}</span>
+              <span className="font-display text-3xl font-semibold leading-none text-foreground">{score ?? "-"}</span>
               <span className="text-xs text-muted-foreground">/ 100</span>
             </div>
           )}
@@ -1008,7 +1008,7 @@ function DashboardSkeleton() {
   );
 }
 
-/* ─────────────── NitiAge™ — actionable detail ─────────────── */
+/* ─────────────── NitiAge™ - actionable detail ─────────────── */
 
 /**
  * Presentation-only interpretation of NitiAge. No calculation is changed:
@@ -1059,11 +1059,11 @@ function NitiAgeDetail({
   const fixCopy: Record<string, { what: string; unlock: string }> = {
     "Emergency buffer": {
       what: `Park ${formatINR(Math.max(0, input.monthlyExpenses * 3 - input.liquidAssets))} in a liquid fund or sweep-in FD until you hold at least 3 months of expenses (${formatINR(input.monthlyExpenses * 3)}).`,
-      unlock: "A funded buffer removes the need to break investments or borrow when income pauses — and is worth up to 3 years off your NitiAge.",
+      unlock: "A funded buffer removes the need to break investments or borrow when income pauses - and is worth up to 3 years off your NitiAge.",
     },
     "Savings rate": {
       what: `Automate a further ${formatINR(Math.max(0, Math.round(input.monthlyIncome * 0.2 - (input.monthlyIncome - input.monthlyExpenses))))} a month on salary day to lift your savings rate past 20%.`,
-      unlock: "Each percentage point of savings rate buys back time — it shortens every goal timeline without touching your lifestyle later.",
+      unlock: "Each percentage point of savings rate buys back time - it shortens every goal timeline without touching your lifestyle later.",
     },
     "Debt load": {
       what: `Prepay the highest-rate loan until EMIs fall below ${formatINR(Math.round(input.monthlyIncome * 0.3))} a month (30% of income).`,
@@ -1072,8 +1072,8 @@ function NitiAgeDetail({
     Protection: {
       what: bothCover
         ? "Review sum assured against your current income."
-        : `Buy the missing cover — ${!input.hasTermInsurance ? `term cover of about ${formatINR(input.monthlyIncome * 12 * 12)}` : ""}${!input.hasTermInsurance && !input.hasHealthInsurance ? " and " : ""}${!input.hasHealthInsurance ? "a family floater health policy" : ""}.`,
-      unlock: "Protection stops one hospital bill or income shock from undoing years of saving — the cheapest 2 years you will ever take off your NitiAge.",
+        : `Buy the missing cover - ${!input.hasTermInsurance ? `term cover of about ${formatINR(input.monthlyIncome * 12 * 12)}` : ""}${!input.hasTermInsurance && !input.hasHealthInsurance ? " and " : ""}${!input.hasHealthInsurance ? "a family floater health policy" : ""}.`,
+      unlock: "Protection stops one hospital bill or income shock from undoing years of saving - the cheapest 2 years you will ever take off your NitiAge.",
     },
   };
   const fix = worstLever ? fixCopy[worstLever.label] : undefined;
@@ -1084,7 +1084,7 @@ function NitiAgeDetail({
     <>
       <DialogHeader>
         <DialogTitle className="font-display text-2xl">
-          NitiAge™ — {nitiAge.value} yrs
+          NitiAge™ - {nitiAge.value} yrs
           <span className={`ml-2 align-middle text-xs font-semibold uppercase tracking-[0.14em] ${dir === "ahead" ? "text-secondary" : dir === "behind" ? "text-warning" : "text-muted-foreground"}`}>
             {dir === "ahead" ? `${dy} yr${dy === 1 ? "" : "s"} ahead` : dir === "behind" ? `${dy} yr${dy === 1 ? "" : "s"} behind` : "on par"}
           </span>
@@ -1100,10 +1100,10 @@ function NitiAgeDetail({
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">What it means</p>
           <p className="mt-1.5 leading-relaxed text-foreground">
             {dir === "ahead"
-              ? `Your finances are behaving like someone younger than you. You carry more flexibility than a typical ${input.ageYears}-year-old — but this is a licence to choose, not to save less.`
+              ? `Your finances are behaving like someone younger than you. You carry more flexibility than a typical ${input.ageYears}-year-old - but this is a licence to choose, not to save less.`
               : dir === "behind"
-                ? `Your habits are running ${dy} year${dy === 1 ? "" : "s"} behind where you are in life, so your financial flexibility today is lower than it should be${worstLever ? ` — mostly ${worstLever.label.toLowerCase()}` : ""}.`
-                : "Your habits sit exactly where they should for your age — steady, with no built-in cushion yet."}
+                ? `Your habits are running ${dy} year${dy === 1 ? "" : "s"} behind where you are in life, so your financial flexibility today is lower than it should be${worstLever ? ` - mostly ${worstLever.label.toLowerCase()}` : ""}.`
+                : "Your habits sit exactly where they should for your age - steady, with no built-in cushion yet."}
           </p>
         </section>
 
@@ -1135,7 +1135,7 @@ function NitiAgeDetail({
             </p>
             <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
               {dir === "behind"
-                ? "Big-ticket decisions — a home, a career break, a business — need more notice and cost more, because there is little buffer between income and obligations."
+                ? "Big-ticket decisions - a home, a career break, a business - need more notice and cost more, because there is little buffer between income and obligations."
                 : surplus > 0
                   ? `Roughly ${formatINR(surplus)} a month is genuinely discretionary. You can point it at a goal, a home down payment or lifestyle without weakening the base.`
                   : "You have room to bring goals forward or take measured equity risk, because your buffer and protection are already carrying the downside."}
@@ -1146,7 +1146,7 @@ function NitiAgeDetail({
             <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">
               {dir === "behind"
                 ? "Any new EMI added before the buffer is rebuilt widens the gap faster than a pay rise closes it."
-                : `Lifestyle inflation is the only real threat — if expenses rise faster than income, your savings rate slips below 30% and this ${dy || ""}-year lead disappears within a year.`}
+                : `Lifestyle inflation is the only real threat - if expenses rise faster than income, your savings rate slips below 30% and this ${dy || ""}-year lead disappears within a year.`}
             </p>
           </div>
         </section>
@@ -1162,7 +1162,7 @@ function NitiAgeDetail({
           <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted-foreground">
             {dir === "behind" && fix
               ? fix.unlock
-              : "This keeps your savings rate flat as income rises — the single habit that holds a NitiAge below actual age over a decade."}
+              : "This keeps your savings rate flat as income rises - the single habit that holds a NitiAge below actual age over a decade."}
           </p>
           <Link to="/recommendations" className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
             See the full NitiPath™ plan <ArrowRight className="h-3 w-3" />

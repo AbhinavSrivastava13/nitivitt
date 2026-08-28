@@ -25,7 +25,7 @@ interface StatusBadgeProps {
 }
 
 /**
- * StatusBadge — single source of truth for scoring/priority/status pills
+ * StatusBadge - single source of truth for scoring/priority/status pills
  * (Grade A, High priority, Needs attention, Stable, etc.).
  */
 export function StatusBadge({

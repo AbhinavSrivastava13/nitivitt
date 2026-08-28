@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "NitiVitt is India's financial guidance platform. Get your NitiScore, plan goals, and make smarter money decisions — transparent, math-backed, never biased.",
+          "NitiVitt is India's financial guidance platform. Get your NitiScore, plan goals, and make smarter money decisions - transparent, math-backed, never biased.",
       },
       { name: "author", content: "NitiVitt" },
       { name: "theme-color", content: "#0B2E5C" },
@@ -93,7 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Know Better. Plan Better. Grow Better. India's financial guidance platform — built on math, not opinions.",
+          "Know Better. Plan Better. Grow Better. India's financial guidance platform - built on math, not opinions.",
       },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "NitiVitt" },
@@ -124,7 +124,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   // Inject runtime Supabase config so the browser client works on any host
   // (Cloudflare Workers, Lovable Cloud, self-hosted) without a rebuild.
-  // On Cloudflare, env comes from the Worker's fetch(env) arg — not process.env.
+  // On Cloudflare, env comes from the Worker's fetch(env) arg - not process.env.
   const runtimeEnv = {
     SUPABASE_URL: getRuntimeEnv("SUPABASE_URL") ?? getRuntimeEnv("VITE_SUPABASE_URL") ?? "",
     SUPABASE_PUBLISHABLE_KEY:

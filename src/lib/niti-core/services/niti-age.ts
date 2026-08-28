@@ -1,5 +1,5 @@
 /**
- * NitiAge™ — Financial Age.
+ * NitiAge™ - Financial Age.
  *
  * Definition: Financial Age = your actual age adjusted by the quality of your
  * money habits (savings rate, emergency buffer, debt load, insurance, investing).

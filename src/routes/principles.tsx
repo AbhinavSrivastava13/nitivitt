@@ -4,7 +4,7 @@ import { PageShell } from "@/components/page-shell";
 export const Route = createFileRoute("/principles")({
   head: () => ({
     meta: [
-      { title: "Our principles — NitiVitt" },
+      { title: "Our principles - NitiVitt" },
       {
         name: "description",
         content:
@@ -37,7 +37,7 @@ function Principles() {
     <PageShell
       eyebrow="Principles"
       title="The non-negotiables."
-      lede="These aren't taglines. They are the constraints we engineer against — the reason NitiVitt looks and behaves the way it does."
+      lede="These aren't taglines. They are the constraints we engineer against - the reason NitiVitt looks and behaves the way it does."
     >
       <div className="grid gap-4 md:grid-cols-2">
         {RULES.map((r, i) => (

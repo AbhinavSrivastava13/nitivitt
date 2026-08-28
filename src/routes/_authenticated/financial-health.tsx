@@ -21,7 +21,7 @@ import { computeJourney } from "@/lib/journey/compute-journey";
 export const Route = createFileRoute("/_authenticated/financial-health")({
   head: () => ({
     meta: [
-      { title: "Financial Health Report — NitiVitt" },
+      { title: "Financial Health Report - NitiVitt" },
       { name: "description", content: "The complete diagnostic. Every metric, formula and assumption behind your NitiScore™." },
     ],
   }),
@@ -49,7 +49,7 @@ function useReportData() {
         countFinancialSnapshots(user.id),
         listFinancialSnapshots(user.id, 2),
       ]);
-      // Use the second-most-recent snapshot as the "previous review" baseline —
+      // Use the second-most-recent snapshot as the "previous review" baseline -
       // the most recent snapshot represents the current state.
       const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
       return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount, previousSnapshot };
@@ -162,7 +162,7 @@ function FinancialHealthReport() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-secondary">Your financial journey</p>
             <p className="mt-2 text-sm text-muted-foreground">
               This is your first recorded review. From your next Review Profile onwards, NitiVitt will track how your
-              NitiScore™, NitiAge™, net worth, emergency fund and debt evolve — so you can see meaningful progress over
+              NitiScore™, NitiAge™, net worth, emergency fund and debt evolve - so you can see meaningful progress over
               months and years, not just today's snapshot.
             </p>
           </section>
@@ -177,7 +177,7 @@ function FinancialHealthReport() {
 
             {journey.deltas.length === 0 ? (
               <p className="mt-3 text-sm text-muted-foreground">
-                Not much has moved since your last review. Steady months are often the foundation of long-term progress —
+                Not much has moved since your last review. Steady months are often the foundation of long-term progress -
                 keep the habits going.
               </p>
             ) : (
@@ -315,7 +315,7 @@ function FinancialHealthReport() {
         <section className="mt-10 rounded-2xl border border-border bg-card p-6">
           <h2 className="font-display text-xl text-foreground">Assumptions used</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            These are the deterministic constants inside the NitiCore™ engine. Every projection uses them — no exceptions.
+            These are the deterministic constants inside the NitiCore™ engine. Every projection uses them - no exceptions.
           </p>
           <dl className="mt-5 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
             <Assumption label="Inflation" value={`${(NITI_CORE_CONFIG.inflation * 100).toFixed(1)}% p.a.`} />

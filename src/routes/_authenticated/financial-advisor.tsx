@@ -30,13 +30,13 @@ import {
 export const Route = createFileRoute("/_authenticated/financial-advisor")({
   head: () => ({
     meta: [
-      { title: "Financial Advisor — Talk to a Fee-Only Expert — NitiVitt" },
+      { title: "Financial Advisor - Talk to a Fee-Only Expert - NitiVitt" },
       {
         name: "description",
         content:
-          "Book a private session with a SEBI-registered, fee-only advisor. Your NitiVitt briefing — NitiScore™, NitiAge™ and top actions — is attached automatically.",
+          "Book a private session with a SEBI-registered, fee-only advisor. Your NitiVitt briefing - NitiScore™, NitiAge™ and top actions - is attached automatically.",
       },
-      { property: "og:title", content: "Financial Advisor — NitiVitt" },
+      { property: "og:title", content: "Financial Advisor - NitiVitt" },
       {
         property: "og:description",
         content:
@@ -384,7 +384,7 @@ function StepDocuments({ draft, setDraft }: StepProps) {
 
       <div className="mt-6 rounded-2xl border border-dashed border-border bg-surface p-8 text-center">
         <Paperclip className="mx-auto h-6 w-6 text-muted-foreground" />
-        <p className="mt-3 text-sm text-foreground">PDF, image, spreadsheet or document — up to {MAX_FILE_MB} MB each</p>
+        <p className="mt-3 text-sm text-foreground">PDF, image, spreadsheet or document - up to {MAX_FILE_MB} MB each</p>
         <p className="mt-1 text-xs text-muted-foreground">
           Stored privately. Only you and the advisor assigned to this request can open them.
         </p>
@@ -655,7 +655,7 @@ function SuccessScreen({
           {confirmation.referenceId}
           {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
         </button>
-        <p className="mt-2 text-xs text-muted-foreground">Your reference ID — quote it in any reply.</p>
+        <p className="mt-2 text-xs text-muted-foreground">Your reference ID - quote it in any reply.</p>
       </div>
 
       <div className="grid gap-6 px-8 py-8 sm:grid-cols-3">

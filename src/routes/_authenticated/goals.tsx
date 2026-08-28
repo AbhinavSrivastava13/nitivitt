@@ -4,13 +4,13 @@ import { PageShell, ModulePlaceholder } from "@/components/page-shell";
 export const Route = createFileRoute("/_authenticated/goals")({
   head: () => ({
     meta: [
-      { title: "Goal planning — NitiVitt" },
+      { title: "Goal planning - NitiVitt" },
       {
         name: "description",
         content:
-          "Plan home, car, education, retirement, and custom goals with transparent math — target, time horizon, monthly SIP, sensitivity.",
+          "Plan home, car, education, retirement, and custom goals with transparent math - target, time horizon, monthly SIP, sensitivity.",
       },
-      { property: "og:title", content: "Goal planning — NitiVitt" },
+      { property: "og:title", content: "Goal planning - NitiVitt" },
       {
         property: "og:description",
         content: "Every goal, broken into target, gap, action, and probability.",
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/goals")({
     >
       <ModulePlaceholder
         module="NitiVitt Goals"
-        description="A goal-first planning engine for home, education, retirement, vacation, business, and fully custom goals. Inputs flow into deterministic formulas — no opinion required."
+        description="A goal-first planning engine for home, education, retirement, vacation, business, and fully custom goals. Inputs flow into deterministic formulas - no opinion required."
         features={[
           "Target amount inflated to your goal year",
           "Existing corpus projected forward at expected return",

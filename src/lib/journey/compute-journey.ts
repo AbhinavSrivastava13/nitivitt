@@ -7,7 +7,7 @@
  *   - human-readable "since last review" lines
  *   - milestone achievements (genuine, boolean-gated)
  *
- * No AI, no I/O — safe to import from client or server code.
+ * No AI, no I/O - safe to import from client or server code.
  */
 import { formatINR } from "@/lib/finance/core";
 
@@ -85,7 +85,7 @@ export function computeJourney(
   const deltas: JourneyDelta[] = [];
   const sinceLastReview: string[] = [];
 
-  // NitiScore — higher is better
+  // NitiScore - higher is better
   if (typeof previous.niti_score === "number") {
     const diff = current.nitiScore - previous.niti_score;
     if (Math.abs(diff) >= 1) {
@@ -107,7 +107,7 @@ export function computeJourney(
     }
   }
 
-  // NitiAge — lower is better
+  // NitiAge - lower is better
   if (typeof previous.niti_age === "number") {
     const diff = current.nitiAge - previous.niti_age;
     if (Math.abs(diff) >= 1) {
@@ -128,7 +128,7 @@ export function computeJourney(
     }
   }
 
-  // Net worth — higher better
+  // Net worth - higher better
   if (typeof previous.net_worth === "number") {
     const diff = current.netWorth - previous.net_worth;
     if (Math.abs(diff) >= 1) {
@@ -149,7 +149,7 @@ export function computeJourney(
     }
   }
 
-  // Emergency months — higher better
+  // Emergency months - higher better
   if (typeof previous.emergency_months === "number") {
     const diff = current.emergencyMonths - previous.emergency_months;
     if (Math.abs(diff) >= 0.2) {
@@ -170,7 +170,7 @@ export function computeJourney(
     }
   }
 
-  // Debt (total liabilities) — lower better
+  // Debt (total liabilities) - lower better
   if (typeof previous.total_liabilities === "number") {
     const diff = current.totalLiabilities - previous.total_liabilities;
     if (Math.abs(diff) >= 1) {
@@ -191,7 +191,7 @@ export function computeJourney(
     }
   }
 
-  // Savings rate — higher better
+  // Savings rate - higher better
   if (typeof previous.savings_rate === "number") {
     const diff = current.savingsRatePct - previous.savings_rate;
     if (Math.abs(diff) >= 0.5) {
@@ -212,7 +212,7 @@ export function computeJourney(
     }
   }
 
-  // Retirement status — categorical improvement
+  // Retirement status - categorical improvement
   if (previous.retirement_status && previous.retirement_status !== current.retirementStatus) {
     const order = ["not_available", "critical", "needs_attention", "on_track"];
     const prevIdx = order.indexOf(previous.retirement_status);

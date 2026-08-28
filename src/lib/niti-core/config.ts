@@ -2,7 +2,7 @@
  * NitiCore™ configuration layer.
  *
  * All financial assumptions live here. Every downstream service reads from
- * `NITI_CORE_CONFIG` — nothing is hardcoded. Tune this file to update the
+ * `NITI_CORE_CONFIG` - nothing is hardcoded. Tune this file to update the
  * whole engine.
  *
  * Values must be reviewed by qualified financial professionals before
@@ -32,7 +32,7 @@ export interface NitiCoreConfig {
     retirement: number;
     investments: number;
   };
-  /** Grade thresholds on the 0–1000 NitiScore */
+  /** Grade thresholds on the 0-1000 NitiScore */
   scoreGrades: { grade: "A+" | "A" | "B" | "C" | "D"; min: number }[];
 }
 

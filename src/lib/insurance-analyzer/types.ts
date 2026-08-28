@@ -1,5 +1,5 @@
 /**
- * Insurance Analyzer V1 — types shared across engine, server functions, UI.
+ * Insurance Analyzer V1 - types shared across engine, server functions, UI.
  *
  * Nothing in this file performs analysis. Deterministic reasoning lives in
  * `engine.ts` and calls NitiCore™ + FinancialContext.
@@ -25,7 +25,7 @@ export const POLICY_TYPE_LABEL: Record<PolicyType, string> = {
 };
 
 /**
- * Extracted policy fields — every field is optional because real policies
+ * Extracted policy fields - every field is optional because real policies
  * rarely surface every attribute. Never invent values; keep them null when
  * absent so the UI can prompt the user to confirm.
  */
@@ -102,7 +102,7 @@ export interface InsuranceRecommendation {
 
 export interface AnalysisReport {
   policyType: PolicyType;
-  protectionScore: number; // 0–100, deterministic
+  protectionScore: number; // 0-100, deterministic
   scoreLabel: string;
   coverageSummary: string[]; // key-value pairs rendered by the UI
   strengths: Finding[];
@@ -110,6 +110,6 @@ export interface AnalysisReport {
   observations: Finding[];
   recommendations: InsuranceRecommendation[];
   contextSummary: string;
-  /** Populated by the AI narration layer — never used for computation. */
+  /** Populated by the AI narration layer - never used for computation. */
   mentorSummary?: string;
 }

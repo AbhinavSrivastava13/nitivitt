@@ -1,12 +1,12 @@
 /**
- * RecommendationCard — canonical NitiVitt recommendation surface.
+ * RecommendationCard - canonical NitiVitt recommendation surface.
  *
  * Per Master Bible §1 Recommendation Philosophy: every recommendation must
  * disclose Recommendation · Reason · Logic · Assumptions · Calculation · Action
  * · Confidence · Priority · Impact · Time Horizon · Risk.
  *
  * This component is the single source of truth for how a recommendation is
- * rendered across the product. AI never composes one — math produces it, this
+ * rendered across the product. AI never composes one - math produces it, this
  * component displays it.
  */
 import { type ReactNode } from "react";
@@ -50,7 +50,7 @@ export function RecommendationCard({ rec, footer }: { rec: Recommendation; foote
           {rec.priority} priority
         </span>
         <span className="text-xs text-muted-foreground">
-          Confidence — {CONFIDENCE_LABEL[rec.confidence]}
+          Confidence - {CONFIDENCE_LABEL[rec.confidence]}
         </span>
       </header>
 

@@ -8,13 +8,13 @@ import type { ArticleSummary } from "@/content/knowledge/types";
 export const Route = createFileRoute("/knowledge/")({
   head: () => ({
     meta: [
-      { title: "Knowledge Hub — NitiVitt" },
+      { title: "Knowledge Hub - NitiVitt" },
       {
         name: "description",
         content:
-          "NitiVitt's financial education library — practical, plain-language articles on investing, insurance, retirement and tax written specifically for Indian households.",
+          "NitiVitt's financial education library - practical, plain-language articles on investing, insurance, retirement and tax written specifically for Indian households.",
       },
-      { property: "og:title", content: "Knowledge Hub — NitiVitt" },
+      { property: "og:title", content: "Knowledge Hub - NitiVitt" },
       { property: "og:description", content: "Practical Indian personal-finance education from NitiVitt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -44,7 +44,7 @@ function KnowledgeHub() {
     <PageShell
       eyebrow="Knowledge Hub"
       title="Learn personal finance, the Indian way."
-      lede="Practical, plain-language articles on investing, insurance, retirement and behaviour — written for Indian households by NitiVitt."
+      lede="Practical, plain-language articles on investing, insurance, retirement and behaviour - written for Indian households by NitiVitt."
     >
       <div className="mb-8 flex flex-wrap gap-2">
         {(["All", ...categories] as const).map((c) => {
@@ -98,7 +98,7 @@ function KnowledgeHub() {
 
       {filtered.length === 0 && (
         <p className="mt-8 rounded-xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
-          No articles in this category yet — check back soon.
+          No articles in this category yet - check back soon.
         </p>
       )}
     </PageShell>

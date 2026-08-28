@@ -1,5 +1,5 @@
 /**
- * Yahoo Finance provider — resolves listed Indian securities to a sector,
+ * Yahoo Finance provider - resolves listed Indian securities to a sector,
  * industry and market-cap band.
  *
  * Two steps:
@@ -23,7 +23,7 @@ export const yahooProvider: MarketDataProvider = {
   id: "yahoo",
   supports: (a) => SUPPORTED.includes(a),
   async enrich({ identifier, name, assetClass }: MarketDataQuery): Promise<HoldingEnrichment | null> {
-    // Step 1 — resolve. The search endpoint already carries sector / industry
+    // Step 1 - resolve. The search endpoint already carries sector / industry
     // for listed equities and needs no session crumb, so it is the primary
     // classification source. quoteSummary is a best-effort enhancement.
     const match = await resolveSecurity(identifier, name);
@@ -46,7 +46,7 @@ export const yahooProvider: MarketDataProvider = {
       }
     }
 
-    // Step 2 — index / gold ETFs carry no company sector. Classify them by the
+    // Step 2 - index / gold ETFs carry no company sector. Classify them by the
     // instrument they track rather than dropping them out of the sector view.
     if (!sector) {
       const fallback = passiveSector(name, identifier, assetClass, quoteType);
@@ -147,7 +147,7 @@ async function fetchProfile(symbol: string): Promise<
 /**
  * Index and commodity ETFs have no company sector. They still represent a real,
  * known exposure, so classify them by the basket they track instead of hiding
- * them from the sector view. Nothing here is estimated — each label is a fact
+ * them from the sector view. Nothing here is estimated - each label is a fact
  * about the instrument itself.
  */
 function passiveSector(

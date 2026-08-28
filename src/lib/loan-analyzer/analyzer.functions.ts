@@ -1,5 +1,5 @@
 /**
- * NitiLoan™ — server functions.
+ * NitiLoan™ - server functions.
  *
  * Deterministic analysis (via engine) + persistence. Optional NitiGuide
  * narration is layered on top; the numbers themselves are always
@@ -197,13 +197,13 @@ async function narrateLoan(report: LoanReport, loan: LoanInput): Promise<string 
     strengths: report.strengths.map((r) => r.title),
     context: report.contextSummary,
   };
-  const system = `You are NitiGuide — an experienced Indian CFP sitting across from a real client discussing ONE of their loans.
+  const system = `You are NitiGuide - an experienced Indian CFP sitting across from a real client discussing ONE of their loans.
 
 Do NOT restate percentages, EMI values or interest savings already shown on the report. Do NOT recommend specific banks or refinance offers. Do NOT predict returns. No bullets, headings, em dashes, or AI-summariser tone.
 
 Write 4 short paragraphs, 2-3 sentences each, in this order:
-1. Frame what kind of debt this is — healthy, neutral or poor — and what that means for their long-term wealth. Educational tone.
-2. Explain the concept behind the prepay-vs-invest verdict in plain language (opportunity cost, risk-adjusted returns) — teach, do not compute.
+1. Frame what kind of debt this is - healthy, neutral or poor - and what that means for their long-term wealth. Educational tone.
+2. Explain the concept behind the prepay-vs-invest verdict in plain language (opportunity cost, risk-adjusted returns) - teach, do not compute.
 3. The single most important behavioural point for this loan: buffer first, EMI discipline, avoiding refinance traps, or not being emotionally attached to being "debt-free" too early.
 4. What order the recommended actions should happen in, and what can safely wait.
 

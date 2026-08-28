@@ -27,7 +27,7 @@ function getCloudflareGlobalEnv(): EnvRecord | undefined {
 
 export function captureRuntimeEnv(env: unknown): void {
   if (env && typeof env === "object") {
-    // Merge — later captures win, but keep previously-seen keys as fallback.
+    // Merge - later captures win, but keep previously-seen keys as fallback.
     capturedEnv = { ...(capturedEnv ?? {}), ...(env as EnvRecord) };
   }
 }

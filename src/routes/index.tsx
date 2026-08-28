@@ -45,12 +45,12 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Most platforms tell you what to invest in. NitiVitt teaches you why — with math, transparency, and zero commissions.",
+          "Most platforms tell you what to invest in. NitiVitt teaches you why - with math, transparency, and zero commissions.",
       },
     ],
   }),
   beforeLoad: async () => {
-    // Authenticated users never see the landing page — send them straight to the app.
+    // Authenticated users never see the landing page - send them straight to the app.
     if (typeof window === "undefined") return;
     const { supabase } = await import("@/integrations/supabase/client");
     const { data } = await supabase.auth.getSession();
@@ -860,7 +860,7 @@ function FAQ() {
     },
     {
       q: "How is the NitiScore™ calculated?",
-      a: "Your NitiScore is a weighted score across six measurable pillars — Savings (20%), Emergency Fund (15%), Insurance (15%), Investments (20%), Debt (15%), and Retirement (15%). Every pillar score, assumption, and calculation is visible in your dashboard.",
+      a: "Your NitiScore is a weighted score across six measurable pillars - Savings (20%), Emergency Fund (15%), Insurance (15%), Investments (20%), Debt (15%), and Retirement (15%). Every pillar score, assumption, and calculation is visible in your dashboard.",
     },
     {
       q: "Will NitiVitt sell my financial data?",
@@ -868,11 +868,11 @@ function FAQ() {
     },
     {
       q: "Do you give specific stock or mutual fund tips?",
-      a: "No. NitiVitt focuses on financial planning — how much to save, where to allocate, when to insure, how to retire. Product selection is your decision, made on your platform of choice.",
+      a: "No. NitiVitt focuses on financial planning - how much to save, where to allocate, when to insure, how to retire. Product selection is your decision, made on your platform of choice.",
     },
     {
       q: "Is it really free?",
-      a: "Yes — the full NitiScore and core planning tools are free today. A premium tier and expert consultations are planned for the future. We will never run on commissions.",
+      a: "Yes - the full NitiScore and core planning tools are free today. A premium tier and expert consultations are planned for the future. We will never run on commissions.",
     },
   ];
   const [open, setOpen] = useState<number | null>(0);
@@ -930,7 +930,7 @@ function FAQ() {
   );
 }
 
-/* Pricing removed — pricing will live inside individual services in future milestones. */
+/* Pricing removed - pricing will live inside individual services in future milestones. */
 
 /* ---------------- FINAL CTA ---------------- */
 

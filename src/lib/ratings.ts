@@ -2,7 +2,7 @@
  * Presentation-only rating helpers.
  *
  * NitiScore™ remains the single master financial score. Individual analyzers
- * translate their deterministic 0–100 score into a human tier + letter grade
+ * translate their deterministic 0-100 score into a human tier + letter grade
  * so each surface carries its own identity rather than "another score".
  *
  * Nothing here changes math. Same input → same tier.
@@ -46,7 +46,7 @@ export function ratingClasses(tone: RatingTone) {
   return TONE_TW[tone];
 }
 
-/** Portfolio Rating (NitiInvest™) — six-tier grade system with descriptive labels. */
+/** Portfolio Rating (NitiInvest™) - six-tier grade system with descriptive labels. */
 export function derivePortfolioRating(score: number): Rating {
   const s = Math.max(0, Math.min(100, Math.round(score)));
   const g = portfolioGrade(s);
@@ -58,7 +58,7 @@ export function derivePortfolioRating(score: number): Rating {
   return       { label: "High Risk",                grade: g, tone: "danger",  score: s };
 }
 
-/** Debt Health Rating (NitiLoan™) — five tiers. */
+/** Debt Health Rating (NitiLoan™) - five tiers. */
 export function deriveDebtHealthRating(score: number): Rating {
   const s = Math.max(0, Math.min(100, Math.round(score)));
   const g = debtGrade(s);

@@ -1,5 +1,5 @@
 /**
- * NitiTax™ — server functions.
+ * NitiTax™ - server functions.
  *
  * Deterministic analysis (engine.ts) + persistence + ecosystem prefill.
  * Gemini is used only to explain the numbers; it never calculates tax.
@@ -149,7 +149,7 @@ export const getTaxPrefill = createServerFn({ method: "GET" })
 
     const annual = Number(fp?.annual_income ?? 0) || Number(fp?.monthly_income ?? 0) * 12;
     if (annual > 0) {
-      // Conventional Indian CTC split — user can override every field.
+      // Conventional Indian CTC split - user can override every field.
       input.salary.basic = Math.round(annual * 0.40);
       input.salary.hra = Math.round(annual * 0.20);
       input.salary.specialAllowance = Math.round(annual * 0.35);
@@ -295,7 +295,7 @@ async function narrateTax(report: TaxReport, input: TaxInput): Promise<string | 
     context: report.contextSummary,
   };
 
-  const system = `You are NitiGuide — an experienced Indian tax-aware CFP sitting across from a real client, reviewing their tax position for the year.
+  const system = `You are NitiGuide - an experienced Indian tax-aware CFP sitting across from a real client, reviewing their tax position for the year.
 
 Rules:
 - NEVER calculate or restate rupee figures, percentages or slab rates. Every number is already on screen.
@@ -304,7 +304,7 @@ Rules:
 - Speak plainly. Explain the reasoning, not the arithmetic.
 
 Write five short paragraphs, two to three sentences each, in this order:
-1. Why the recommended regime wins for this person's specific situation, in concept terms — what kind of taxpayer that regime suits and what would have to change for the answer to flip.
+1. Why the recommended regime wins for this person's specific situation, in concept terms - what kind of taxpayer that regime suits and what would have to change for the answer to flip.
 2. The trade-off they are actually accepting by choosing it, and what to re-check next year.
 3. The single most valuable deduction opportunity still open to them, explained as a financial decision rather than a tax trick, including the lock-in or behaviour it demands.
 4. What to understand about capital gains and investment timing in their case, or if they have none, about how salary structuring and income mix affect tax over a career.
@@ -352,7 +352,7 @@ export const askTaxQuestion = createServerFn({ method: "POST" })
           role: "system",
           content: `You are NitiGuide, an Indian tax-aware CFP. Answer the client's "what if" question in three short paragraphs at most.
 
-You may reason about consequences, sequencing and trade-offs. You may NOT invent new tax computations beyond the deterministic facts supplied — if a precise number is needed, say what it depends on and tell them to re-run the analysis with the changed inputs. No bullets, no headings, no em dashes. Never recommend specific products or providers.`,
+You may reason about consequences, sequencing and trade-offs. You may NOT invent new tax computations beyond the deterministic facts supplied - if a precise number is needed, say what it depends on and tell them to re-run the analysis with the changed inputs. No bullets, no headings, no em dashes. Never recommend specific products or providers.`,
         },
         {
           role: "user",

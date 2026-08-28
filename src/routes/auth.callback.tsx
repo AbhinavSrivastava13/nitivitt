@@ -8,7 +8,7 @@ import { SiteFooter } from "@/components/site-footer";
 export const Route = createFileRoute("/auth/callback")({
   head: () => ({
     meta: [
-      { title: "Signing in — NitiVitt" },
+      { title: "Signing in - NitiVitt" },
       { name: "description", content: "Completing your secure NitiVitt sign-in." },
     ],
   }),

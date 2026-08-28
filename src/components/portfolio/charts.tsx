@@ -1,5 +1,5 @@
 /**
- * NitiInvest™ visualization system — powered by recharts.
+ * NitiInvest™ visualization system - powered by recharts.
  *
  * Design principle: different question → different visualisation.
  *   Comparison    → grouped horizontal bars
@@ -31,18 +31,18 @@ import {
   Treemap,
 } from "recharts";
 
-/** Semantic series colours — one meaning per colour, used sparingly. */
+/** Semantic series colours - one meaning per colour, used sparingly. */
 export const SERIES_COLORS = {
-  you: "#3f4d75", // current user position — calm slate-indigo
-  recommended: "#0d9488", // scenario / alternative series — teal
-  nitiCore: "#9c8355", // NitiCore™ recommendation — muted champagne
+  you: "#3f4d75", // current user position - calm slate-indigo
+  recommended: "#0d9488", // scenario / alternative series - teal
+  nitiCore: "#9c8355", // NitiCore™ recommendation - muted champagne
   positive: "#15803d",
   attention: "#b45309",
   action: "#b91c1c",
   peer: "#8b7f5e",
 };
 
-/** Restrained composition palette — differentiated without being loud. */
+/** Restrained composition palette - differentiated without being loud. */
 export const CHART_PALETTE = [
   "#3f4d75",
   "#0d9488",
@@ -108,7 +108,7 @@ export function NoData({ children }: { children?: React.ReactNode }) {
   );
 }
 
-/* ───────────────── COMPARISON — You vs NitiCore™ ───────────────── */
+/* ───────────────── COMPARISON - You vs NitiCore™ ───────────────── */
 
 export function ComparisonBars({
   rows,
@@ -192,7 +192,7 @@ export function ComparisonBars({
   );
 }
 
-/* ───────────────── COMPOSITION — donut ───────────────── */
+/* ───────────────── COMPOSITION - donut ───────────────── */
 
 export function AllocationDonut({
   slices,
@@ -280,7 +280,7 @@ export function AllocationDonut({
   );
 }
 
-/* ───────────────── CONCENTRATION — ranked bars ───────────────── */
+/* ───────────────── CONCENTRATION - ranked bars ───────────────── */
 
 export function ConcentrationBars({
   rows,
@@ -385,7 +385,7 @@ export function ConcentrationBars({
   );
 }
 
-/* ───────────────── STACKED COMPOSITION — market cap ───────────────── */
+/* ───────────────── STACKED COMPOSITION - market cap ───────────────── */
 
 export function StackedComposition({
   slices,
@@ -410,7 +410,7 @@ export function StackedComposition({
             key={s.label}
             onMouseEnter={() => setActive(s.label)}
             onMouseLeave={() => setActive(null)}
-            title={`${s.label} — ${s.pct}%`}
+            title={`${s.label} - ${s.pct}%`}
             style={{
               width: `${s.pct}%`,
               background: CHART_PALETTE[i % CHART_PALETTE.length],
@@ -454,7 +454,7 @@ export function StackedComposition({
   );
 }
 
-/* ───────────────── SECTOR — treemap ───────────────── */
+/* ───────────────── SECTOR - treemap ───────────────── */
 
 interface TreemapNodeProps {
   x?: number;
@@ -627,7 +627,7 @@ export function ThresholdMarker({
   );
 }
 
-/* ───────────────── PROJECTION — interactive line chart ───────────────── */
+/* ───────────────── PROJECTION - interactive line chart ───────────────── */
 
 export function ProjectionChart({
   data,
@@ -692,7 +692,7 @@ export function ProjectionChart({
   );
 }
 
-/* ───────────────── CONCENTRATION — editorial ladder ───────────────── */
+/* ───────────────── CONCENTRATION - editorial ladder ───────────────── */
 
 /**
  * Holdings distribution, presented as an editorial ranked ladder rather than a
@@ -810,7 +810,7 @@ export function ConcentrationLadder({
   );
 }
 
-/* ───────────────── COMPARISON — paired allocation tracks ───────────────── */
+/* ───────────────── COMPARISON - paired allocation tracks ───────────────── */
 
 /**
  * Allocation comparison as paired horizontal tracks on a single rail: the
@@ -895,7 +895,7 @@ export function ComparisonTracks({
 }
 
 
-/* ───────────────── EXPOSURE — overlap composition ───────────────── */
+/* ───────────────── EXPOSURE - overlap composition ───────────────── */
 
 export interface ExposureGroup {
   label: string;
@@ -906,7 +906,7 @@ export interface ExposureGroup {
 
 /**
  * What actually drives the portfolio: holdings collapsed into the exposure
- * they share. A single composition rail plus the contributing positions —
+ * they share. A single composition rail plus the contributing positions -
  * deliberately not another bar chart.
  */
 export function ExposureOverlap({
@@ -929,7 +929,7 @@ export function ExposureOverlap({
             key={g.label}
             onMouseEnter={() => setActive(g.label)}
             onMouseLeave={() => setActive(null)}
-            title={`${g.label} — ${g.pct}%`}
+            title={`${g.label} - ${g.pct}%`}
             style={{
               width: `${g.pct}%`,
               background: CHART_PALETTE[i % CHART_PALETTE.length],
@@ -982,7 +982,7 @@ export function ExposureOverlap({
   );
 }
 
-/* ───────────────── EFFECTIVENESS — dial ───────────────── */
+/* ───────────────── EFFECTIVENESS - dial ───────────────── */
 
 /**
  * A single large deterministic score. Deliberately typographic: one arc, one
@@ -1047,7 +1047,7 @@ export function EffectivenessDial({
   );
 }
 
-/* ───────────────── NITISIM™ — scenario matrix ───────────────── */
+/* ───────────────── NITISIM™ - scenario matrix ───────────────── */
 
 /**
  * Each cell shows the projected outcome for a contribution/return combination,
@@ -1076,7 +1076,7 @@ export function ScenarioMatrix({
   const hi = Math.max(...values);
   const shade = (v: number) => {
     const t = hi === lo ? 0.35 : (v - lo) / (hi - lo);
-    // Restrained single-hue ramp — no traffic lights.
+    // Restrained single-hue ramp - no traffic lights.
     return `color-mix(in oklab, ${SERIES_COLORS.you} ${Math.round(8 + t * 40)}%, var(--card))`;
   };
   return (
@@ -1112,7 +1112,7 @@ export function ScenarioMatrix({
                 style={{ background: shade(cell?.projected ?? 0) }}
               >
                 <span className="block font-mono text-[12.5px] font-semibold tabular-nums text-foreground">
-                  {cell ? formatValue(cell.projected) : "—"}
+                  {cell ? formatValue(cell.projected) : "-"}
                 </span>
                 <span className="mt-0.5 block font-mono text-[10px] tabular-nums text-muted-foreground">
                   {cell ? `${cell.score}/100` : ""}
@@ -1127,7 +1127,7 @@ export function ScenarioMatrix({
 }
 
 
-/* ───────────────── STRESS — scenario rails ───────────────── */
+/* ───────────────── STRESS - scenario rails ───────────────── */
 
 export function StressScenarios({
   rows,
@@ -1167,7 +1167,7 @@ export function StressScenarios({
   );
 }
 
-/* ───────────────── PEER — paired comparison rails ───────────────── */
+/* ───────────────── PEER - paired comparison rails ───────────────── */
 
 /**
  * Compact peer comparison table: metric, your value against the cohort value on
@@ -1251,12 +1251,12 @@ export function PeerRails({
 }
 
 
-/* ───────────────── STRESS — drawdown ladder ───────────────── */
+/* ───────────────── STRESS - drawdown ladder ───────────────── */
 
 /**
  * Premium stress visualisation: one rail per scenario where the shaded band is
  * the value that survives the fall and the notched segment is the loss. Numbers
- * lead, explanation follows. Same data as StressScenarios — presentation only.
+ * lead, explanation follows. Same data as StressScenarios - presentation only.
  */
 export function StressWaterfall({
   rows,
@@ -1334,7 +1334,7 @@ export function StressWaterfall({
   );
 }
 
-/* ───────────────── HEALTH — compact semicircular gauge ───────────────── */
+/* ───────────────── HEALTH - compact semicircular gauge ───────────────── */
 
 export function HealthGauge({
   score,

@@ -1,9 +1,9 @@
 /**
- * Services catalog — the SINGLE SOURCE OF TRUTH for NitiVitt service metadata.
+ * Services catalog - the SINGLE SOURCE OF TRUTH for NitiVitt service metadata.
  *
  * Homepage, Dashboard, /services, /services/$slug and the navbar all read from
  * here. Never hard-code a service name, tagline, icon, status or CTA anywhere
- * else — add it to this file instead.
+ * else - add it to this file instead.
  */
 import { Sparkles, ShieldCheck, BarChart3, Landmark, Receipt } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -30,7 +30,7 @@ export interface Service {
   icon: LucideIcon;
   appRoute: ServiceAppRoute;
   featured?: boolean;
-  /** One-line card copy — short, used in the grid on Home + Dashboard. */
+  /** One-line card copy - short, used in the grid on Home + Dashboard. */
   cardDescription: string;
   /** CTA shown to a signed-in user with no data yet. */
   ctaEmpty: string;

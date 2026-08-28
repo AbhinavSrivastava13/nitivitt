@@ -3,7 +3,7 @@ import type { Article } from "../types";
 export const commonMistakes: Article = {
   slug: "common-mistakes",
   title: "Common Personal Finance Mistakes in India",
-  subtitle: "The recurring patterns that quietly cost Indian households years of compounding — and what to do instead.",
+  subtitle: "The recurring patterns that quietly cost Indian households years of compounding - and what to do instead.",
   category: "Behaviour",
   readingMinutes: 7,
   updatedAt: "2026-06-05",
@@ -19,12 +19,12 @@ export const commonMistakes: Article = {
     {
       heading: "Buying ULIPs and endowment plans as investments",
       body:
-        "Insurance-cum-investment products in India (ULIPs, endowment, money-back) exist to pay large agent commissions, not to serve the buyer. They give inadequate cover, mediocre returns (5–6% typical over 20 years), and punish early exit.\n\nRule: buy pure term insurance separately, buy mutual funds separately. Never mix.",
+        "Insurance-cum-investment products in India (ULIPs, endowment, money-back) exist to pay large agent commissions, not to serve the buyer. They give inadequate cover, mediocre returns (5-6% typical over 20 years), and punish early exit.\n\nRule: buy pure term insurance separately, buy mutual funds separately. Never mix.",
     },
     {
       heading: "Investing without an emergency fund",
       body:
-        "Starting SIPs while having zero months of buffer is putting the roof up before the foundation. The first serious emergency will force you to sell equity — often at a loss — and undo months of contribution.\n\nBuild 3 months of essentials before starting SIPs. Push to 6 months alongside.",
+        "Starting SIPs while having zero months of buffer is putting the roof up before the foundation. The first serious emergency will force you to sell equity - often at a loss - and undo months of contribution.\n\nBuild 3 months of essentials before starting SIPs. Push to 6 months alongside.",
     },
     {
       heading: "Chasing last year's best fund",
@@ -34,12 +34,12 @@ export const commonMistakes: Article = {
     {
       heading: "Over-allocating to gold, real estate and FDs",
       body:
-        "Indian households on average hold too much in physical gold, illiquid real estate and FDs — and too little in equity. That's cultural.\n\nGold and property are fine as a slice of the pie (5–15% each). But if 70% of your net worth is one flat and jewellery, and only 10% is compounding in equity, you'll fall behind inflation. Diversify.",
+        "Indian households on average hold too much in physical gold, illiquid real estate and FDs - and too little in equity. That's cultural.\n\nGold and property are fine as a slice of the pie (5-15% each). But if 70% of your net worth is one flat and jewellery, and only 10% is compounding in equity, you'll fall behind inflation. Diversify.",
     },
     {
       heading: "Taking large home loans early",
       body:
-        "Bank underwriting will happily lend you 5–6× annual income. Your discipline should stop well earlier. An EMI at 45% of income leaves no room for retirement, emergencies or kids' education — the very things a house is supposed to provide stability for.\n\nCap EMI at 30% of gross income. Ideally lower.",
+        "Bank underwriting will happily lend you 5-6× annual income. Your discipline should stop well earlier. An EMI at 45% of income leaves no room for retirement, emergencies or kids' education - the very things a house is supposed to provide stability for.\n\nCap EMI at 30% of gross income. Ideally lower.",
     },
     {
       heading: "Stopping SIPs during a market crash",
@@ -49,7 +49,7 @@ export const commonMistakes: Article = {
     {
       heading: "Ignoring inflation on 'safe' investments",
       body:
-        "A 7% FD after 30% tax nets 4.9%. Inflation is 5–6%. Real return is roughly zero — sometimes negative. FDs are correct for short-term certainty but wrong for retirement or 15-year goals.\n\nMatch the tool to the horizon, not to your comfort with volatility.",
+        "A 7% FD after 30% tax nets 4.9%. Inflation is 5-6%. Real return is roughly zero - sometimes negative. FDs are correct for short-term certainty but wrong for retirement or 15-year goals.\n\nMatch the tool to the horizon, not to your comfort with volatility.",
     },
     {
       heading: "Treating tax saving as an investment strategy",

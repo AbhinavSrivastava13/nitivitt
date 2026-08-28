@@ -1,5 +1,5 @@
 /**
- * Insurance Analyzer V2 — portfolio-level deterministic analysis.
+ * Insurance Analyzer V2 - portfolio-level deterministic analysis.
  *
  * Consumes a set of saved policies + the user's NitiCore financial context
  * and produces an overall Protection Summary: totals per coverage line,
@@ -28,7 +28,7 @@ export interface PortfolioPolicy {
 }
 
 export interface PortfolioSummary {
-  protectionScore: number; // 0–100
+  protectionScore: number; // 0-100
   scoreLabel: string;
   totalLifeCover: number;
   totalHealthCover: number;
@@ -129,7 +129,7 @@ export function analyzePortfolio(
         priority: "high",
         reason: "Term insurance is the single largest protection lever for a household with dependents.",
         expectedBenefit: `Replaces ${inr(recommendedTerm)} of income for your family if you are not around.`,
-        tradeOffs: ["Annual premium (typically 0.1–0.2% of cover in your 30s)."],
+        tradeOffs: ["Annual premium (typically 0.1-0.2% of cover in your 30s)."],
         financialImpact: `Adds ${inr(recommendedTerm)} of income-replacement capacity.`,
       });
     } else if (totalLifeCover < recommendedTerm * 0.7) {
@@ -164,14 +164,14 @@ export function analyzePortfolio(
         severity: "observation",
         title: "Only endowment / ULIP life cover detected",
         detail:
-          "Endowment and ULIP policies mix insurance with investment — the cover component is usually much smaller than the term-insurance benchmark. Adding a pure term policy is typically the most cost-effective step.",
+          "Endowment and ULIP policies mix insurance with investment - the cover component is usually much smaller than the term-insurance benchmark. Adding a pure term policy is typically the most cost-effective step.",
       });
     }
   } else if (!coverage.hasTerm) {
     observations.push({
       id: "no-term-no-dep",
       severity: "observation",
-      title: "No life cover — acceptable with no dependents",
+      title: "No life cover - acceptable with no dependents",
       detail: "Priority sits with health and personal-accident cover. Revisit term when your responsibilities change.",
     });
   }
@@ -226,7 +226,7 @@ export function analyzePortfolio(
       severity: "observation",
       title: "Multiple base health policies detected",
       detail:
-        "Holding several base health policies for the same members rarely doubles protection — insurers coordinate claims. Consider consolidating into one strong base + a super top-up.",
+        "Holding several base health policies for the same members rarely doubles protection - insurers coordinate claims. Consider consolidating into one strong base + a super top-up.",
     });
   }
 
@@ -288,7 +288,7 @@ export function analyzePortfolio(
       id: "premium-load-heavy",
       severity: "observation",
       title: "Annual insurance premium is high relative to income",
-      detail: `Combined premium of ${inr(totalPremium)} is ${((totalPremium / annualIncome) * 100).toFixed(1)}% of annual income. Above 6–8% typically signals endowment / ULIP-heavy portfolios worth reviewing.`,
+      detail: `Combined premium of ${inr(totalPremium)} is ${((totalPremium / annualIncome) * 100).toFixed(1)}% of annual income. Above 6-8% typically signals endowment / ULIP-heavy portfolios worth reviewing.`,
     });
   }
 

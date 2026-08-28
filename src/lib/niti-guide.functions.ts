@@ -1,5 +1,5 @@
 /**
- * NitiGuide™ — the explanation layer.
+ * NitiGuide™ - the explanation layer.
  *
  * NitiGuide NEVER performs financial calculations. It only translates the
  * deterministic outputs of NitiCore™ into plain-language explanations.
@@ -68,7 +68,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
     const insAnalyses = (insAnalysesRes.data ?? []) as { protection_score: number; last_reviewed_at: string }[];
     const portAnalyses = (portAnalysesRes.data ?? []) as { portfolio_score: number; total_value: number | string | null; last_reviewed_at: string }[];
 
-    // 2) Compute deterministic outputs — the single source of truth.
+    // 2) Compute deterministic outputs - the single source of truth.
     const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
     const liquidAssets = assets
       .filter((a) => a.is_liquid)
@@ -172,7 +172,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
       goals: goals.slice(0, 5).map((g) => ({ name: g.name, target: Number(g.target_amount ?? 0), progress: Number(g.current_progress ?? 0), targetDate: g.target_date })),
     };
 
-    // 4) Call the AI layer (Lovable Gateway or Gemini direct — auto-detected).
+    // 4) Call the AI layer (Lovable Gateway or Gemini direct - auto-detected).
     const { callAiChat, isAiConfigured } = await import("@/lib/ai-gateway");
     if (!isAiConfigured()) {
       return {
@@ -183,7 +183,7 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
 
     const systemPrompt = `You are NitiGuide, the AI explanation layer of NitiVitt, India's financial guidance platform.
 
-Rules — non-negotiable:
+Rules - non-negotiable:
 1. You NEVER compute or recalculate anything. Every number below is authoritative and was produced by the NitiCore deterministic engine.
 2. You NEVER invent recommendations. Only reference the "topActions" provided.
 3. You NEVER quote a number that isn't in the input JSON.
@@ -191,12 +191,12 @@ Rules — non-negotiable:
 5. Explain WHY each number matters, not just what it is. Reference Indian financial context (SIP, EPF, ELSS, term cover multiples).
 6. Address the user by first name once, naturally.
 7. Do not use headings, markdown tables, or emojis. Do use short paragraphs.
-8. Aim for 120-180 words unless the focus is "overview" — then 180-240.
-9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference them by name. When talking about the portfolio, always say "Portfolio Rating" (Excellent, Strong, Balanced, Needs Attention, High Risk) — never "portfolio score" or a raw /100 number. If a loan section is discussed, always say "Debt Health Rating" (Healthy, Stable, Watchlist, Stressed, Critical) — never "loan health score". Connect the ratings to the wider picture — e.g. a Strong Portfolio Rating alongside a protection gap, or a Healthy Debt Health Rating freeing room to invest.`;
+8. Aim for 120-180 words unless the focus is "overview" - then 180-240.
+9. If "analyzers.nitiSure" or "analyzers.nitiInvest" is present, reference them by name. When talking about the portfolio, always say "Portfolio Rating" (Excellent, Strong, Balanced, Needs Attention, High Risk) - never "portfolio score" or a raw /100 number. If a loan section is discussed, always say "Debt Health Rating" (Healthy, Stable, Watchlist, Stressed, Critical) - never "loan health score". Connect the ratings to the wider picture - e.g. a Strong Portfolio Rating alongside a protection gap, or a Healthy Debt Health Rating freeing room to invest.`;
 
     const userPrompt = data.question
       ? `The user asks: "${data.question}"\n\nAnswer using ONLY the authoritative NitiCore JSON below. If the answer requires numbers not present, say so honestly and suggest opening NitiSim.\n\n${JSON.stringify(structured, null, 2)}`
-      : `Explain the user's financial situation with focus="${data.focus}". Use this authoritative JSON exactly — do not modify any number:\n\n${JSON.stringify(structured, null, 2)}`;
+      : `Explain the user's financial situation with focus="${data.focus}". Use this authoritative JSON exactly - do not modify any number:\n\n${JSON.stringify(structured, null, 2)}`;
 
     const result = await callAiChat({
       messages: [
@@ -224,11 +224,11 @@ function fallbackExplanation(s: {
 }): string {
   const m = s.metrics;
   const first = s.topActions[0];
-  return `Hi ${s.firstName}. Your NitiScore is ${m.nitiScore.value}/1000 (grade ${m.nitiScore.grade}), and your financial age is ${m.nitiAge.value} vs. your actual ${m.nitiAge.actual}. You're currently saving about ${Math.round(m.savingsRatePct)}% of income, with ${m.emergencyMonths.toFixed(1)} months of expenses set aside for emergencies. ${first ? `The most valuable next move is: ${first.title} — ${first.nextAction}` : "You're in a stable position — keep automating your savings."} NitiGuide is temporarily offline, so this is a straight-from-the-numbers summary. Full explanations resume shortly.`;
+  return `Hi ${s.firstName}. Your NitiScore is ${m.nitiScore.value}/1000 (grade ${m.nitiScore.grade}), and your financial age is ${m.nitiAge.value} vs. your actual ${m.nitiAge.actual}. You're currently saving about ${Math.round(m.savingsRatePct)}% of income, with ${m.emergencyMonths.toFixed(1)} months of expenses set aside for emergencies. ${first ? `The most valuable next move is: ${first.title} - ${first.nextAction}` : "You're in a stable position - keep automating your savings."} NitiGuide is temporarily offline, so this is a straight-from-the-numbers summary. Full explanations resume shortly.`;
 }
 
 /**
- * NitiGuide™ briefing — the "elder-brother explanation".
+ * NitiGuide™ briefing - the "elder-brother explanation".
  *
  * Not a chatbot. Given the user's real NitiCore snapshot, this returns a
  * warm, mentor-style briefing in markdown covering:
@@ -419,35 +419,35 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       return { markdown: briefingFallback(payload), source: "fallback", generatedAt: new Date().toISOString() };
     }
 
-    const systemPrompt = `You are NitiGuide, the "trusted mentor" financial reviewer inside NitiVitt. You are NOT a chatbot — you produce a personalised written briefing the user reads once, like a thoughtful review from an experienced Indian financial planner sitting across the table.
+    const systemPrompt = `You are NitiGuide, the "trusted mentor" financial reviewer inside NitiVitt. You are NOT a chatbot - you produce a personalised written briefing the user reads once, like a thoughtful review from an experienced Indian financial planner sitting across the table.
 
 Non-negotiable rules:
 1. Every number you cite MUST come from the JSON provided. You NEVER invent, estimate, or recalculate.
-2. Do NOT restate the dashboard verbatim (avoid "your score is X, your age is Y" openers). Interpret the pattern — what it says about how the user actually behaves with money.
+2. Do NOT restate the dashboard verbatim (avoid "your score is X, your age is Y" openers). Interpret the pattern - what it says about how the user actually behaves with money.
 3. Do NOT just repeat the NitiPath™ action titles. Explain WHY each of the top 3 matters for THIS person and what genuinely improves if they act.
 4. Warm, professional, encouraging. No sales language. No emojis. No H1/H2 markdown headings. Use **bold section labels** inline at the start of each paragraph.
 5. Respect Indian context: joint families, dependents, salaried vs self-employed, EMI culture, FD/gold bias, PPF/EPF/ELSS/SIP behaviour, insurance under-coverage, retirement anxiety.
 6. Address them by first name once, near the start.
 7. Return Markdown paragraphs, no JSON, no code fences.
-8. If "analyzers.nitiSure" is present, weave in the NitiSure™ protection score and what it says about their insurance layer. If "analyzers.nitiInvest" is present, refer to it as their **Portfolio Rating** (e.g. Excellent, Strong, Balanced, Needs Attention, High Risk) — never a raw score or /100 number. If loan analyses are present, refer to their **Debt Health Rating** (Healthy, Stable, Watchlist, Stressed, Critical) — never "loan health score". When multiple ratings are present, connect them — a Strong Portfolio Rating with weak protection is a very different picture from balanced strength across both.
+8. If "analyzers.nitiSure" is present, weave in the NitiSure™ protection score and what it says about their insurance layer. If "analyzers.nitiInvest" is present, refer to it as their **Portfolio Rating** (e.g. Excellent, Strong, Balanced, Needs Attention, High Risk) - never a raw score or /100 number. If loan analyses are present, refer to their **Debt Health Rating** (Healthy, Stable, Watchlist, Stressed, Critical) - never "loan health score". When multiple ratings are present, connect them - a Strong Portfolio Rating with weak protection is a very different picture from balanced strength across both.
 
-Structure — use these six sections in order, each 2–4 sentences:
+Structure - use these six sections in order, each 2-4 sentences:
 
 **Overall assessment.** A calm, honest read of where they stand and what the numbers together say. Not a metric restatement.
 
 **Strengths.** What they're clearly getting right, referencing pillar names naturally (Savings, Emergency, Debt, Insurance, Investments, Retirement). Give them credit specifically.
 
-**Areas needing attention.** The 1–2 places behaviour is quietly costing them, with the *why*. Be direct without being harsh.
+**Areas needing attention.** The 1-2 places behaviour is quietly costing them, with the *why*. Be direct without being harsh.
 
-**Behavioural observations.** Patterns you notice — e.g. buffer-heavy but under-invested, high EMI-to-income, under-insured for dependents, FD-heavy allocation, retirement gap on autopilot. Ground each observation in the JSON.
+**Behavioural observations.** Patterns you notice - e.g. buffer-heavy but under-invested, high EMI-to-income, under-insured for dependents, FD-heavy allocation, retirement gap on autopilot. Ground each observation in the JSON.
 
-**What to do next.** Walk through the top NitiPath™ actions one by one — why each matters for THIS person and what improves (a pillar, a metric, a future outcome) if they act. Do NOT list; write as flowing prose.
+**What to do next.** Walk through the top NitiPath™ actions one by one - why each matters for THIS person and what improves (a pillar, a metric, a future outcome) if they act. Do NOT list; write as flowing prose.
 
-**Where this leads.** A short, hopeful projection of what following through looks like 3–5 years out. Encouraging, specific, and anchored to their pillars.
+**Where this leads.** A short, hopeful projection of what following through looks like 3-5 years out. Encouraging, specific, and anchored to their pillars.
 
-If the JSON contains a "journey" object (previous review exists), open the briefing by acknowledging the measurable progress since their last review in plain language — for example, "Three months ago your emergency fund covered only two months of expenses; today it covers almost five." Reference specific deltas from journey.deltas. Do NOT congratulate excessively ("great job", "awesome"); sound like an experienced mentor noting real progress. When journey is null, do not invent any history.
+If the JSON contains a "journey" object (previous review exists), open the briefing by acknowledging the measurable progress since their last review in plain language - for example, "Three months ago your emergency fund covered only two months of expenses; today it covers almost five." Reference specific deltas from journey.deltas. Do NOT congratulate excessively ("great job", "awesome"); sound like an experienced mentor noting real progress. When journey is null, do not invent any history.
 
-Length: 380–520 words total.`;
+Length: 380-520 words total.`;
 
     const userPrompt = `Write the briefing using ONLY these authoritative NitiCore numbers. Do not modify any value.\n\n${JSON.stringify(payload, null, 2)}`;
 
@@ -478,12 +478,12 @@ function briefingFallback(p: {
   const m = p.metrics;
   const lines = [
     `Hi ${p.firstName}, here's how your financial life is shaping up right now.`,
-    `Your NitiScore of ${m.nitiScore.value}/1000 (grade ${m.nitiScore.grade}) and financial age of ${m.nitiAge.value} against your actual ${m.nitiAge.actual} tell a clear story: your habits are ${m.nitiAge.delta <= 0 ? "already ahead of your years — you're building the discipline that most people take a decade to develop." : "still catching up with where they need to be — that's normal, and completely fixable."}`,
+    `Your NitiScore of ${m.nitiScore.value}/1000 (grade ${m.nitiScore.grade}) and financial age of ${m.nitiAge.value} against your actual ${m.nitiAge.actual} tell a clear story: your habits are ${m.nitiAge.delta <= 0 ? "already ahead of your years - you're building the discipline that most people take a decade to develop." : "still catching up with where they need to be - that's normal, and completely fixable."}`,
     `You're saving about ${Math.round(m.savingsRatePct)}% of your income and keep ${m.emergencyMonths.toFixed(1)} months of expenses aside for emergencies. That is the base your future decisions will rest on.`,
     p.topActions.length
       ? `The three moves that will move the needle most for you next are focused on: ${p.topActions.map((a) => a.title).join("; ")}. Each one is chosen because it protects or compounds every rupee that follows.`
-      : `You're clear of critical actions right now — the priority becomes protecting and compounding what you already have.`,
-    `NitiGuide is temporarily offline for the full narrative, but the numbers above are your real NitiCore snapshot. Take the top action first — the rest cascades from there.`,
+      : `You're clear of critical actions right now - the priority becomes protecting and compounding what you already have.`,
+    `NitiGuide is temporarily offline for the full narrative, but the numbers above are your real NitiCore snapshot. Take the top action first - the rest cascades from there.`,
   ];
   return lines.join("\n\n");
 }

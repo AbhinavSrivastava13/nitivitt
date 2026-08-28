@@ -1,5 +1,5 @@
 /**
- * NitiVitt Financial Core — deterministic math primitives.
+ * NitiVitt Financial Core - deterministic math primitives.
  *
  * Per Master Bible §2.7: every financial formula must be deterministic.
  * No AI, no randomness. Pure functions. Inputs in, numbers out.
@@ -46,7 +46,7 @@ export function emergencyFundTarget(monthlyEssentialExpenses: number, months = 6
   return Math.max(0, monthlyEssentialExpenses) * months;
 }
 
-/** Term-life cover guidance: 15–20× annual income, plus liabilities, minus liquid assets. */
+/** Term-life cover guidance: 15-20× annual income, plus liabilities, minus liquid assets. */
 export function termLifeCoverEstimate(input: {
   annualIncome: number;
   liabilities: number;
@@ -75,7 +75,7 @@ export function retirementCorpus(input: {
 
 /** Format INR with the Indian numbering system (lakh / crore aware). */
 export function formatINR(value: number, opts: { compact?: boolean } = {}): string {
-  if (!Number.isFinite(value)) return "—";
+  if (!Number.isFinite(value)) return "-";
   if (opts.compact) {
     const abs = Math.abs(value);
     if (abs >= 1e7) return `₹${(value / 1e7).toFixed(2)} Cr`;

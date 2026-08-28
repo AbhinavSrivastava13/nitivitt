@@ -7,17 +7,17 @@ import type { Service } from "@/content/services";
 export const Route = createFileRoute("/services")({
   head: () => ({
     meta: [
-      { title: "Services — NitiVitt" },
+      { title: "Services - NitiVitt" },
       {
         name: "description",
         content:
-          "NitiVitt's services — Financial Advisor, Insurance Analyzer, Portfolio Analyzer, Loan Analyzer and Tax Planner. Guidance, never commissions.",
+          "NitiVitt's services - Financial Advisor, Insurance Analyzer, Portfolio Analyzer, Loan Analyzer and Tax Planner. Guidance, never commissions.",
       },
-      { property: "og:title", content: "Services — NitiVitt" },
+      { property: "og:title", content: "Services - NitiVitt" },
       {
         property: "og:description",
         content:
-          "Financial Advisor plus four analyzers — insurance, portfolio, loan and tax — all grounded in NitiCore™ math.",
+          "Financial Advisor plus four analyzers - insurance, portfolio, loan and tax - all grounded in NitiCore™ math.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

@@ -4,12 +4,12 @@ interface LogoProps {
   className?: string;
   showWordmark?: boolean;
   tone?: "default" | "inverse";
-  /** Render without its own anchor — use when a parent already links the mark. */
+  /** Render without its own anchor - use when a parent already links the mark. */
   plain?: boolean;
 }
 
 /**
- * NitiVitt mark — an upward arc (growth) cradled by a downward arc (guidance),
+ * NitiVitt mark - an upward arc (growth) cradled by a downward arc (guidance),
  * forming a stylised "N" lens. Drawn as inline SVG so it inherits currentColor
  * and stays crisp at any size.
  */
@@ -25,7 +25,7 @@ export function Logo({
     plain ? (
       <span className={cls}>{children}</span>
     ) : (
-      <Link to="/" className={cls} aria-label="NitiVitt — home">
+      <Link to="/" className={cls} aria-label="NitiVitt - home">
         {children}
       </Link>
     );

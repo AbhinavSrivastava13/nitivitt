@@ -1,5 +1,5 @@
 /**
- * NitiInvest™ V3 — AI classification fallback.
+ * NitiInvest™ V3 - AI classification fallback.
  *
  * ENRICHMENT ONLY. This layer never calculates a value, allocation, score,
  * rating or recommendation. It answers one narrow question for holdings that
@@ -8,7 +8,7 @@
  *   "What sector, industry, market-cap band and instrument type is this?"
  *
  * The model is instructed to return null rather than guess. Anything it is
- * unsure about stays unavailable in the report — we never invent data.
+ * unsure about stays unavailable in the report - we never invent data.
  */
 import { callAiChat } from "@/lib/ai-gateway";
 import type { Holding, MarketCap } from "./types";

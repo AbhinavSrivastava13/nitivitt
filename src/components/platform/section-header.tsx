@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 
 /**
- * SectionHeader — canonical eyebrow + title + lede + actions row.
+ * SectionHeader - canonical eyebrow + title + lede + actions row.
  * Used at the top of every dashboard / analyzer / knowledge section so that
  * spacing, typography scale and hierarchy remain identical across the app.
  */

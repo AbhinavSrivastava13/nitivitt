@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 /**
  * Auth-gated layout. All routes under `_authenticated/` require a session.
  * SSR is disabled because the Supabase session lives in localStorage, which
- * the server cannot read — gating server-side would loop on hard refresh.
+ * the server cannot read - gating server-side would loop on hard refresh.
  */
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,

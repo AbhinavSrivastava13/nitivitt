@@ -4,7 +4,7 @@ import { Check, Loader2 } from "lucide-react";
 /**
  * Full-screen premium analysis sequence.
  * Represents the NitiCore™ deterministic engine processing a user's profile.
- * Not a generic spinner — a narrated, deterministic-feeling progression.
+ * Not a generic spinner - a narrated, deterministic-feeling progression.
  */
 export interface AnalysisStep {
   id: string;
@@ -43,9 +43,9 @@ interface Props {
 }
 
 const DEFAULT_REASSURANCES = [
-  "Still working — market data for some holdings is taking a little longer.",
+  "Still working - market data for some holdings is taking a little longer.",
   "Cross-checking every holding against your NitiCore™ context.",
-  "Almost there — assembling the final report exactly once, so it opens complete.",
+  "Almost there - assembling the final report exactly once, so it opens complete.",
 ];
 
 export function AnalysisSequence({

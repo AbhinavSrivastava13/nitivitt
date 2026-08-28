@@ -4,7 +4,7 @@ import { PageShell } from "@/components/page-shell";
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How NitiVitt works — the math behind the score" },
+      { title: "How NitiVitt works - the math behind the score" },
       {
         name: "description",
         content:
@@ -24,7 +24,7 @@ const STEPS = [
   {
     n: "02",
     title: "We compute your NitiScore",
-    body: "Six pillars — Savings, Emergency, Insurance, Investments, Debt, Retirement — each weighted, each explainable.",
+    body: "Six pillars - Savings, Emergency, Insurance, Investments, Debt, Retirement - each weighted, each explainable.",
   },
   {
     n: "03",
@@ -68,7 +68,7 @@ function HowItWorks() {
         The six pillars of your NitiScore.
       </h2>
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        Each pillar scores 0–100 from a deterministic formula. Final score is a weighted sum.
+        Each pillar scores 0-100 from a deterministic formula. Final score is a weighted sum.
       </p>
 
       <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">

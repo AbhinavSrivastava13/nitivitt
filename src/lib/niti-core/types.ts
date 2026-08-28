@@ -3,7 +3,7 @@
  *
  * Every deterministic calculation returns a `MetricResult`. This is the
  * contract that the UI, the recommendation engine, and (later) NitiGuide™
- * consume — never plain numbers.
+ * consume - never plain numbers.
  */
 
 export type Priority = "high" | "medium" | "low";
@@ -38,7 +38,7 @@ export interface Recommendation {
   priority: Priority;
   severity: Severity;
   explanation: string;
-  /** Human-readable "why this matters" for the user's life — no numbers invented. */
+  /** Human-readable "why this matters" for the user's life - no numbers invented. */
   whyItMatters: string;
   /** Human-readable expected financial impact of taking this action. */
   expectedImpact: string;
@@ -53,7 +53,7 @@ export interface Recommendation {
   impactScore: number;
   /**
    * Optional plain-English note describing how this recommendation
-   * interacts with OTHER pillars — e.g. "raising SIP now would delay
+   * interacts with OTHER pillars - e.g. "raising SIP now would delay
    * building your 6-month buffer". Filled in by the cross-pillar
    * prioritiser when a meaningful trade-off exists.
    */
@@ -66,16 +66,16 @@ export interface Recommendation {
 
   /** One-line financial objective this recommendation serves. */
   financialObjective?: string;
-  /** Concrete short-term (0–12 months) consequences — cash-flow / liquidity. */
+  /** Concrete short-term (0-12 months) consequences - cash-flow / liquidity. */
   shortTermImpact?: string;
-  /** Concrete long-term (5+ years) consequences — wealth / resilience. */
+  /** Concrete long-term (5+ years) consequences - wealth / resilience. */
   longTermImpact?: string;
   /** Explicit trade-offs a real planner would name out loud. */
   tradeOffs?: string[];
   /** Other recommendation IDs that should ideally be addressed first. */
   dependencies?: string[];
   /**
-   * Opportunity cost — what the user gives up (or unlocks) by acting.
+   * Opportunity cost - what the user gives up (or unlocks) by acting.
    * Phrased in the language of a planner, not a mathematician.
    */
   opportunityCost?: string;
@@ -111,12 +111,12 @@ export interface NitiCoreInput {
   retirementAge: number;
   employmentType?: "salaried" | "self_employed";
   riskProfile?: "conservative" | "moderate" | "aggressive";
-  /** Optional — number of financial dependents (spouse, kids, parents). */
+  /** Optional - number of financial dependents (spouse, kids, parents). */
   dependentsCount?: number;
   /**
    * Optional cross-service intelligence. Populated when the user has run
    * NitiSure™ (insurance) or NitiInvest™ (portfolio) analyses. Feeds the
-   * FinancialContext so recommendations reflect the whole picture — an
+   * FinancialContext so recommendations reflect the whole picture - an
    * investment portfolio never outweighs a protection gap.
    */
   crossService?: {

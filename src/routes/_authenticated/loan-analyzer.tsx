@@ -33,8 +33,8 @@ import { deriveDebtHealthRating, ratingClasses } from "@/lib/ratings";
 export const Route = createFileRoute("/_authenticated/loan-analyzer")({
   head: () => ({
     meta: [
-      { title: "NitiLoan™ — Loan Analyzer — NitiVitt" },
-      { name: "description", content: "Every loan analyzed the NitiCore™ way — Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies grounded in your whole financial life." },
+      { title: "NitiLoan™ - Loan Analyzer - NitiVitt" },
+      { name: "description", content: "Every loan analyzed the NitiCore™ way - Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies grounded in your whole financial life." },
     ],
   }),
   component: LoanAnalyzerPage,
@@ -57,7 +57,7 @@ function LoanAnalyzerPage() {
     <PageShell
       eyebrow="Service · NitiLoan™"
       title="Loan Analyzer"
-      lede="Every loan you carry, rated the NitiCore™ way. Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies — grounded in your whole financial life."
+      lede="Every loan you carry, rated the NitiCore™ way. Debt Health Rating, Debt Freedom Age, prepayment intelligence and repayment strategies - grounded in your whole financial life."
     >
       <div className="mx-auto max-w-5xl space-y-6">
         {view.kind === "workspace" && (
@@ -191,7 +191,7 @@ function Workspace({
           icon={Landmark}
           eyebrow="NitiLoan™"
           title="No loans analyzed yet"
-          description="NitiLoan™ evaluates each loan against your whole financial life — affordability, buffer, insurance, interest cost — not just the EMI."
+          description="NitiLoan™ evaluates each loan against your whole financial life - affordability, buffer, insurance, interest cost - not just the EMI."
           action={
             <button
               onClick={onAddNew}
@@ -396,7 +396,7 @@ function LoanForm({ replaceId, initial, onCancel, onDone }: {
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {busy ? "Analyzing…" : replaceId ? "Update and re-analyze" : "Analyze loan"}
           </button>
-          <p className="text-[11px] text-muted-foreground">Every calculation is deterministic. AI narrates the findings — it never adjusts the math.</p>
+          <p className="text-[11px] text-muted-foreground">Every calculation is deterministic. AI narrates the findings - it never adjusts the math.</p>
         </div>
       </div>
     </>
@@ -593,7 +593,7 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
 
       {/* Prepayment Intelligence */}
       <section className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary-soft/40 to-card p-6 shadow-soft">
-        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Prepayment Intelligence" subtitle="Deterministic prepay-vs-invest reasoning — grounded in cost, expected return, tax and your risk profile." />
+        <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Prepayment Intelligence" subtitle="Deterministic prepay-vs-invest reasoning - grounded in cost, expected return, tax and your risk profile." />
         <div className="mt-4 grid gap-4 md:grid-cols-[auto,1fr] md:items-start">
           <div className="rounded-xl border border-border bg-card px-4 py-3 text-sm">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Post-tax loan cost</p>
@@ -619,7 +619,7 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
 
       {/* Repayment Strategy Simulator */}
       <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-        <SectionHeading icon={<TrendingDown className="h-4 w-4 text-primary" />} title="Repayment Strategy Simulator" subtitle="Deterministic comparisons — interest saved, years saved, debt freedom age." />
+        <SectionHeading icon={<TrendingDown className="h-4 w-4 text-primary" />} title="Repayment Strategy Simulator" subtitle="Deterministic comparisons - interest saved, years saved, debt freedom age." />
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">
             <thead className="bg-surface text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -644,8 +644,8 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
                   </td>
                   <td className="px-3 py-2 text-right font-mono">{inr(s.monthlyOutflow)}{s.annualPrepayment > 0 ? <span className="ml-1 text-[10px] text-muted-foreground">+ ₹{Math.round(s.annualPrepayment).toLocaleString("en-IN")}/yr</span> : null}</td>
                   <td className="px-3 py-2 text-right font-mono">{inr(s.totalInterest)}</td>
-                  <td className="px-3 py-2 text-right font-mono text-success">{s.interestSavedVsCurrent > 0 ? inr(s.interestSavedVsCurrent) : "—"}</td>
-                  <td className="px-3 py-2 text-right font-mono text-success">{s.monthsSavedVsCurrent > 0 ? `${Math.floor(s.monthsSavedVsCurrent / 12)}y ${s.monthsSavedVsCurrent % 12}m` : "—"}</td>
+                  <td className="px-3 py-2 text-right font-mono text-success">{s.interestSavedVsCurrent > 0 ? inr(s.interestSavedVsCurrent) : "-"}</td>
+                  <td className="px-3 py-2 text-right font-mono text-success">{s.monthsSavedVsCurrent > 0 ? `${Math.floor(s.monthsSavedVsCurrent / 12)}y ${s.monthsSavedVsCurrent % 12}m` : "-"}</td>
                   <td className="px-3 py-2 text-right font-mono">{s.debtFreedomAge}</td>
                 </tr>
               ))}
@@ -695,7 +695,7 @@ function ReportView({ report, loan, onBack }: { report: LoanReport; loan: LoanIn
       {/* Recommendations */}
       {report.recommendations.length > 0 && (
         <section className="rounded-2xl border border-border bg-card p-6 shadow-soft">
-          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Recommended actions" subtitle="Ordered by NitiCore hierarchy — protection and buffer before optimisation." />
+          <SectionHeading icon={<Target className="h-4 w-4 text-primary" />} title="Recommended actions" subtitle="Ordered by NitiCore hierarchy - protection and buffer before optimisation." />
           <ul className="mt-4 space-y-3">
             {report.recommendations.map((r) => (
               <li key={r.id} className="rounded-xl border border-border bg-surface p-4">

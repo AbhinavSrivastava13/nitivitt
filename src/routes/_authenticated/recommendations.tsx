@@ -24,7 +24,7 @@ const searchSchema = z.object({ rec: z.string().optional() });
 export const Route = createFileRoute("/_authenticated/recommendations")({
   head: () => ({
     meta: [
-      { title: "NitiPath™ — Recommendations — NitiVitt" },
+      { title: "NitiPath™ - Recommendations - NitiVitt" },
       { name: "description", content: "Your prioritized action plan, computed by NitiCore™. Every recommendation is transparent about the reason, math, and impact." },
     ],
   }),
@@ -116,7 +116,7 @@ function RecommendationsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">NitiPath™</p>
           <h1 className="mt-2 font-display text-3xl text-foreground md:text-4xl">What should I do next?</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Your action plan, ranked by impact. Every recommendation was produced by the deterministic NitiCore™ engine — the reasoning is fully transparent.
+            Your action plan, ranked by impact. Every recommendation was produced by the deterministic NitiCore™ engine - the reasoning is fully transparent.
           </p>
         </header>
 
@@ -287,7 +287,7 @@ function deriveCurrentVsRecommended(rec: Recommendation, input: NitiCoreInput): 
       return {
         currentText: `${Number(r.value).toFixed(1)} months of essentials`,
         recommendedText: `6 months of essentials`,
-        timeline: "6–12 months",
+        timeline: "6-12 months",
       };
     }
     case "Insurance": {
@@ -303,7 +303,7 @@ function deriveCurrentVsRecommended(rec: Recommendation, input: NitiCoreInput): 
       return {
         currentText: `${Number(r.value).toFixed(1)}% EMI-to-income`,
         recommendedText: `< 20% (max 40%)`,
-        timeline: "6–24 months",
+        timeline: "6-24 months",
       };
     }
     case "Savings": {
@@ -323,6 +323,6 @@ function deriveCurrentVsRecommended(rec: Recommendation, input: NitiCoreInput): 
       };
     }
     default:
-      return { currentText: "—", recommendedText: "—", timeline: "—" };
+      return { currentText: "-", recommendedText: "-", timeline: "-" };
   }
 }

@@ -1,5 +1,5 @@
 /**
- * NitiInvest™ — deterministic Portfolio Intelligence engine.
+ * NitiInvest™ - deterministic Portfolio Intelligence engine.
  *
  * Zero AI. Same input → same output. Uses NitiCore™ FinancialContext to
  * ground recommendations in the user's whole financial life (dependents,
@@ -44,7 +44,7 @@ function scoreLabel(score: number): string {
   if (score >= 70) return "Solid, minor rebalance opportunities";
   if (score >= 50) return "Working but structurally imbalanced";
   if (score >= 30) return "Significant concentration or gaps";
-  return "High-risk composition — needs rework";
+  return "High-risk composition - needs rework";
 }
 
 function inr(n: number): string {
@@ -136,7 +136,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
       gaps.push({
         id: "over-equity",
         severity: "risk",
-        title: `Equity allocation is ${equityPct}% — above the ${targetEquityClamped}% target`,
+        title: `Equity allocation is ${equityPct}% - above the ${targetEquityClamped}% target`,
         detail: `Higher equity magnifies drawdowns near goal dates. Consider rebalancing ${Math.round(equity - (totalValue * targetEquityClamped) / 100).toLocaleString("en-IN")} into debt / hybrid vehicles.`,
       });
       recommendations.push({
@@ -152,7 +152,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
       gaps.push({
         id: "under-equity",
         severity: "gap",
-        title: `Equity allocation is ${equityPct}% — below the ${targetEquityClamped}% target`,
+        title: `Equity allocation is ${equityPct}% - below the ${targetEquityClamped}% target`,
         detail: `A lower equity share slows long-term compounding. Consider redirecting new investments to equity mutual funds or index funds.`,
       });
       recommendations.push({
@@ -167,7 +167,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     }
   }
 
-  // 2. Concentration risk — top holding share
+  // 2. Concentration risk - top holding share
   const topSorted = [...cleaned].sort((a, b) => valueOf(b) - valueOf(a));
   const topHolding = topSorted[0];
   const topPct = topHolding ? pct(valueOf(topHolding), totalValue) : 0;
@@ -252,7 +252,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
   const diversificationScore = Math.max(0, Math.round((1 - hhi) * 100));
   const concentrationScore = Math.round(hhi * 100);
 
-  // 7. Cross-pillar context — respect the financial hierarchy
+  // 7. Cross-pillar context - respect the financial hierarchy
   const emergencyOk = context.liquidityHealth === "adequate" || context.liquidityHealth === "excess";
   const protectionOk = context.protectionPosture === "protected";
   const debtHeavy = context.flags.includes("debt_overload") || context.flags.includes("debt_elevated");
@@ -315,7 +315,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     }
   }
 
-  // 9. Behaviour flags — direct equity vs mutual-fund heavy
+  // 9. Behaviour flags - direct equity vs mutual-fund heavy
   const stockPct = pct(cleaned.filter((h) => h.assetClass === "equity_stock").reduce((a, h) => a + valueOf(h), 0), totalValue);
   if (stockPct >= 50 && cleaned.filter((h) => h.assetClass === "equity_stock").length >= 10) {
     observations.push({
@@ -326,7 +326,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     });
   }
 
-  // Portfolio Score — weighted composite
+  // Portfolio Score - weighted composite
   const allocationScore = totalValue > 0 ? 100 - Math.min(50, Math.abs(equityPct - targetEquityClamped) * 2) : 50;
   const concentrationSubscore = 100 - Math.min(70, topPct * 2);
   const contextPenalty =
@@ -399,7 +399,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     diversificationBand,
     riskLevel,
     riskLevelLabel,
-    largestHolding: topHolding?.name ?? "—",
+    largestHolding: topHolding?.name ?? "-",
     largestHoldingPct: topPct,
     investmentBehaviour,
   };
@@ -424,14 +424,14 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     goalAlignment = { status: "over_allocated", label: "Above your growth target", note: "Equity exposure sits above the level typically appropriate for your horizon. Volatility could hurt near-term goals." };
   }
 
-  // Positive intelligence — celebrate genuine strengths.
+  // Positive intelligence - celebrate genuine strengths.
   const positives: PortfolioFinding[] = [...strengths];
   if (mfShare >= 60 && cleaned.length >= 4) {
     positives.push({
       id: "quality-vehicles",
       severity: "strength",
       title: "Portfolio built through structured vehicles",
-      detail: "Most of your money is deployed through mutual funds rather than ad-hoc stock picks — a durable base to build on.",
+      detail: "Most of your money is deployed through mutual funds rather than ad-hoc stock picks - a durable base to build on.",
     });
   }
   if (indexShare >= 25) {
@@ -467,13 +467,13 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     });
   }
 
-  // Educational insights — neither strength nor a hard risk, but worth understanding.
+  // Educational insights - neither strength nor a hard risk, but worth understanding.
   const insights: PortfolioFinding[] = [...observations];
   insights.push({
     id: "asset-class-hierarchy",
     severity: "observation",
     title: `${styleParts.join(" · ")}`,
-    detail: `Your current mix reads as ${equityPct}% equity, ${debtPct}% debt and ${goldPct}% gold — the shape of the portfolio your risk and horizon are being built on.`,
+    detail: `Your current mix reads as ${equityPct}% equity, ${debtPct}% debt and ${goldPct}% gold - the shape of the portfolio your risk and horizon are being built on.`,
   });
   if (cleaned.length >= 12 && mfShare >= 40) {
     insights.push({
@@ -486,22 +486,22 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
 
   const intelligence: import("./types").PortfolioIntelligence = { positives, insights };
 
-  // Executive summary — deterministic, personalised, CFP-style opener.
+  // Executive summary - deterministic, personalised, CFP-style opener.
   let executiveSummary: string;
   if (totalValue === 0) {
     executiveSummary = "There is not enough portfolio data yet to draw meaningful conclusions. Add your holdings so NitiInvest™ can evaluate structure, risk and alignment.";
   } else if (!emergencyOk) {
-    executiveSummary = "Your portfolio has real building blocks, but the bigger lever right now sits outside investments — a fuller emergency cushion would let this money compound without being pulled prematurely.";
+    executiveSummary = "Your portfolio has real building blocks, but the bigger lever right now sits outside investments - a fuller emergency cushion would let this money compound without being pulled prematurely.";
   } else if (!protectionOk && context.hasDependents) {
-    executiveSummary = "Your investments are moving in a healthy direction. The biggest risk to this portfolio today is not the market — it is the protection gap for your dependents, which could force premature liquidation.";
+    executiveSummary = "Your investments are moving in a healthy direction. The biggest risk to this portfolio today is not the market - it is the protection gap for your dependents, which could force premature liquidation.";
   } else if (topPct >= 25) {
-    executiveSummary = `The portfolio is fundamentally sound, but a single holding accounts for a disproportionate share of it — the biggest opportunity is reducing concentration rather than changing fund selection.`;
+    executiveSummary = `The portfolio is fundamentally sound, but a single holding accounts for a disproportionate share of it - the biggest opportunity is reducing concentration rather than changing fund selection.`;
   } else if (drift <= -12) {
     executiveSummary = "Your investments are diversified, but the equity allocation is meaningfully below what fits your life stage. The biggest lever here is asset allocation, not which fund you pick next.";
   } else if (drift >= 12) {
-    executiveSummary = "Your portfolio leans aggressive for the goal horizon. Fund selection looks reasonable — the priority is measured rebalancing so market swings do not derail near-term goals.";
+    executiveSummary = "Your portfolio leans aggressive for the goal horizon. Fund selection looks reasonable - the priority is measured rebalancing so market swings do not derail near-term goals.";
   } else if (diversificationScore >= 70 && Math.abs(drift) <= 8) {
-    executiveSummary = "This is a well-built portfolio for your stage of life. The priority now is discipline and periodic review — not restructuring.";
+    executiveSummary = "This is a well-built portfolio for your stage of life. The priority now is discipline and periodic review - not restructuring.";
   } else {
     executiveSummary = "The foundations of your portfolio are in place. A few structural refinements, rather than wholesale changes, will compound meaningfully over time.";
   }
@@ -544,17 +544,17 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     ],
   };
 
-  // Hero — verdict + three CFP-style headline insights.
+  // Hero - verdict + three CFP-style headline insights.
   const heroInsights: string[] = [];
-  if (mfShare >= 60 && cleaned.length >= 3) heroInsights.push("Your fund selection looks reasonable — the story here is structure, not picks.");
+  if (mfShare >= 60 && cleaned.length >= 3) heroInsights.push("Your fund selection looks reasonable - the story here is structure, not picks.");
   else if (stockPct >= 40) heroInsights.push("You are comfortable running a direct-equity book, which increases the importance of position sizing.");
   if (topPct >= 25) heroInsights.push(`A single holding (${topHolding?.name}) drives a large share of the outcome.`);
-  else if (topPct >= 15) heroInsights.push("Concentration is moderate — the largest position still moves the portfolio meaningfully.");
+  else if (topPct >= 15) heroInsights.push("Concentration is moderate - the largest position still moves the portfolio meaningfully.");
   else if (topPct > 0) heroInsights.push("No single holding dominates the portfolio.");
   if (Math.abs(drift) <= 8 && totalValue > 0) heroInsights.push("Equity mix is well-aligned with your life stage and risk profile.");
-  else if (drift < -8) heroInsights.push("Equity share is below what typically fits your horizon — compounding is being left on the table.");
-  else if (drift > 8) heroInsights.push("Equity share sits above your horizon-appropriate target — market swings will hurt more.");
-  if (!emergencyOk) heroInsights.push("The biggest lever is outside investments today — the emergency cushion needs to catch up.");
+  else if (drift < -8) heroInsights.push("Equity share is below what typically fits your horizon - compounding is being left on the table.");
+  else if (drift > 8) heroInsights.push("Equity share sits above your horizon-appropriate target - market swings will hurt more.");
+  if (!emergencyOk) heroInsights.push("The biggest lever is outside investments today - the emergency cushion needs to catch up.");
   else if (!protectionOk && context.hasDependents) heroInsights.push("Protection gaps could force you to liquidate this portfolio at the worst time.");
   else if (diversificationScore >= 70) heroInsights.push("Diversification is doing its job across asset classes.");
   const keyInsights = heroInsights.slice(0, 3);
@@ -562,15 +562,15 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
   let verdict: string;
   if (totalValue === 0) verdict = "Not enough portfolio data yet.";
   else if (portfolioScore >= 80) verdict = "You have built a well-structured portfolio.";
-  else if (portfolioScore >= 65 && mfShare >= 60) verdict = "Your fund selection is good — the next step is improving portfolio construction.";
-  else if (portfolioScore >= 65) verdict = "Solid foundation — a few structural refinements will compound over time.";
+  else if (portfolioScore >= 65 && mfShare >= 60) verdict = "Your fund selection is good - the next step is improving portfolio construction.";
+  else if (portfolioScore >= 65) verdict = "Solid foundation - a few structural refinements will compound over time.";
   else if (topPct >= 25) verdict = "The portfolio is working, but concentration is the single biggest lever to fix.";
-  else if (Math.abs(drift) >= 12) verdict = "Fund choices look reasonable — the priority is asset allocation, not what to buy next.";
-  else verdict = "The building blocks are here — the biggest lever is structure, not more holdings.";
+  else if (Math.abs(drift) >= 12) verdict = "Fund choices look reasonable - the priority is asset allocation, not what to buy next.";
+  else verdict = "The building blocks are here - the biggest lever is structure, not more holdings.";
 
   const hero: import("./types").PortfolioHero = { verdict, keyInsights };
 
-  // ─────────────── Portfolio Quality — holistic quality read ───────────────
+  // ─────────────── Portfolio Quality - holistic quality read ───────────────
   const portfolioQuality: import("./types").PortfolioQualityFinding[] = [];
   if (totalValue > 0) {
     // Fund selection quality
@@ -579,7 +579,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
         id: "pq-structured",
         tone: "positive",
         title: "Good quality fund selection",
-        detail: "Most of your capital is deployed through structured vehicles rather than opportunistic bets — a durable foundation.",
+        detail: "Most of your capital is deployed through structured vehicles rather than opportunistic bets - a durable foundation.",
       });
     }
     if (indexShare >= 25) {
@@ -595,7 +595,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
         id: "pq-diversified",
         tone: "positive",
         title: "Appropriate diversification",
-        detail: "Capital is spread across asset classes in a way that fits your horizon — no single bucket dominates the outcome.",
+        detail: "Capital is spread across asset classes in a way that fits your horizon - no single bucket dominates the outcome.",
       });
     }
     // Watch signals
@@ -609,7 +609,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
         id: "pq-thematic",
         tone: "watch",
         title: "Concentrated thematic exposure",
-        detail: `Direct stocks are ${thematicShare}% of the portfolio across a small number of names — outcomes swing on a handful of decisions.`,
+        detail: `Direct stocks are ${thematicShare}% of the portfolio across a small number of names - outcomes swing on a handful of decisions.`,
       });
     }
     if (cash > 0 && pct(cash, totalValue) >= 20) {
@@ -637,7 +637,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
         detail: `${cleaned.length} holdings is more than most investors can meaningfully monitor. Consolidation would reduce noise without reducing diversification.`,
       });
     }
-    // Neutral — always add a structural read
+    // Neutral - always add a structural read
     portfolioQuality.push({
       id: "pq-shape",
       tone: "neutral",
@@ -646,7 +646,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     });
   }
 
-  // ─────────────── NitiInvest™ V2 — Portfolio Intelligence ───────────────
+  // ─────────────── NitiInvest™ V2 - Portfolio Intelligence ───────────────
   const intelInput: IntelligenceInput = {
     holdings: cleaned,
     totalValue,
@@ -700,7 +700,7 @@ export function analyzePortfolio({ holdings, input, context }: EngineInput): Por
     expectedReturnPct,
     returnBasis: `Blended from your own mix: ${equityPct}% equity, ${debtPct}% debt, ${goldPct}% gold. Not a forecast.`,
     defaultHorizonYears,
-    horizonBasis: `You are ${input.ageYears}, targeting retirement around ${input.retirementAge || 60} — about ${yearsToRetirement} years of runway.`,
+    horizonBasis: `You are ${input.ageYears}, targeting retirement around ${input.retirementAge || 60} - about ${yearsToRetirement} years of runway.`,
     suggestedSipUplift,
     guidance: [],
   };

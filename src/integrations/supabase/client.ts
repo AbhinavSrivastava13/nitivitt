@@ -46,9 +46,9 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 function createSupabaseClient() {
   // Resolution order (platform-agnostic):
-  //   1. window.__NITIVITT_ENV — injected at SSR from runtime env (Cloudflare Workers, etc.)
-  //   2. import.meta.env.VITE_*  — Vite build-time replacement only when no runtime injection exists
-  //   3. process.env.*           — Node/SSR fallback
+  //   1. window.__NITIVITT_ENV - injected at SSR from runtime env (Cloudflare Workers, etc.)
+  //   2. import.meta.env.VITE_*  - Vite build-time replacement only when no runtime injection exists
+  //   3. process.env.*           - Node/SSR fallback
   const runtime = getBrowserRuntimeEnv();
   const hasRuntimeInjection = typeof window !== 'undefined' && runtime !== undefined;
 

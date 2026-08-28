@@ -41,7 +41,7 @@ import type { PortfolioSummary } from "@/lib/insurance-analyzer/portfolio";
 export const Route = createFileRoute("/_authenticated/insurance-analyzer")({
   head: () => ({
     meta: [
-      { title: "Insurance Analyzer — NitiVitt" },
+      { title: "Insurance Analyzer - NitiVitt" },
       {
         name: "description",
         content:
@@ -70,7 +70,7 @@ function InsuranceAnalyzerPage() {
     <PageShell
       eyebrow="Service"
       title="Insurance Analyzer"
-      lede="Your insurance workspace. Every reviewed policy is saved here so NitiCore™ can evaluate your whole portfolio — not just one policy at a time."
+      lede="Your insurance workspace. Every reviewed policy is saved here so NitiCore™ can evaluate your whole portfolio - not just one policy at a time."
     >
       <div className="mx-auto max-w-5xl space-y-6">
         {view.kind === "workspace" && (
@@ -340,7 +340,7 @@ function PolicyList({
                 {a.insurer ?? a.fileName ?? "Unnamed policy"}
               </p>
               <p className="mt-0.5 text-[12px] text-muted-foreground">
-                Sum insured: {a.sumInsured ? fmtInr(a.sumInsured) : "—"} · Premium: {a.premiumAnnual ? fmtInr(a.premiumAnnual) : "—"} · Uploaded {fmtDate(a.createdAt)} · Last reviewed {fmtDate(a.lastReviewedAt)}
+                Sum insured: {a.sumInsured ? fmtInr(a.sumInsured) : "-"} · Premium: {a.premiumAnnual ? fmtInr(a.premiumAnnual) : "-"} · Uploaded {fmtDate(a.createdAt)} · Last reviewed {fmtDate(a.lastReviewedAt)}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -397,11 +397,11 @@ function UploadFlow({
           fileBase64: b64,
         },
       });
-      // ALWAYS hydrate the confirm form with whatever came back — never blank it.
+      // ALWAYS hydrate the confirm form with whatever came back - never blank it.
       setExtracted({ ...res.policy, policyType });
       setFileName(file.name);
       if (res.usedAi) {
-        setNotice({ tone: "success", text: "AI extracted the details below — please confirm or edit before running the analysis." });
+        setNotice({ tone: "success", text: "AI extracted the details below - please confirm or edit before running the analysis." });
       } else if (res.note) {
         setNotice({ tone: "warning", text: res.note });
       }
@@ -527,7 +527,7 @@ function SelectPolicyType({ selected, onSelect }: { selected: PolicyType | null;
   return (
     <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
       <h2 className="font-display text-xl text-foreground">Which policy would you like reviewed?</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Select the type first — the analysis rules differ by category.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Select the type first - the analysis rules differ by category.</p>
       <div className="mt-5 grid gap-2 sm:grid-cols-2">
         {POLICY_TYPES.map((t) => (
           <button
@@ -558,7 +558,7 @@ function UploadStep({
         <div>
           <h2 className="font-display text-xl text-foreground">{isReplacing ? "Upload the replacement policy" : "Upload the policy PDF"}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {POLICY_TYPE_LABEL[policyType]} — we'll extract the key fields and let you confirm before analysis.
+            {POLICY_TYPE_LABEL[policyType]} - we'll extract the key fields and let you confirm before analysis.
           </p>
         </div>
         <button onClick={onBack} className="text-xs font-semibold uppercase tracking-wider text-secondary hover:text-primary">
@@ -573,7 +573,7 @@ function UploadStep({
           <>
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm font-medium text-foreground">Reading your policy…</p>
-            <p className="text-xs text-muted-foreground">This may take 20–40 seconds for large PDFs.</p>
+            <p className="text-xs text-muted-foreground">This may take 20-40 seconds for large PDFs.</p>
           </>
         ) : (
           <>
@@ -831,7 +831,7 @@ function ReportView({ report }: { report: AnalysisReport }) {
         <section className="rounded-2xl border border-primary/20 bg-primary-soft/40 p-6">
           <div className="mb-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Executive summary — NitiGuide</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">Executive summary - NitiGuide</p>
           </div>
           <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{report.mentorSummary}</div>
         </section>
@@ -939,7 +939,7 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 function fmtInr(n: number): string {
-  if (!n || n <= 0) return "—";
+  if (!n || n <= 0) return "-";
   if (n >= 1_00_00_000) return `₹${(n / 1_00_00_000).toFixed(2)} Cr`;
   if (n >= 1_00_000) return `₹${(n / 1_00_000).toFixed(2)} L`;
   return `₹${Math.round(n).toLocaleString("en-IN")}`;
@@ -948,5 +948,5 @@ function fmtInr(n: number): string {
 function fmtDate(iso: string): string {
   try {
     return new Date(iso).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-  } catch { return "—"; }
+  } catch { return "-"; }
 }

@@ -1,5 +1,5 @@
 /**
- * Insurance Analyzer — server functions (V2).
+ * Insurance Analyzer - server functions (V2).
  *
  * - `extractInsurancePolicy` sends the PDF to Gemini (via the Lovable AI
  *   gateway) and returns structured JSON. Never analyses; only extracts.
@@ -56,11 +56,11 @@ export const extractInsurancePolicy = createServerFn({ method: "POST" })
       return {
         policy: { ...emptyExtractedPolicy(), policyType: data.policyType },
         usedAi: false,
-        note: "AI extraction unavailable — please enter policy details manually.",
+        note: "AI extraction unavailable - please enter policy details manually.",
       };
     }
 
-    const system = `You are a document-extraction assistant reading Indian insurance policy PDFs. Extract ONLY fields visible in the document. Never invent values. When a field is unclear, leave it null and add its exact JSON key name to lowConfidenceFields. Return ONE strict JSON object matching the requested shape — no markdown, no commentary.`;
+    const system = `You are a document-extraction assistant reading Indian insurance policy PDFs. Extract ONLY fields visible in the document. Never invent values. When a field is unclear, leave it null and add its exact JSON key name to lowConfidenceFields. Return ONE strict JSON object matching the requested shape - no markdown, no commentary.`;
 
     const shape = `{
   "policyHolder": string | null,
@@ -528,7 +528,7 @@ async function narrateReport(
     },
   };
 
-  const system = `You are NitiGuide — a calm, seasoned Indian financial mentor reviewing a client's insurance policy. Only explain the deterministic findings provided. Never invent numbers, never recommend specific products or insurers, never use fear-based language. Speak in 3–5 short paragraphs, first plainly acknowledging what is in place, then the meaningful gaps in order of priority, then a short closing note on which actions deserve immediate attention and which can wait. Use standard punctuation (hyphens, not em dashes).`;
+  const system = `You are NitiGuide - a calm, seasoned Indian financial mentor reviewing a client's insurance policy. Only explain the deterministic findings provided. Never invent numbers, never recommend specific products or insurers, never use fear-based language. Speak in 3-5 short paragraphs, first plainly acknowledging what is in place, then the meaningful gaps in order of priority, then a short closing note on which actions deserve immediate attention and which can wait. Use standard punctuation (hyphens, not em dashes).`;
 
   const res = await callAiChat({
     temperature: 0.4,
@@ -662,7 +662,7 @@ export const deleteInsuranceAnalysis = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// Re-analyze uses the saved extracted policy — deterministic engine only.
+// Re-analyze uses the saved extracted policy - deterministic engine only.
 const ReanalyzeInput = z.object({ id: z.string().uuid(), narrate: z.boolean().default(true) });
 
 export const reanalyzeInsurancePolicy = createServerFn({ method: "POST" })

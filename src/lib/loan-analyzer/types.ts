@@ -1,5 +1,5 @@
 /**
- * NitiLoan™ — Loan Intelligence types.
+ * NitiLoan™ - Loan Intelligence types.
  *
  * Deterministic. Every field on the report is produced by the engine
  * from a `LoanInput` plus the user's `FinancialContext`. AI (NitiGuide)

@@ -2,7 +2,7 @@ import { type ComponentType, type ReactNode } from "react";
 import { StatusBadge, type StatusTone } from "./status-badge";
 
 /**
- * MetricCard — canonical "number tile" used on the dashboard, health report
+ * MetricCard - canonical "number tile" used on the dashboard, health report
  * and analyzer summary. Consistent height, padding and hierarchy.
  */
 interface MetricCardProps {
