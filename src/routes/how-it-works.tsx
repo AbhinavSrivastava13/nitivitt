@@ -70,16 +70,16 @@ const STEPS = [
 ];
 
 const TOOLKIT = [
-  { icon: Gauge, name: "NitiScore™", body: "Understand your overall financial health on one 0-1000 scale." },
-  { icon: Sparkles, name: "NitiAge™", body: "See whether your financial habits run ahead of or behind your actual age." },
-  { icon: Target, name: "Goal Planning", body: "See what it takes to fund the goals that matter to you." },
-  { icon: PieChart, name: "NitiInvest™ Portfolio Analyzer", body: "Understand portfolio structure, concentration and diversification - and what to improve." },
-  { icon: Umbrella, name: "NitiSure™ Insurance Analyzer", body: "Understand the gaps in your family's protection." },
-  { icon: Landmark, name: "NitiLoan™ Loan Analyzer", body: "Understand your debt and the real impact of every repayment choice." },
-  { icon: Receipt, name: "NitiTax™ Tax Planner", body: "Plan and understand your tax implications before the year ends." },
-  { icon: Sunset, name: "Retirement Planning", body: "Understand whether your current path supports the retirement you want." },
-  { icon: RouteIcon, name: "NitiPath™", body: "Bring every finding together into prioritized next steps." },
-  { icon: MessagesSquare, name: "NitiGuide™", body: "Explain the numbers and decisions in plain language, whenever you need it." },
+  { icon: Gauge, label: "NitiScore™", name: "Financial Health", body: "Understand your overall financial health on one 0-1000 scale." },
+  { icon: Sparkles, label: "NitiAge™", name: "Financial Age", body: "See whether your financial habits run ahead of or behind your actual age." },
+  { icon: Target, label: "", name: "Goal Planning", body: "See what it takes to fund the goals that matter to you." },
+  { icon: PieChart, label: "NitiInvest™", name: "Portfolio Analysis", body: "Understand portfolio structure, concentration and diversification - and what to improve." },
+  { icon: Umbrella, label: "NitiSure™", name: "Insurance Analysis", body: "Understand the gaps in your family's protection." },
+  { icon: Landmark, label: "NitiLoan™", name: "Loan Analysis", body: "Understand your debt and the real impact of every repayment choice." },
+  { icon: Receipt, label: "NitiTax™", name: "Tax Planning", body: "Plan and understand your tax implications before the year ends." },
+  { icon: Sunset, label: "", name: "Retirement Planning", body: "Understand whether your current path supports the retirement you want." },
+  { icon: RouteIcon, label: "Your prioritized roadmap", name: "NitiPath™", body: "Bring every finding together into prioritized next steps." },
+  { icon: MessagesSquare, label: "Plain-language guidance", name: "NitiGuide™", body: "Explain the numbers and decisions in plain language, whenever you need it." },
 ];
 
 const PILLARS = [
