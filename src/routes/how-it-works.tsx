@@ -1,15 +1,38 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  ClipboardList,
+  Gauge,
+  Route as RouteIcon,
+  Compass,
+  Shield,
+  Target,
+  PieChart,
+  Umbrella,
+  Landmark,
+  Receipt,
+  Sunset,
+  MessagesSquare,
+  Sparkles,
+} from "lucide-react";
 import { PageShell } from "@/components/page-shell";
+import { SectionHeader } from "@/components/platform/section-header";
 
 export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
-      { title: "How NitiVitt works - the math behind the score" },
+      { title: "How NitiVitt works - from your numbers to your next move" },
       {
         name: "description",
         content:
-          "A transparent walkthrough of the NitiScore framework, the six pillars, the formulas, and the recommendation engine.",
+          "See how NitiVitt turns your complete financial picture into a measurable NitiScore, a prioritized NitiPath, and plain-language guidance for every decision.",
       },
+      { property: "og:title", content: "How NitiVitt works - from your numbers to your next move" },
+      {
+        property: "og:description",
+        content:
+          "See how NitiVitt turns your complete financial picture into a measurable NitiScore, a prioritized NitiPath, and plain-language guidance for every decision.",
+      },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: HowItWorks,
@@ -18,24 +41,45 @@ export const Route = createFileRoute("/how-it-works")({
 const STEPS = [
   {
     n: "01",
+    icon: ClipboardList,
     title: "Build your financial profile",
-    body: "Income, expenses, assets, liabilities, investments, insurance, goals. We never ask for what we don't use.",
+    body: "Tell us about your income, expenses, savings, investments, loans, insurance and goals. It takes a few minutes, and we never ask for anything we don't use in a calculation.",
+    you: "You share your complete financial picture.",
   },
   {
     n: "02",
-    title: "We compute your NitiScore",
-    body: "Six pillars - Savings, Emergency, Insurance, Investments, Debt, Retirement - each weighted, each explainable.",
+    icon: Gauge,
+    title: "We compute your NitiScore™",
+    body: "Six pillars - Savings, Emergency, Insurance, Investments, Debt and Retirement - each scored 0-100 from a fixed formula, then combined into one 0-1000 score you can trace point by point.",
+    you: "You get a measurable view of your financial health.",
   },
   {
     n: "03",
-    title: "We generate your NitiPath",
-    body: "A prioritized roadmap ordered by impact. Every step shows the calculation behind it.",
+    icon: RouteIcon,
+    title: "We generate your NitiPath™",
+    body: "Your findings become a prioritized roadmap - which gap to close first, which move has the biggest impact next month, and the calculation behind every recommendation.",
+    you: "You receive a clear, ordered plan of action.",
   },
   {
     n: "04",
+    icon: Compass,
     title: "You decide. We coach.",
-    body: "NitiGuide explains terms, simulators show 'what if', the Knowledge Hub teaches the why. You stay in control.",
+    body: "NitiGuide™ explains any number in plain language, simulators let you test 'what if' scenarios, and the Knowledge Hub teaches the why - so every decision stays yours.",
+    you: "You act with confidence, at your own pace.",
   },
+];
+
+const TOOLKIT = [
+  { icon: Gauge, name: "NitiScore™", body: "Understand your overall financial health on one 0-1000 scale." },
+  { icon: Sparkles, name: "NitiAge™", body: "See whether your financial habits run ahead of or behind your actual age." },
+  { icon: Target, name: "Goal Planning", body: "See what it takes to fund the goals that matter to you." },
+  { icon: PieChart, name: "NitiInvest™ Portfolio Analyzer", body: "Understand portfolio structure, concentration and diversification - and what to improve." },
+  { icon: Umbrella, name: "NitiSure™ Insurance Analyzer", body: "Understand the gaps in your family's protection." },
+  { icon: Landmark, name: "NitiLoan™ Loan Analyzer", body: "Understand your debt and the real impact of every repayment choice." },
+  { icon: Receipt, name: "NitiTax™ Tax Planner", body: "Plan and understand your tax implications before the year ends." },
+  { icon: Sunset, name: "Retirement Planning", body: "Understand whether your current path supports the retirement you want." },
+  { icon: RouteIcon, name: "NitiPath™", body: "Bring every finding together into prioritized next steps." },
+  { icon: MessagesSquare, name: "NitiGuide™", body: "Explain the numbers and decisions in plain language, whenever you need it." },
 ];
 
 const PILLARS = [
@@ -52,51 +96,105 @@ function HowItWorks() {
     <PageShell
       eyebrow="How it works"
       title="The math behind every screen."
-      lede="No black boxes, no opinion-as-advice. Here is exactly how NitiVitt computes your score, plans your goals, and surfaces recommendations."
+      lede="NitiVitt takes your complete financial picture, turns it into measurable financial health, and then helps you decide what to do next - with every calculation shown, never hidden behind a black box."
     >
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* ── The journey ─────────────────────────────────────────── */}
+      <SectionHeader
+        eyebrow="Your journey"
+        title="From your numbers to your next move."
+        lede="Four steps. You always know what we calculated, why it matters, and what it means for you."
+      />
+
+      <div className="relative mt-12 grid gap-10 md:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+        {/* connector line */}
+        <div
+          className="absolute left-0 right-0 top-6 hidden h-px bg-gradient-to-r from-transparent via-border to-transparent lg:block"
+          aria-hidden
+        />
         {STEPS.map((s) => (
-          <div key={s.n} className="rounded-2xl border border-border bg-card p-7 shadow-soft">
-            <span className="font-display text-3xl text-primary">{s.n}</span>
-            <h3 className="mt-3 text-lg font-semibold text-foreground">{s.title}</h3>
+          <div key={s.n} className="group relative flex flex-col">
+            <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-card shadow-soft transition-shadow group-hover:shadow-md">
+              <s.icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
+            </div>
+            <span className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
+              Step {s.n}
+            </span>
+            <h3 className="mt-2 font-display text-xl text-foreground">{s.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+            <p className="mt-4 border-l-2 border-primary/40 pl-3 text-sm font-medium text-foreground">
+              {s.you}
+            </p>
           </div>
         ))}
       </div>
 
-      <h2 className="mt-20 font-display text-3xl text-foreground md:text-4xl">
-        The six pillars of your NitiScore.
-      </h2>
-      <p className="mt-2 max-w-2xl text-muted-foreground">
-        Each pillar scores 0-100 from a deterministic formula. Final score is a weighted sum.
-      </p>
-
-      <div className="mt-8 overflow-hidden rounded-2xl border border-border bg-card shadow-soft">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border bg-surface text-left text-xs uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="px-5 py-3 font-semibold">Pillar</th>
-              <th className="px-5 py-3 font-semibold">Weight</th>
-              <th className="px-5 py-3 font-semibold">Healthy benchmark</th>
-            </tr>
-          </thead>
-          <tbody>
-            {PILLARS.map((p, i) => (
-              <tr key={p.name} className={i < PILLARS.length - 1 ? "border-b border-border" : ""}>
-                <td className="px-5 py-3.5 font-semibold text-foreground">{p.name}</td>
-                <td className="px-5 py-3.5 text-muted-foreground">{p.weight}%</td>
-                <td className="px-5 py-3.5 text-foreground">{p.target}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* ── What you can do ─────────────────────────────────────── */}
+      <div className="mt-24">
+        <SectionHeader
+          eyebrow="One connected picture"
+          title="What you can do with NitiVitt."
+          lede="These aren't separate products. Every tool reads the same financial picture, so an insight in one place sharpens the answer everywhere else."
+        />
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {TOOLKIT.map((t) => (
+            <div
+              key={t.name}
+              className="rounded-xl border border-border bg-card p-5 shadow-soft transition-shadow hover:shadow-md"
+            >
+              <t.icon className="h-4.5 w-4.5 text-primary" strokeWidth={1.75} />
+              <h3 className="mt-3 text-sm font-semibold text-foreground">{t.name}</h3>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t.body}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-8 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+          One profile powers it all: improve your emergency fund and your NitiScore rises, your
+          NitiAge drops, and your NitiPath reorders itself. Change nothing twice - update your
+          numbers once and every answer updates with them.
+        </p>
       </div>
 
-      <p className="mt-10 max-w-3xl text-sm text-muted-foreground">
-        Read the source: every formula lives in{" "}
-        <code className="rounded bg-muted px-1.5 py-0.5 text-xs">src/lib/finance/</code> as a pure,
-        unit-testable function. Audit it, fork it, hold us accountable.
-      </p>
+      {/* ── Six pillars ─────────────────────────────────────────── */}
+      <div className="mt-24">
+        <SectionHeader
+          eyebrow="The NitiScore™ framework"
+          title="Six pillars. Every point explained."
+          lede="Each pillar scores 0-100 from a fixed formula. Your NitiScore is their weighted sum - and you can always see exactly where every point came from."
+        />
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {PILLARS.map((p) => (
+            <div
+              key={p.name}
+              className="rounded-2xl border border-border bg-card p-6 shadow-soft transition-shadow hover:shadow-md"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground">{p.name}</h3>
+                <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">
+                  {p.weight}%
+                </span>
+              </div>
+              <div
+                className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                aria-hidden
+              >
+                <div className="h-full rounded-full bg-primary" style={{ width: `${p.weight * 4}%` }} />
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                <span className="font-medium text-foreground">Healthy:</span> {p.target}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 flex items-start gap-4 rounded-2xl border border-border bg-surface p-6">
+          <Shield className="mt-0.5 h-5 w-5 shrink-0 text-secondary" strokeWidth={1.75} />
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            <span className="font-medium text-foreground">No black boxes.</span> Two people with
+            the same numbers always get the same score. Every recommendation in your Financial
+            Health Report shows the formula and the inputs behind it - so you can question it,
+            verify it, and trust it on your own terms.
+          </p>
+        </div>
+      </div>
     </PageShell>
   );
 }
