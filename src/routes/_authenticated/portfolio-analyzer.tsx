@@ -579,24 +579,29 @@ function ConfirmFlow({
     <>
       {busy && (
         <AnalysisSequence
+          awaitCompletion
           onComplete={() => {
-            /* deterministic sequence — final state controlled by RPC */
+            /* completion is driven by the real analysis, not a timer */
           }}
-          stepDurationMs={520}
+          stepDurationMs={900}
           title="Building your portfolio report"
           subtitle="NitiInvest™ is analyzing your holdings and grounding every finding in your NitiCore™ context."
+          reassurances={[
+            "Still working — market data for some securities takes longer to confirm.",
+            "Matching each holding against sector, market-cap and exposure references.",
+            "Running NitiCore™ analysis across allocation, concentration and cost.",
+            "Finishing up — your report opens only when every section is complete.",
+          ]}
           steps={[
-            { id: "upload", label: "Uploading portfolio" },
-            { id: "extract", label: "Extracting holdings" },
-            { id: "match", label: "Matching securities" },
-            { id: "market", label: "Fetching market intelligence" },
+            { id: "read", label: "Reading portfolio" },
+            { id: "identify", label: "Identifying holdings" },
+            { id: "map", label: "Mapping exposure" },
             { id: "core", label: "Running NitiCore™ analysis" },
-            { id: "context", label: "Applying financial context" },
-            { id: "guide", label: "Preparing NitiGuide™ briefing" },
-            { id: "report", label: "Composing your portfolio report" },
+            { id: "report", label: "Preparing your report" },
           ]}
         />
       )}
+
 
       <div className="space-y-5 rounded-2xl border border-border bg-card p-6 shadow-soft">
         <div className="flex items-center gap-3">
