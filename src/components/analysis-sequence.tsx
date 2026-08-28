@@ -105,13 +105,33 @@ export function AnalysisSequence({
         <h2 className="mt-2 font-display text-2xl text-foreground md:text-3xl">{title}</h2>
         <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
 
-        <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <p className="mt-2 text-[11px] font-medium text-muted-foreground">{pct}% complete</p>
+        {awaitCompletion ? (
+          <>
+            <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full w-2/5 animate-pulse rounded-full bg-primary/80" />
+            </div>
+            <p className="mt-2 text-[11px] font-medium text-muted-foreground">
+              Step {Math.min(active + 1, steps.length)} of {steps.length} ·{" "}
+              {steps[Math.min(active, lastIndex)]?.label}
+            </p>
+            {reassurance && (
+              <p className="mt-2 rounded-lg border border-border bg-surface px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                {reassurance}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="mt-2 text-[11px] font-medium text-muted-foreground">{pct}% complete</p>
+          </>
+        )}
+
 
         <ul className="mt-6 space-y-2.5">
           {steps.map((s, i) => {
