@@ -32,7 +32,21 @@ interface Props {
   stepDurationMs?: number;
   title?: string;
   subtitle?: string;
+  /**
+   * When true, the sequence never auto-finishes: it walks through the steps and
+   * then holds on the final step (with reassuring context) until the parent
+   * unmounts it because the real work returned. No fake percentage is shown.
+   */
+  awaitCompletion?: boolean;
+  /** Contextual messages rotated while the final step is still running. */
+  reassurances?: string[];
 }
+
+const DEFAULT_REASSURANCES = [
+  "Still working — market data for some holdings is taking a little longer.",
+  "Cross-checking every holding against your NitiCore™ context.",
+  "Almost there — assembling the final report exactly once, so it opens complete.",
+];
 
 export function AnalysisSequence({
   steps = DEFAULT_ANALYSIS_STEPS,
@@ -40,19 +54,41 @@ export function AnalysisSequence({
   stepDurationMs = 420,
   title = "Analyzing your financial profile",
   subtitle = "The NitiCore™ engine is running deterministic math across every dimension of your finances.",
+  awaitCompletion = false,
+  reassurances = DEFAULT_REASSURANCES,
 }: Props) {
   const [active, setActive] = useState(0);
+  const [waitingMs, setWaitingMs] = useState(0);
+
+  const lastIndex = steps.length - 1;
+  const holding = awaitCompletion && active >= lastIndex;
 
   useEffect(() => {
+    if (awaitCompletion) {
+      if (active >= lastIndex) return;
+      const t = setTimeout(() => setActive((v) => v + 1), stepDurationMs);
+      return () => clearTimeout(t);
+    }
     if (active >= steps.length) {
       const t = setTimeout(onComplete, 260);
       return () => clearTimeout(t);
     }
     const t = setTimeout(() => setActive((v) => v + 1), stepDurationMs);
     return () => clearTimeout(t);
-  }, [active, steps.length, stepDurationMs, onComplete]);
+  }, [active, steps.length, lastIndex, stepDurationMs, onComplete, awaitCompletion]);
+
+  useEffect(() => {
+    if (!holding) return;
+    const i = setInterval(() => setWaitingMs((v) => v + 1000), 1000);
+    return () => clearInterval(i);
+  }, [holding]);
 
   const pct = Math.min(100, Math.round((active / steps.length) * 100));
+  const reassurance =
+    holding && waitingMs >= 4000 && reassurances.length > 0
+      ? reassurances[Math.min(reassurances.length - 1, Math.floor(waitingMs / 8000))]
+      : null;
+
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-background/95 backdrop-blur-xl">
@@ -69,13 +105,33 @@ export function AnalysisSequence({
         <h2 className="mt-2 font-display text-2xl text-foreground md:text-3xl">{title}</h2>
         <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
 
-        <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <p className="mt-2 text-[11px] font-medium text-muted-foreground">{pct}% complete</p>
+        {awaitCompletion ? (
+          <>
+            <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full w-2/5 animate-pulse rounded-full bg-primary/80" />
+            </div>
+            <p className="mt-2 text-[11px] font-medium text-muted-foreground">
+              Step {Math.min(active + 1, steps.length)} of {steps.length} ·{" "}
+              {steps[Math.min(active, lastIndex)]?.label}
+            </p>
+            {reassurance && (
+              <p className="mt-2 rounded-lg border border-border bg-surface px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                {reassurance}
+              </p>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="mt-2 text-[11px] font-medium text-muted-foreground">{pct}% complete</p>
+          </>
+        )}
+
 
         <ul className="mt-6 space-y-2.5">
           {steps.map((s, i) => {
