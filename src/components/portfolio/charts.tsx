@@ -998,7 +998,7 @@ export function EffectivenessDial({
   caption?: string;
 }) {
   const v = Math.max(0, Math.min(100, score));
-  const size = 168;
+  const size = 150;
   const r = (size - 14) / 2;
   const c = Math.PI * r; // half circle
   const color =

@@ -1142,7 +1142,7 @@ function ReportView({
           </div>
         )}
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <div className="mt-3 grid items-stretch gap-3 xl:grid-cols-2">
           <ChartCard
             title="Exposure families"
             note="Holdings collapsed into the exposure they actually share."
@@ -1436,13 +1436,13 @@ function ChartCard({
 }) {
   return (
     <div
-      className={`rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6 ${className}`}
+      className={`rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5 ${className}`}
     >
       <h4 className="font-display text-base tracking-tight text-foreground">{title}</h4>
       {note && (
         <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>
       )}
-      <div className="mt-5">{children}</div>
+      <div className="mt-4">{children}</div>
     </div>
   );
 }
@@ -1973,10 +1973,10 @@ function EffectivenessSection({
   const scenarioLabel = SCENARIOS.find((s) => s.key === scenario)?.label ?? "Base";
 
   return (
-    <div className="mt-4 space-y-3">
-      <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+    <div className="mt-3 space-y-3">
+      <div className="rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5">
         {/* Scenario controls - one compact strip above the two analysis columns */}
-        <div className="rounded-2xl border border-border/70 bg-surface/60 p-4">
+        <div className="rounded-2xl border border-border/70 bg-surface/60 p-3.5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Scenario controls
@@ -1995,7 +1995,7 @@ function EffectivenessSection({
               </button>
             )}
           </div>
-          <div className="mt-3.5 grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-3 grid gap-x-6 gap-y-3 sm:grid-cols-2 xl:grid-cols-4">
             <Slider
               label="Monthly contribution"
               value={`₹${monthlySip.toLocaleString("en-IN")}`}
@@ -2055,13 +2055,13 @@ function EffectivenessSection({
         </div>
 
         {/* Left 55: Your Plan · Right 45: Scenario Lab */}
-        <div className="mt-5 grid gap-5 lg:grid-cols-[55fr_45fr] lg:gap-6">
+        <div className="mt-4 grid items-stretch gap-4 lg:grid-cols-[55fr_45fr] lg:gap-5">
           {/* ── YOUR PLAN ── */}
-          <div className="min-w-0 rounded-2xl border border-border/70 bg-surface/40 p-4 md:p-5">
+          <div className="min-w-0 rounded-2xl border border-border/70 bg-surface/40 p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Your plan · where am I going?
             </p>
-            <div className="mt-3 grid gap-5 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
+            <div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
               <EffectivenessDial score={result.score} delta={result.score - current.score} />
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                 {[
@@ -2085,7 +2085,7 @@ function EffectivenessSection({
               </dl>
             </div>
 
-            <div className="mt-4 grid gap-2 border-t border-border/70 pt-4 sm:grid-cols-3">
+            <div className="mt-3 grid gap-2 border-t border-border/70 pt-3 sm:grid-cols-3">
               {[
                 {
                   label: "Projected corpus",
@@ -2119,7 +2119,7 @@ function EffectivenessSection({
 
             {/* Contribution vs growth */}
             {result.projected > 0 && (
-              <div className="mt-4 border-t border-border/70 pt-3.5">
+              <div className="mt-3 border-t border-border/70 pt-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     Contribution vs growth
@@ -2153,7 +2153,7 @@ function EffectivenessSection({
               </div>
             )}
 
-            <dl className="mt-3.5 space-y-1.5 border-t border-border/70 pt-3 text-[12px]">
+            <dl className="mt-3 space-y-1.5 border-t border-border/70 pt-2.5 text-[12px]">
               <EffStat label="Readiness" value={`${readiness}% funded`} />
               <EffStat label="Structural health" value={`${result.structure}/100`} />
             </dl>
@@ -2175,7 +2175,7 @@ function EffectivenessSection({
           </div>
 
           {/* ── SCENARIO LAB ── */}
-          <div className="flex min-w-0 flex-col rounded-2xl border border-border/70 bg-surface/40 p-4 md:p-5">
+          <div className="flex min-w-0 flex-col rounded-2xl border border-border/70 bg-surface/40 p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Scenario lab · what can I change?
             </p>
@@ -2199,7 +2199,7 @@ function EffectivenessSection({
               </div>
             </div>
 
-            <div className="mt-4 border-t border-border/70 pt-3.5">
+            <div className="mt-3 border-t border-border/70 pt-3">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Projected growth
               </p>
@@ -2207,7 +2207,7 @@ function EffectivenessSection({
                 <ProjectionChart
                   data={series}
                   format={inrShort}
-                  height={170}
+                  height={150}
                   series={[
                     { key: "base", label: "Current plan", color: SERIES_COLORS.you },
                     {
