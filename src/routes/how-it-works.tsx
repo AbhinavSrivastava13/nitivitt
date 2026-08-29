@@ -136,21 +136,29 @@ function HowItWorks() {
           lede="These aren't separate products. Every tool reads the same financial picture, so an insight in one place sharpens the answer everywhere else."
         />
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {TOOLKIT.map((t) => (
-            <div
-              key={t.name}
-              className="rounded-xl border border-border bg-card p-5 shadow-soft transition-shadow hover:shadow-md"
+        {TOOLKIT.map((t) => (
+          <div
+            key={t.name}
+            className="rounded-xl border border-border bg-card p-5 shadow-soft transition-shadow hover:shadow-md"
+          >
+            <t.icon className="h-4.5 w-4.5 text-primary" strokeWidth={1.75} />
+            <span
+              className={`block text-[10px] font-semibold uppercase tracking-[0.14em] text-secondary ${
+                t.label ? "mt-3" : "hidden"
+              }`}
             >
-              <t.icon className="h-4.5 w-4.5 text-primary" strokeWidth={1.75} />
-              <h3 className="mt-3 text-sm font-semibold text-foreground">{t.name}</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t.body}</p>
-            </div>
-          ))}
+              {t.label}
+            </span>
+            <h3 className={`text-sm font-semibold text-foreground ${t.label ? "mt-1" : "mt-3"}`}>
+              {t.name}
+            </h3>
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t.body}</p>
+          </div>
+        ))}
         </div>
         <p className="mt-8 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          One profile powers it all: improve your emergency fund and your NitiScore rises, your
-          NitiAge drops, and your NitiPath reorders itself. Change nothing twice - update your
-          numbers once and every answer updates with them.
+          One financial picture powers everything. Update your numbers once, and every insight stays
+          connected.
         </p>
       </div>
 
