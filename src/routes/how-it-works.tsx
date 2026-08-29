@@ -157,9 +157,8 @@ function HowItWorks() {
         ))}
         </div>
         <p className="mt-8 max-w-3xl text-sm leading-relaxed text-muted-foreground">
-          One profile powers it all: improve your emergency fund and your NitiScore rises, your
-          NitiAge drops, and your NitiPath reorders itself. Change nothing twice - update your
-          numbers once and every answer updates with them.
+          One financial picture powers everything. Update your numbers once, and every insight stays
+          connected.
         </p>
       </div>
 
