@@ -2119,59 +2119,32 @@ function EffectivenessSection({
 
             {/* Contribution vs growth */}
             {result.projected > 0 && (
-              <div className="mt-3 border-t border-border/70 pt-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Contribution vs growth
-                  </p>
-                  <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                    {Math.round(
-                      (Math.min(result.contributed, result.projected) / result.projected) * 100,
-                    )}
-                    % paid in ·{" "}
-                    {100 -
-                      Math.round(
-                        (Math.min(result.contributed, result.projected) / result.projected) * 100,
-                      )}
-                    % compounding
-                  </p>
-                </div>
-                <div className="mt-2 flex h-6 w-full items-stretch overflow-hidden rounded-lg bg-muted/50">
-                  <span
-                    className="transition-[width] duration-500"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, (result.contributed / result.projected) * 100))}%`,
-                      background: SERIES_COLORS.you,
-                    }}
-                  />
-                  <span className="flex-1" style={{ background: SERIES_COLORS.recommended }} />
-                </div>
-                <p className="mt-1.5 font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                  {inrShort(result.contributed)} contributed ·{" "}
-                  {inrShort(Math.max(0, result.projected - result.contributed))} from compounding
-                </p>
+              <div className="mt-2.5 border-t border-border/70 pt-2.5">
+...
               </div>
             )}
 
-            <dl className="mt-3 space-y-1.5 border-t border-border/70 pt-2.5 text-[12px]">
-              <EffStat label="Readiness" value={`${readiness}% funded`} />
-              <EffStat label="Structural health" value={`${result.structure}/100`} />
-            </dl>
-            <p className="mt-3 text-[12.5px] leading-relaxed text-foreground/85">{interpretation}</p>
-            <details className="group mt-2.5">
-              <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
-                How this score is built
-              </summary>
-              <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
-                Effectiveness = 65% readiness against the NitiCore™ reference path + 35%
-                deterministic structural health.{" "}
-                {basis.sipSource === "profile"
-                  ? "Your current plan uses the contribution recorded in your profile."
-                  : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}{" "}
-                Current plan reference: {inrShort(current.projected)} at ₹
-                {baseSip.toLocaleString("en-IN")}/mo over {baseYears} yrs.
-              </p>
-            </details>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-border/70 pt-2.5">
+              <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px]">
+                <EffStat label="Readiness" value={`${readiness}% funded`} />
+                <EffStat label="Structural health" value={`${result.structure}/100`} />
+              </dl>
+              <details className="group ml-auto">
+                <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
+                  How this score is built
+                </summary>
+                <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+                  Effectiveness = 65% readiness against the NitiCore™ reference path + 35%
+                  deterministic structural health.{" "}
+                  {basis.sipSource === "profile"
+                    ? "Your current plan uses the contribution recorded in your profile."
+                    : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}{" "}
+                  Current plan reference: {inrShort(current.projected)} at ₹
+                  {baseSip.toLocaleString("en-IN")}/mo over {baseYears} yrs.
+                </p>
+              </details>
+            </div>
+            <p className="mt-2 text-[12px] leading-relaxed text-foreground/85">{interpretation}</p>
           </div>
 
           {/* ── SCENARIO LAB ── */}
