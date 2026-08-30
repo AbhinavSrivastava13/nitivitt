@@ -634,20 +634,25 @@ export function ProjectionChart({
   format,
   series,
   height = 320,
+  fill = false,
 }: {
   data: { year: number; base: number; alternative: number; third?: number }[];
   format: (n: number) => string;
   series: { key: "base" | "alternative" | "third"; label: string; color: string; dash?: string }[];
-  height?: number;
+  height?: number | string;
+  /** When true, the chart stretches to fill its flex parent instead of using a fixed height. */
+  fill?: boolean;
 }) {
   const labelOf = (k: string) => series.find((s) => s.key === k)?.label ?? k;
   return (
-    <div>
+    <div className={fill ? "flex min-h-0 flex-1 flex-col" : undefined}>
       <ChartLegend
         items={series.map((s) => ({ label: s.label, color: s.color, dashed: Boolean(s.dash) }))}
       />
-      <div className="mt-4 w-full" style={{ height }}>
-
+      <div
+        className={`mt-4 w-full ${fill ? "min-h-0 flex-1" : ""}`}
+        style={fill ? undefined : { height }}
+      >
         <ResponsiveContainer>
           <LineChart data={data} margin={{ top: 12, right: 12, bottom: 4, left: 4 }}>
             <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
@@ -992,13 +997,14 @@ export function EffectivenessDial({
   score,
   delta,
   caption,
+  size = 150,
 }: {
   score: number;
   delta?: number;
   caption?: string;
+  size?: number;
 }) {
   const v = Math.max(0, Math.min(100, score));
-  const size = 150;
   const r = (size - 14) / 2;
   const c = Math.PI * r; // half circle
   const color =
