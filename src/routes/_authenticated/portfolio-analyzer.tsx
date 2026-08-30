@@ -2057,11 +2057,12 @@ function EffectivenessSection({
         {/* Left 55: Your Plan · Right 45: Scenario Lab */}
         <div className="mt-3 grid items-stretch gap-3 lg:grid-cols-[55fr_45fr]">
           {/* ── YOUR PLAN ── */}
-          <div className="min-w-0 rounded-2xl border border-border/70 bg-surface/40 p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Your plan · where am I going?
-            </p>
-            <div className="mt-2.5 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
+          <div className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-border/70 bg-surface/40 p-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Your plan · where am I going?
+              </p>
+              <div className="mt-2.5 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
               <EffectivenessDial score={result.score} delta={result.score - current.score} size={136} />
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                 {[
