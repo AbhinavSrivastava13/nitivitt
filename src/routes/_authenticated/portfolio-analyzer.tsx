@@ -1974,9 +1974,9 @@ function EffectivenessSection({
 
   return (
     <div className="mt-3 space-y-3">
-      <div className="rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5">
+      <div className="rounded-3xl border border-border bg-card p-4 shadow-soft">
         {/* Scenario controls - one compact strip above the two analysis columns */}
-        <div className="rounded-2xl border border-border/70 bg-surface/60 p-3.5">
+        <div className="rounded-2xl border border-border/70 bg-surface/60 px-3.5 py-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Scenario controls
@@ -2055,14 +2055,14 @@ function EffectivenessSection({
         </div>
 
         {/* Left 55: Your Plan · Right 45: Scenario Lab */}
-        <div className="mt-4 grid items-stretch gap-4 lg:grid-cols-[55fr_45fr] lg:gap-5">
+        <div className="mt-3 grid items-stretch gap-3 lg:grid-cols-[55fr_45fr]">
           {/* ── YOUR PLAN ── */}
           <div className="min-w-0 rounded-2xl border border-border/70 bg-surface/40 p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Your plan · where am I going?
             </p>
-            <div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
-              <EffectivenessDial score={result.score} delta={result.score - current.score} />
+            <div className="mt-2.5 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
+              <EffectivenessDial score={result.score} delta={result.score - current.score} size={136} />
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                 {[
                   {
@@ -2103,14 +2103,14 @@ function EffectivenessSection({
               ].map((c) => (
                 <div
                   key={c.label}
-                  className={`rounded-xl border px-3.5 py-2.5 ${
+                  className={`rounded-xl border px-3 py-2 ${
                     c.strong ? "border-foreground/25 bg-surface/70" : "border-border/70"
                   }`}
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     {c.label}
                   </p>
-                  <p className="mt-1 font-display text-lg leading-none tracking-tight text-foreground">
+                  <p className="mt-1 font-display text-base leading-none tracking-tight text-foreground">
                     {c.value}
                   </p>
                 </div>
@@ -2119,59 +2119,32 @@ function EffectivenessSection({
 
             {/* Contribution vs growth */}
             {result.projected > 0 && (
-              <div className="mt-3 border-t border-border/70 pt-3">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                    Contribution vs growth
-                  </p>
-                  <p className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                    {Math.round(
-                      (Math.min(result.contributed, result.projected) / result.projected) * 100,
-                    )}
-                    % paid in ·{" "}
-                    {100 -
-                      Math.round(
-                        (Math.min(result.contributed, result.projected) / result.projected) * 100,
-                      )}
-                    % compounding
-                  </p>
-                </div>
-                <div className="mt-2 flex h-6 w-full items-stretch overflow-hidden rounded-lg bg-muted/50">
-                  <span
-                    className="transition-[width] duration-500"
-                    style={{
-                      width: `${Math.max(0, Math.min(100, (result.contributed / result.projected) * 100))}%`,
-                      background: SERIES_COLORS.you,
-                    }}
-                  />
-                  <span className="flex-1" style={{ background: SERIES_COLORS.recommended }} />
-                </div>
-                <p className="mt-1.5 font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                  {inrShort(result.contributed)} contributed ·{" "}
-                  {inrShort(Math.max(0, result.projected - result.contributed))} from compounding
-                </p>
+              <div className="mt-2.5 border-t border-border/70 pt-2.5">
+...
               </div>
             )}
 
-            <dl className="mt-3 space-y-1.5 border-t border-border/70 pt-2.5 text-[12px]">
-              <EffStat label="Readiness" value={`${readiness}% funded`} />
-              <EffStat label="Structural health" value={`${result.structure}/100`} />
-            </dl>
-            <p className="mt-3 text-[12.5px] leading-relaxed text-foreground/85">{interpretation}</p>
-            <details className="group mt-2.5">
-              <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
-                How this score is built
-              </summary>
-              <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
-                Effectiveness = 65% readiness against the NitiCore™ reference path + 35%
-                deterministic structural health.{" "}
-                {basis.sipSource === "profile"
-                  ? "Your current plan uses the contribution recorded in your profile."
-                  : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}{" "}
-                Current plan reference: {inrShort(current.projected)} at ₹
-                {baseSip.toLocaleString("en-IN")}/mo over {baseYears} yrs.
-              </p>
-            </details>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-border/70 pt-2.5">
+              <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px]">
+                <EffStat label="Readiness" value={`${readiness}% funded`} />
+                <EffStat label="Structural health" value={`${result.structure}/100`} />
+              </dl>
+              <details className="group ml-auto">
+                <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
+                  How this score is built
+                </summary>
+                <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+                  Effectiveness = 65% readiness against the NitiCore™ reference path + 35%
+                  deterministic structural health.{" "}
+                  {basis.sipSource === "profile"
+                    ? "Your current plan uses the contribution recorded in your profile."
+                    : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}{" "}
+                  Current plan reference: {inrShort(current.projected)} at ₹
+                  {baseSip.toLocaleString("en-IN")}/mo over {baseYears} yrs.
+                </p>
+              </details>
+            </div>
+            <p className="mt-2 text-[12px] leading-relaxed text-foreground/85">{interpretation}</p>
           </div>
 
           {/* ── SCENARIO LAB ── */}
@@ -2182,7 +2155,7 @@ function EffectivenessSection({
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               Contribution × return · projected value at {years} years
             </p>
-            <div className="mt-3 -mx-1 overflow-x-auto px-1">
+            <div className="mt-2.5 -mx-1 overflow-x-auto px-1">
               <div className="min-w-[420px]">
                 <ScenarioMatrix
                   cells={grid}
@@ -2199,15 +2172,16 @@ function EffectivenessSection({
               </div>
             </div>
 
-            <div className="mt-3 border-t border-border/70 pt-3">
+            {/* Projected growth - flexes to fill the right column so both columns align */}
+            <div className="mt-2.5 flex min-h-0 flex-1 flex-col border-t border-border/70 pt-2.5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Projected growth
               </p>
-              <div className="mt-2">
+              <div className="mt-1.5 flex min-h-[150px] flex-1 flex-col">
                 <ProjectionChart
                   data={series}
                   format={inrShort}
-                  height={150}
+                  fill
                   series={[
                     { key: "base", label: "Current plan", color: SERIES_COLORS.you },
                     {
@@ -2219,13 +2193,13 @@ function EffectivenessSection({
                   ]}
                 />
               </div>
-              <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+              <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
                 Illustrative scenarios, not guaranteed returns.
               </p>
             </div>
 
             {lever && (
-              <p className="mt-3 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed text-foreground/85">
+              <p className="mt-2.5 border-t border-border/60 pt-2.5 text-[11.5px] leading-relaxed text-foreground/85">
                 {lever}
               </p>
             )}
