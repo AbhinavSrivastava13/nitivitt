@@ -2155,7 +2155,7 @@ function EffectivenessSection({
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               Contribution × return · projected value at {years} years
             </p>
-            <div className="mt-3 -mx-1 overflow-x-auto px-1">
+            <div className="mt-2.5 -mx-1 overflow-x-auto px-1">
               <div className="min-w-[420px]">
                 <ScenarioMatrix
                   cells={grid}
@@ -2172,15 +2172,16 @@ function EffectivenessSection({
               </div>
             </div>
 
-            <div className="mt-3 border-t border-border/70 pt-3">
+            {/* Projected growth - flexes to fill the right column so both columns align */}
+            <div className="mt-2.5 flex min-h-0 flex-1 flex-col border-t border-border/70 pt-2.5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Projected growth
               </p>
-              <div className="mt-2">
+              <div className="mt-1.5 flex min-h-[150px] flex-1 flex-col">
                 <ProjectionChart
                   data={series}
                   format={inrShort}
-                  height={150}
+                  fill
                   series={[
                     { key: "base", label: "Current plan", color: SERIES_COLORS.you },
                     {
@@ -2192,13 +2193,13 @@ function EffectivenessSection({
                   ]}
                 />
               </div>
-              <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+              <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
                 Illustrative scenarios, not guaranteed returns.
               </p>
             </div>
 
             {lever && (
-              <p className="mt-3 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed text-foreground/85">
+              <p className="mt-2.5 border-t border-border/60 pt-2.5 text-[11.5px] leading-relaxed text-foreground/85">
                 {lever}
               </p>
             )}
