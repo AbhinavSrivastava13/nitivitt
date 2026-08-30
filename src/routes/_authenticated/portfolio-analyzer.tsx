@@ -2103,14 +2103,14 @@ function EffectivenessSection({
               ].map((c) => (
                 <div
                   key={c.label}
-                  className={`rounded-xl border px-3.5 py-2.5 ${
+                  className={`rounded-xl border px-3 py-2 ${
                     c.strong ? "border-foreground/25 bg-surface/70" : "border-border/70"
                   }`}
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                     {c.label}
                   </p>
-                  <p className="mt-1 font-display text-lg leading-none tracking-tight text-foreground">
+                  <p className="mt-1 font-display text-base leading-none tracking-tight text-foreground">
                     {c.value}
                   </p>
                 </div>
