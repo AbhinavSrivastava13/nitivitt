@@ -1974,9 +1974,9 @@ function EffectivenessSection({
 
   return (
     <div className="mt-3 space-y-3">
-      <div className="rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5">
+      <div className="rounded-3xl border border-border bg-card p-4 shadow-soft">
         {/* Scenario controls - one compact strip above the two analysis columns */}
-        <div className="rounded-2xl border border-border/70 bg-surface/60 p-3.5">
+        <div className="rounded-2xl border border-border/70 bg-surface/60 px-3.5 py-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Scenario controls
@@ -2055,14 +2055,14 @@ function EffectivenessSection({
         </div>
 
         {/* Left 55: Your Plan · Right 45: Scenario Lab */}
-        <div className="mt-4 grid items-stretch gap-4 lg:grid-cols-[55fr_45fr] lg:gap-5">
+        <div className="mt-3 grid items-stretch gap-3 lg:grid-cols-[55fr_45fr]">
           {/* ── YOUR PLAN ── */}
           <div className="min-w-0 rounded-2xl border border-border/70 bg-surface/40 p-4">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Your plan · where am I going?
             </p>
-            <div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
-              <EffectivenessDial score={result.score} delta={result.score - current.score} />
+            <div className="mt-2.5 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
+              <EffectivenessDial score={result.score} delta={result.score - current.score} size={136} />
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                 {[
                   {
