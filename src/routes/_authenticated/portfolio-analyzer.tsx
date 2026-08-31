@@ -2117,35 +2117,38 @@ function EffectivenessSection({
                 </div>
               ))}
             </div>
+            </div>
 
             {/* Contribution vs growth */}
             {result.projected > 0 && (
-              <div className="mt-2.5 border-t border-border/70 pt-2.5">
+              <div className="border-t border-border/70 pt-2.5">
 ...
               </div>
             )}
 
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-border/70 pt-2.5">
-              <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px]">
-                <EffStat label="Readiness" value={`${readiness}% funded`} />
-                <EffStat label="Structural health" value={`${result.structure}/100`} />
-              </dl>
-              <details className="group ml-auto">
-                <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
-                  How this score is built
-                </summary>
-                <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
-                  Effectiveness = 65% readiness against the NitiCore™ reference path + 35%
-                  deterministic structural health.{" "}
-                  {basis.sipSource === "profile"
-                    ? "Your current plan uses the contribution recorded in your profile."
-                    : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}{" "}
-                  Current plan reference: {inrShort(current.projected)} at ₹
-                  {baseSip.toLocaleString("en-IN")}/mo over {baseYears} yrs.
-                </p>
-              </details>
+            <div>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-border/70 pt-2.5">
+                <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[12px]">
+                  <EffStat label="Readiness" value={`${readiness}% funded`} />
+                  <EffStat label="Structural health" value={`${result.structure}/100`} />
+                </dl>
+                <details className="group ml-auto">
+                  <summary className="cursor-pointer list-none text-[11px] font-semibold text-primary hover:underline">
+                    How this score is built
+                  </summary>
+                  <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+                    Effectiveness = 65% readiness against the NitiCore™ reference path + 35%
+                    deterministic structural health.{" "}
+                    {basis.sipSource === "profile"
+                      ? "Your current plan uses the contribution recorded in your profile."
+                      : `No recurring contribution is recorded in your profile, so the current plan starts from the NitiCore™ suggested ₹${baseSip.toLocaleString("en-IN")}/month.`}{" "}
+                    Current plan reference: {inrShort(current.projected)} at ₹
+                    {baseSip.toLocaleString("en-IN")}/mo over {baseYears} yrs.
+                  </p>
+                </details>
+              </div>
+              <p className="mt-2 text-[12px] leading-relaxed text-foreground/85">{interpretation}</p>
             </div>
-            <p className="mt-2 text-[12px] leading-relaxed text-foreground/85">{interpretation}</p>
           </div>
 
           {/* ── SCENARIO LAB ── */}
