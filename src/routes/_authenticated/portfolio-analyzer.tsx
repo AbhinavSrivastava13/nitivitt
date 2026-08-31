@@ -2122,7 +2122,44 @@ function EffectivenessSection({
             {/* Contribution vs growth */}
             {result.projected > 0 && (
               <div className="border-t border-border/70 pt-2.5">
-...
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Contribution vs growth
+                  </p>
+                  <p className="text-[10.5px] text-muted-foreground">
+                    You put in {inrShort(Math.min(result.contributed, result.projected))} · growth
+                    adds {inrShort(Math.max(0, result.projected - result.contributed))}
+                  </p>
+                </div>
+                <div className="mt-2 flex h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-l-full"
+                    style={{
+                      width: `${Math.max(2, Math.min(100, (Math.min(result.contributed, result.projected) / result.projected) * 100))}%`,
+                      backgroundColor: SERIES_COLORS.you,
+                    }}
+                  />
+                  <div
+                    className="h-full flex-1 rounded-r-full"
+                    style={{ backgroundColor: SERIES_COLORS.secondary }}
+                  />
+                </div>
+                <div className="mt-1.5 flex items-center gap-4 text-[10px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: SERIES_COLORS.you }}
+                    />
+                    Your contributions
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ backgroundColor: SERIES_COLORS.secondary }}
+                    />
+                    Compounded growth
+                  </span>
+                </div>
               </div>
             )}
 
