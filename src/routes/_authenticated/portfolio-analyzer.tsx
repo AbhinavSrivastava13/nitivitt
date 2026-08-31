@@ -2141,7 +2141,7 @@ function EffectivenessSection({
                   />
                   <div
                     className="h-full flex-1 rounded-r-full"
-                    style={{ backgroundColor: SERIES_COLORS.secondary }}
+                    style={{ backgroundColor: SERIES_COLORS.positive }}
                   />
                 </div>
                 <div className="mt-1.5 flex items-center gap-4 text-[10px] text-muted-foreground">
@@ -2155,7 +2155,7 @@ function EffectivenessSection({
                   <span className="inline-flex items-center gap-1.5">
                     <span
                       className="h-1.5 w-1.5 rounded-full"
-                      style={{ backgroundColor: SERIES_COLORS.secondary }}
+                      style={{ backgroundColor: SERIES_COLORS.positive }}
                     />
                     Compounded growth
                   </span>
