@@ -266,3 +266,96 @@ export function stressScenarios(totalValue: number, equityValue: number): Stress
     };
   });
 }
+
+/* ─────────────── Personalised (exposure-weighted) stress ─────────────── */
+
+/**
+ * A single illustrative shock applied per exposure family. Rates are stated
+ * NitiCore™ exposure assumptions - they are not forecasts, and they are only
+ * applied to families the analyzer actually identified.
+ */
+const FAMILY_SHOCK: { test: RegExp; shock: number; basis: string }[] = [
+  { test: /gold/i, shock: 5, basis: "Gold usually cushions equity falls rather than amplifying them." },
+  { test: /debt|cash/i, shock: 2, basis: "Debt and cash barely move in an equity drawdown." },
+  { test: /hybrid/i, shock: 15, basis: "Hybrid funds hold a debt sleeve that absorbs part of the fall." },
+  { test: /mid\s*&?\s*small|small\s*cap|midcap|mid-cap/i, shock: 38, basis: "Mid and small caps historically fall far harder than the index." },
+  { test: /bank/i, shock: 32, basis: "A single-sector index concentrates the drawdown into one part of the economy." },
+  { test: /nifty\s?50|large-cap index/i, shock: 25, basis: "Broad large-cap index exposure falls roughly with the market." },
+  { test: /direct equity/i, shock: 35, basis: "Individual companies carry business risk on top of market risk." },
+  { test: /active equity/i, shock: 30, basis: "Active equity funds move with the market, with manager risk on top." },
+  { test: /real assets|reit|invit/i, shock: 25, basis: "Listed real-asset vehicles trade like equity in a sell-off." },
+  { test: /index/i, shock: 27, basis: "Index exposure falls broadly with the market it tracks." },
+];
+
+export interface StressLeg {
+  label: string;
+  pct: number;
+  value: number;
+  shockPct: number;
+  loss: number;
+  basis: string;
+  classified: boolean;
+}
+
+export interface PersonalisedStress {
+  label: string;
+  impactPct: number;
+  loss: number;
+  after: number;
+  total: number;
+  explanation: string;
+  legs: StressLeg[];
+  unclassifiedPct: number;
+}
+
+/**
+ * Builds one portfolio-specific illustrative drawdown by applying a stated
+ * shock to each identified exposure family, so a riskier mix produces a larger
+ * impact. Nothing is invented for families the analyzer could not classify -
+ * those are reported separately and excluded from the shock.
+ */
+export function personalisedStress(
+  groups: { label: string; pct: number; value: number }[],
+  totalValue: number,
+): PersonalisedStress | null {
+  if (totalValue <= 0 || groups.length === 0) return null;
+  const legs: StressLeg[] = [];
+  let unclassifiedPct = 0;
+  for (const g of groups) {
+    const match = FAMILY_SHOCK.find((f) => f.test.test(g.label));
+    if (!match) {
+      unclassifiedPct += g.pct;
+      continue;
+    }
+    legs.push({
+      label: g.label,
+      pct: Math.round(g.pct * 10) / 10,
+      value: g.value,
+      shockPct: match.shock,
+      loss: Math.round((g.value * match.shock) / 100),
+      basis: match.basis,
+      classified: true,
+    });
+  }
+  if (legs.length === 0) return null;
+  legs.sort((a, b) => b.loss - a.loss);
+  const loss = legs.reduce((a, l) => a + l.loss, 0);
+  const impactPct = Math.round((loss / totalValue) * 1000) / 10;
+  const driver = legs[0];
+  const equityHeavy = impactPct >= 22;
+  const explanation = `${driver.label} is the largest single contributor to this fall, taking about ${Math.round((driver.loss / Math.max(1, loss)) * 100)}% of the total impact. ${
+    equityHeavy
+      ? "Your mix is weighted towards growth exposure, so a market-wide correction lands close to full force."
+      : "Your defensive and non-equity holdings absorb a meaningful part of the fall, which is why the impact is below a pure-equity portfolio."
+  }`;
+  return {
+    label: "Broad equity correction, weighted to your actual exposure",
+    impactPct,
+    loss,
+    after: Math.max(0, totalValue - loss),
+    total: totalValue,
+    explanation,
+    legs,
+    unclassifiedPct: Math.round(unclassifiedPct * 10) / 10,
+  };
+}
