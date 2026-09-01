@@ -1385,3 +1385,286 @@ export function HealthGauge({
     </div>
   );
 }
+
+/* ───────────────── CONCENTRATION - semi-donut gauge ───────────────── */
+
+function arcPath(cx: number, cy: number, r: number, from: number, to: number) {
+  const p = (t: number) => {
+    const a = Math.PI * (1 - t);
+    return [cx + r * Math.cos(a), cy - r * Math.sin(a)];
+  };
+  const [x1, y1] = p(from);
+  const [x2, y2] = p(to);
+  return `M ${x1} ${y1} A ${r} ${r} 0 ${to - from > 0.5 ? 1 : 0} 1 ${x2} ${y2}`;
+}
+
+/**
+ * Concentration presented as a semi-donut: the sweep is the largest position's
+ * share of the portfolio against a scale that always contains the 15% guide, so
+ * how concentrated the portfolio is reads instantly. The ranked list underneath
+ * keeps the supporting positions on the same page.
+ */
+export function ConcentrationGauge({
+  rows,
+  formatValue,
+  threshold = 15,
+}: {
+  rows: { name: string; pct: number; value?: number }[];
+  formatValue: (n: number) => string;
+  threshold?: number;
+}) {
+  const top = rows.slice(0, 8);
+  if (top.length === 0) return <NoData />;
+  const lead = top[0];
+  const scale = Math.max(threshold * 2, Math.ceil((lead.pct * 1.25) / 5) * 5);
+  const tone =
+    lead.pct >= 25 ? SERIES_COLORS.action : lead.pct >= threshold ? SERIES_COLORS.attention : SERIES_COLORS.positive;
+  const W = 240;
+  const H = 128;
+  const cx = W / 2;
+  const cy = H - 8;
+  const r = 96;
+  const t = Math.min(1, lead.pct / scale);
+  const guide = Math.min(1, threshold / scale);
+  const gx = cx + (r + 12) * Math.cos(Math.PI * (1 - guide));
+  const gy = cy - (r + 12) * Math.sin(Math.PI * (1 - guide));
+  const top5 = Math.round(top.slice(0, 5).reduce((a, x) => a + x.pct, 0) * 10) / 10;
+
+  return (
+    <div>
+      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
+        <div className="relative shrink-0" style={{ width: W, height: H }}>
+          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Largest holding ${lead.pct}% of portfolio`}>
+            <path d={arcPath(cx, cy, r, 0, 1)} fill="none" stroke="var(--muted)" strokeWidth={13} strokeLinecap="round" />
+            <path
+              d={arcPath(cx, cy, r, 0, Math.max(0.012, t))}
+              fill="none"
+              stroke={tone}
+              strokeWidth={13}
+              strokeLinecap="round"
+              style={{ transition: "d 400ms ease" }}
+            />
+            <line
+              x1={cx + (r - 11) * Math.cos(Math.PI * (1 - guide))}
+              y1={cy - (r - 11) * Math.sin(Math.PI * (1 - guide))}
+              x2={cx + (r + 8) * Math.cos(Math.PI * (1 - guide))}
+              y2={cy - (r + 8) * Math.sin(Math.PI * (1 - guide))}
+              stroke="var(--foreground)"
+              strokeWidth={1.5}
+              strokeDasharray="2 2"
+            />
+            <text
+              x={gx}
+              y={gy}
+              textAnchor={guide < 0.5 ? "end" : "start"}
+              className="fill-muted-foreground"
+              style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em" }}
+            >
+              {threshold}%
+            </text>
+          </svg>
+          <div className="absolute inset-x-0 bottom-1 flex flex-col items-center px-6 text-center">
+            <span className="font-display text-[2.1rem] leading-none tracking-tight tabular-nums" style={{ color: tone }}>
+              {lead.pct}%
+            </span>
+            <span className="mt-1 line-clamp-1 max-w-full text-[11px] font-semibold text-foreground">
+              {lead.name}
+            </span>
+            {lead.value ? (
+              <span className="font-mono text-[10.5px] tabular-nums text-muted-foreground">
+                {formatValue(lead.value)}
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        <ul className="w-full min-w-0 flex-1 space-y-[5px]">
+          {top.slice(0, 6).map((h, i) => (
+            <li key={`${h.name}-${i}`} className="grid grid-cols-[1.1rem_minmax(0,1fr)_2.6rem_3.6rem] items-center gap-x-2">
+              <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
+                {i + 1}
+              </span>
+              <span className="truncate text-[11.5px] font-medium text-foreground">{h.name}</span>
+              <span className="text-right font-mono text-[11px] font-semibold tabular-nums" style={{ color: h.pct >= threshold ? tone : "var(--foreground)" }}>
+                {h.pct}%
+              </span>
+              <span className="text-right font-mono text-[10.5px] tabular-nums text-muted-foreground">
+                {h.value ? formatValue(h.value) : ""}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p className="mt-3 border-t border-border/70 pt-2.5 text-[11px] leading-relaxed text-muted-foreground">
+        Top five holdings hold <span className="font-semibold text-foreground">{top5}%</span> of the
+        portfolio. The dashed mark is the {threshold}% single-position guide.
+      </p>
+    </div>
+  );
+}
+
+/* ───────────────── PEER - benchmark bars ───────────────── */
+
+export function PeerBars({
+  rows,
+}: {
+  rows: { label: string; you: number; typical: number; unit: string; verdict: string }[];
+}) {
+  return (
+    <ul className="space-y-3">
+      {rows.map((r) => {
+        const max = Math.max(r.you, r.typical, 1) * 1.18;
+        const diff = r.you - r.typical;
+        const tolerance = Math.max(r.unit === "%" ? 3 : 5, r.typical * 0.12);
+        const status =
+          Math.abs(diff) <= tolerance
+            ? "In line"
+            : diff > 0
+              ? "Higher than typical"
+              : "Below typical";
+        return (
+          <li key={r.label} title={r.verdict}>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="truncate text-[12px] font-semibold text-foreground">{r.label}</span>
+              <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                {status}
+              </span>
+            </div>
+            <div className="mt-1.5 grid grid-cols-[2.4rem_minmax(0,1fr)_3.2rem] items-center gap-x-2">
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                You
+              </span>
+              <span className="block h-[7px] overflow-hidden rounded-full bg-muted/70">
+                <span
+                  className="block h-full rounded-full transition-[width] duration-500"
+                  style={{ width: `${(r.you / max) * 100}%`, background: SERIES_COLORS.you }}
+                />
+              </span>
+              <span className="text-right font-mono text-[11px] font-semibold tabular-nums text-foreground">
+                {r.you}
+                {r.unit}
+              </span>
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                Cohort
+              </span>
+              <span className="block h-[7px] overflow-hidden rounded-full bg-muted/40">
+                <span
+                  className="block h-full rounded-full"
+                  style={{ width: `${(r.typical / max) * 100}%`, background: SERIES_COLORS.peer, opacity: 0.75 }}
+                />
+              </span>
+              <span className="text-right font-mono text-[11px] tabular-nums" style={{ color: SERIES_COLORS.peer }}>
+                {r.typical}
+                {r.unit}
+              </span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/* ───────────────── HEALTH - compact threshold bar ───────────────── */
+
+export function ThresholdBar({
+  score,
+  color,
+  markerPct = 60,
+  markerLabel,
+}: {
+  score: number;
+  color: string;
+  markerPct?: number;
+  markerLabel?: string;
+}) {
+  const v = Math.max(0, Math.min(100, score));
+  return (
+    <div>
+      <div className="relative h-[9px] w-full overflow-hidden rounded-full bg-muted/70">
+        <span
+          className="block h-full rounded-full transition-[width] duration-500"
+          style={{ width: `${Math.max(2, v)}%`, background: color }}
+        />
+      </div>
+      <div className="relative mt-1 h-3">
+        <span
+          className="absolute -translate-x-1/2 whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+          style={{ left: `${Math.min(92, Math.max(8, markerPct))}%` }}
+        >
+          ▲ {markerLabel ?? "target"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────── STRESS - personalised exposure shock ───────────────── */
+
+export function PersonalStress({
+  stress,
+  formatValue,
+}: {
+  stress: import("@/lib/portfolio-analyzer/effectiveness").PersonalisedStress;
+  formatValue: (n: number) => string;
+}) {
+  const maxLoss = Math.max(1, ...stress.legs.map((l) => l.loss));
+  return (
+    <div>
+      <div className="grid gap-2 sm:grid-cols-3">
+        {[
+          { label: "Portfolio impact", value: `−${stress.impactPct}%`, strong: true },
+          { label: "Estimated loss", value: `−${formatValue(stress.loss)}` },
+          { label: "Value remaining", value: formatValue(stress.after) },
+        ].map((c) => (
+          <div
+            key={c.label}
+            className={`rounded-xl border px-3 py-2 ${c.strong ? "border-foreground/25 bg-surface/70" : "border-border/70"}`}
+          >
+            <p className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              {c.label}
+            </p>
+            <p
+              className="mt-1 font-display text-lg leading-none tracking-tight"
+              style={{ color: c.strong ? SERIES_COLORS.action : "var(--foreground)" }}
+            >
+              {c.value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <ul className="mt-3 space-y-2 border-t border-border/70 pt-3">
+        {stress.legs.slice(0, 6).map((l) => (
+          <li key={l.label} title={l.basis}>
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="truncate text-[11.5px] font-medium text-foreground">
+                {l.label} <span className="text-muted-foreground">· {l.pct}%</span>
+              </span>
+              <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+                −{l.shockPct}% · −{formatValue(l.loss)}
+              </span>
+            </div>
+            <span className="mt-1 block h-[6px] w-full overflow-hidden rounded-full bg-muted/60">
+              <span
+                className="block h-full rounded-full"
+                style={{ width: `${(l.loss / maxLoss) * 100}%`, background: SERIES_COLORS.action, opacity: 0.8 }}
+              />
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-3 text-[11.5px] leading-relaxed text-foreground/85">{stress.explanation}</p>
+      {stress.unclassifiedPct > 0 && (
+        <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
+          {stress.unclassifiedPct}% of the portfolio could not be classified reliably, so no shock
+          was assumed for it.
+        </p>
+      )}
+      <p className="mt-2 border-t border-border/60 pt-2 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+        Illustrative scenario based on NitiCore™ exposure assumptions - not a forecast.
+      </p>
+    </div>
+  );
+}
