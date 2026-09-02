@@ -1275,10 +1275,17 @@ function ReportView({
             </div>
           )}
           <ChartCard
-            title="If markets fall from here"
-            note="Hypothetical drawdowns applied to today's holdings - not predictions."
+            title="Personalised stress test"
+            note="One drawdown, weighted to the exposure NitiInvest™ actually identified in your portfolio."
           >
-            <StressWaterfall rows={stress} total={report.totalValue} formatValue={formatInr} />
+            {stress ? (
+              <PersonalStress stress={stress} formatValue={formatInr} />
+            ) : (
+              <p className="text-[12px] leading-relaxed text-muted-foreground">
+                A stress test needs holdings NitiInvest™ can classify into exposure families. None of
+                these positions resolved reliably, so no shock has been assumed.
+              </p>
+            )}
           </ChartCard>
         </div>
       </section>
@@ -1293,12 +1300,22 @@ function ReportView({
           />
           {diagnostics.length > 0 && (
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-              {diagnostics.slice(0, 3).map((d) => (
-                <DiagnosticGauge key={d.id} d={d} />
-              ))}
-              {diagnostics.slice(3).map((d) => (
-                <DiagnosticChip key={d.id} d={d} />
-              ))}
+              {diagnostics
+                .slice()
+                .sort((a, b) => healthRank(a.id) - healthRank(b.id))
+                .map((d) =>
+                  d.id === "diversification" || d.id === "goal" ? (
+                    <DiagnosticGauge key={d.id} d={d} />
+                  ) : d.id === "cost" ? (
+                    <DiagnosticBenchmark
+                      key={d.id}
+                      d={d}
+                      cohort={peer?.rows.find((r) => /cost/i.test(r.label))?.typical ?? 0.9}
+                    />
+                  ) : (
+                    <DiagnosticBar key={d.id} d={d} />
+                  ),
+                )}
             </div>
           )}
 
