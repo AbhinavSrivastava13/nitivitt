@@ -1210,11 +1210,16 @@ function ReportView({
             title="Sector mix"
             note="Sector exposure across holdings matched to verified security data."
             className="xl:col-span-2"
+            takeaway={
+              report.allocation.bySector.length > 0
+                ? "Sector tilts decide how your portfolio behaves when one part of the market falls."
+                : undefined
+            }
           >
             <SectorTreemap
               slices={report.allocation.bySector}
               formatValue={formatInr}
-              height={340}
+              height={280}
               columns={3}
               empty="Sector exposure appears once a holding is matched to a listed security. These positions are held through instruments that do not publish a single sector."
             />
