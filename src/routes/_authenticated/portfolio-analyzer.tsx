@@ -1158,8 +1158,15 @@ function ReportView({
           <ChartCard
             title="Concentration"
             note="How much of the outcome rests on a single position."
+            takeaway={
+              largest
+                ? largest.pct >= 15
+                  ? "Your largest position can now materially influence the portfolio's outcome."
+                  : "No single position is large enough to decide the portfolio's outcome on its own."
+                : undefined
+            }
           >
-            <ConcentrationLadder
+            <ConcentrationGauge
               rows={report.topHoldings.map((h) => ({
                 name: h.name,
                 pct: h.pct,
