@@ -28,17 +28,17 @@ import {
   ComparisonTracks,
   ExposureOverlap,
   AllocationDonut,
-  ConcentrationLadder,
+  ConcentrationGauge,
   StackedComposition,
   SectorTreemap,
   MiniMeter,
-  ProjectionChart,
   SERIES_COLORS,
   EffectivenessDial,
   ScenarioMatrix,
-  StressWaterfall,
   HealthGauge,
-  PeerRails,
+  ThresholdBar,
+  PeerBars,
+  PersonalStress,
   type ExposureGroup,
 } from "@/components/portfolio/charts";
 import {
@@ -50,18 +50,13 @@ import {
   detectOverlap,
   blendedCostFromDiagnostics,
   costDrag,
-  stressScenarios,
+  personalisedStress,
   baselineSip,
   resolveHorizon,
   STEP_UP_ROWS,
   type ScenarioKey,
 } from "@/lib/portfolio-analyzer/effectiveness";
-import {
-  buildProjectionSeries,
-  projectValue,
-  projectionGuidance,
-  inrShort,
-} from "@/lib/portfolio-analyzer/projection";
+import { projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
 import type { ProjectionBasis } from "@/lib/portfolio-analyzer/types";
 
 import {
