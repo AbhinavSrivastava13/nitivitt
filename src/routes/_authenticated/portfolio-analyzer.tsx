@@ -2347,11 +2347,23 @@ function PeerComparison({
   // same deterministic NitiCore™ rule (roughly 100 − age). Every other cohort
   // reference is structural, so it is left exactly as the engine calculated it.
   const bandStart = Number(band.split("-")[0]);
-  const rows = peer.rows.map((r) =>
-    /equity participation/i.test(r.label)
-      ? { ...r, typical: Math.max(20, Math.min(90, 100 - (bandStart + 2))) }
-      : r,
-  );
+  // The five comparisons that actually change a decision. Holding count and
+  // liquidity are deliberately excluded - neither tells you whether the
+  // portfolio is structurally better or worse than a peer's.
+  const PEER_METRICS = [
+    /equity participation/i,
+    /largest holding/i,
+    /diversification/i,
+    /cost efficiency/i,
+    /defensive/i,
+  ];
+  const rows = PEER_METRICS.map((re) => peer.rows.find((r) => re.test(r.label)))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r))
+    .map((r) =>
+      /equity participation/i.test(r.label)
+        ? { ...r, typical: Math.max(20, Math.min(90, 100 - (bandStart + 2))) }
+        : r,
+    );
 
   const conc = rows.find((r) => /largest holding/i.test(r.label));
   const div = rows.find((r) => /diversification/i.test(r.label));
@@ -2377,7 +2389,7 @@ function PeerComparison({
   })();
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+    <div className="rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11px] text-muted-foreground">{peer.cohort}</p>
         <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -2395,8 +2407,8 @@ function PeerComparison({
           </select>
         </label>
       </div>
-      <div className="mt-5">
-        <PeerRails rows={rows} />
+      <div className="mt-4">
+        <PeerBars rows={rows} />
       </div>
       {conclusion && (
         <p className="mt-5 border-t border-border/70 pt-4 text-[13px] leading-relaxed text-foreground/90">
