@@ -943,12 +943,9 @@ function ReportView({
   const exposure = useMemo(() => buildExposureGroups(report), [report]);
   const overlap = useMemo(() => detectOverlap(exposure), [exposure]);
   const largest = report.topHoldings[0];
-  const equityValue = report.allocation.byAssetClass
-    .filter((s) => /equity|index|etf|hybrid/i.test(s.label))
-    .reduce((a, s) => a + s.value, 0);
   const stress = useMemo(
-    () => stressScenarios(report.totalValue, equityValue || report.totalValue),
-    [report.totalValue, equityValue],
+    () => personalisedStress(exposure, report.totalValue),
+    [exposure, report.totalValue],
   );
   const blendedCost = useMemo(() => blendedCostFromDiagnostics(diagnostics), [diagnostics]);
   const drag = useMemo(
