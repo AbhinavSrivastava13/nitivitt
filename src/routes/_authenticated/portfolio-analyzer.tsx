@@ -1138,6 +1138,11 @@ function ReportView({
           <ChartCard
             title="Exposure families"
             note="Holdings collapsed into the exposure they actually share."
+            takeaway={
+              exposure.length > 0 && exposure.length < report.holdingCount
+                ? "You own multiple instruments, but some provide highly similar exposure."
+                : undefined
+            }
           >
             <ExposureOverlap
               groups={exposure}
@@ -1145,9 +1150,9 @@ function ReportView({
               empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
             />
             {exposure.length > 0 && (
-              <p className="mt-4 border-t border-border/70 pt-3 text-[12px] leading-relaxed text-foreground/85">
+              <p className="mt-3 border-t border-border/70 pt-2.5 text-[11.5px] leading-relaxed text-muted-foreground">
                 {report.holdingCount} holdings resolve into{" "}
-                <span className="font-semibold">
+                <span className="font-semibold text-foreground">
                   {exposure.length} distinct exposure{" "}
                   {exposure.length === 1 ? "family" : "families"}
                 </span>
