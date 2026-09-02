@@ -1566,39 +1566,31 @@ function DiagnosticGauge({
 }
 
 
-/**
- * Compact health chip. Status + measured value are glanceable; the reasoning
- * expands only on interaction so the matrix stays a strip, not six blocks.
- */
-function DiagnosticChip({
+/** Score-style checks lead the grid; threshold checks follow; cost closes it. */
+function healthRank(id: string): number {
+  return (
+    { diversification: 0, goal: 1, concentration: 2, allocation: 3, liquidity: 4, cost: 5 }[id] ?? 6
+  );
+}
+
+function DiagnosticShell({
   d,
+  children,
 }: {
   d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+  children: React.ReactNode;
 }) {
-  const map = {
-    good: { dot: SERIES_COLORS.positive, chip: "text-success", word: "Healthy" },
-    watch: { dot: SERIES_COLORS.attention, chip: "text-warning", word: "Watch" },
-    action: { dot: SERIES_COLORS.action, chip: "text-destructive", word: "Act" },
-  }[d.status];
+  const map = DIAGNOSTIC_TONE[d.status];
   return (
-    <details className="group rounded-2xl border border-border bg-card px-4 py-3 shadow-soft transition-colors open:bg-surface/60">
-      <summary className="flex cursor-pointer list-none items-center gap-2.5">
-        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: map.dot }} />
-        <span className="min-w-0 flex-1">
-          <span className="flex items-baseline justify-between gap-2">
-            <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
-            <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-foreground">
-              {d.valueLabel}
-            </span>
-          </span>
-          <span className="mt-1.5 block">
-            <MiniMeter value={d.score} color={map.dot} />
+    <details className="group rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft transition-colors open:bg-surface/60">
+      <summary className="cursor-pointer list-none">
+        <span className="flex items-baseline justify-between gap-2">
+          <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
+          <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}>
+            {map.word}
           </span>
         </span>
-        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}>
-          {map.word}
-        </span>
-        <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+        {children}
       </summary>
       <div className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed">
         <p>
@@ -1611,6 +1603,67 @@ function DiagnosticChip({
         </p>
       </div>
     </details>
+  );
+}
+
+/**
+ * Threshold check - concentration, allocation and liquidity are read against a
+ * healthy band rather than as a score out of a hundred, so they use a measured
+ * bar with the target marked rather than a gauge.
+ */
+function DiagnosticBar({
+  d,
+}: {
+  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+}) {
+  const map = DIAGNOSTIC_TONE[d.status];
+  return (
+    <DiagnosticShell d={d}>
+      <span className="mt-2 block">
+        <ThresholdBar score={d.score} color={map.dot} markerPct={70} markerLabel="healthy" />
+      </span>
+      <span className="mt-0.5 flex items-baseline justify-between gap-2 font-mono text-[11px] tabular-nums">
+        <span className="truncate text-foreground">{d.valueLabel}</span>
+        <span className="shrink-0 truncate text-muted-foreground">{d.targetLabel}</span>
+      </span>
+    </DiagnosticShell>
+  );
+}
+
+/** Cost is only meaningful against what comparable investors pay. */
+function DiagnosticBenchmark({
+  d,
+  cohort,
+}: {
+  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+  cohort: number;
+}) {
+  const you = blendedCostFromDiagnostics([d]) ?? 0;
+  const max = Math.max(you, cohort, 0.1) * 1.25;
+  return (
+    <DiagnosticShell d={d}>
+      <span className="mt-2 block space-y-1">
+        {[
+          { k: "You", v: you, c: SERIES_COLORS.you },
+          { k: "Cohort", v: cohort, c: SERIES_COLORS.peer },
+        ].map((t) => (
+          <span key={t.k} className="grid grid-cols-[2.6rem_minmax(0,1fr)_2.6rem] items-center gap-x-2">
+            <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+              {t.k}
+            </span>
+            <span className="block h-[7px] overflow-hidden rounded-full bg-muted/70">
+              <span
+                className="block h-full rounded-full"
+                style={{ width: `${(t.v / max) * 100}%`, background: t.c }}
+              />
+            </span>
+            <span className="text-right font-mono text-[11px] tabular-nums text-foreground">
+              {t.v}%
+            </span>
+          </span>
+        ))}
+      </span>
+    </DiagnosticShell>
   );
 }
 
