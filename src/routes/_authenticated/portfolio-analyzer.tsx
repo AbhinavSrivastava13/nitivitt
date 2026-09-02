@@ -1426,22 +1426,30 @@ function ChartCard({
   title,
   note,
   children,
+  takeaway,
   className = "",
 }: {
   title: string;
   note?: string;
   children: React.ReactNode;
+  /** One-line "so what?" read for the investor. Kept to a single sentence. */
+  takeaway?: string;
   className?: string;
 }) {
   return (
     <div
-      className={`rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5 ${className}`}
+      className={`flex flex-col rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5 ${className}`}
     >
       <h4 className="font-display text-base tracking-tight text-foreground">{title}</h4>
       {note && (
         <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>
       )}
-      <div className="mt-4">{children}</div>
+      <div className="mt-3 flex-1">{children}</div>
+      {takeaway && (
+        <p className="mt-3 border-t border-border/60 pt-2.5 text-[11.5px] font-medium leading-relaxed text-foreground/85">
+          {takeaway}
+        </p>
+      )}
     </div>
   );
 }
