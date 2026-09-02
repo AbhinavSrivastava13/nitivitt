@@ -28,17 +28,17 @@ import {
   ComparisonTracks,
   ExposureOverlap,
   AllocationDonut,
-  ConcentrationLadder,
+  ConcentrationGauge,
   StackedComposition,
   SectorTreemap,
   MiniMeter,
-  ProjectionChart,
   SERIES_COLORS,
   EffectivenessDial,
   ScenarioMatrix,
-  StressWaterfall,
   HealthGauge,
-  PeerRails,
+  ThresholdBar,
+  PeerBars,
+  PersonalStress,
   type ExposureGroup,
 } from "@/components/portfolio/charts";
 import {
@@ -50,18 +50,13 @@ import {
   detectOverlap,
   blendedCostFromDiagnostics,
   costDrag,
-  stressScenarios,
+  personalisedStress,
   baselineSip,
   resolveHorizon,
   STEP_UP_ROWS,
   type ScenarioKey,
 } from "@/lib/portfolio-analyzer/effectiveness";
-import {
-  buildProjectionSeries,
-  projectValue,
-  projectionGuidance,
-  inrShort,
-} from "@/lib/portfolio-analyzer/projection";
+import { projectionGuidance, inrShort } from "@/lib/portfolio-analyzer/projection";
 import type { ProjectionBasis } from "@/lib/portfolio-analyzer/types";
 
 import {
@@ -948,12 +943,9 @@ function ReportView({
   const exposure = useMemo(() => buildExposureGroups(report), [report]);
   const overlap = useMemo(() => detectOverlap(exposure), [exposure]);
   const largest = report.topHoldings[0];
-  const equityValue = report.allocation.byAssetClass
-    .filter((s) => /equity|index|etf|hybrid/i.test(s.label))
-    .reduce((a, s) => a + s.value, 0);
   const stress = useMemo(
-    () => stressScenarios(report.totalValue, equityValue || report.totalValue),
-    [report.totalValue, equityValue],
+    () => personalisedStress(exposure, report.totalValue),
+    [exposure, report.totalValue],
   );
   const blendedCost = useMemo(() => blendedCostFromDiagnostics(diagnostics), [diagnostics]);
   const drag = useMemo(
@@ -1146,6 +1138,11 @@ function ReportView({
           <ChartCard
             title="Exposure families"
             note="Holdings collapsed into the exposure they actually share."
+            takeaway={
+              exposure.length > 0 && exposure.length < report.holdingCount
+                ? "You own multiple instruments, but some provide highly similar exposure."
+                : undefined
+            }
           >
             <ExposureOverlap
               groups={exposure}
@@ -1153,9 +1150,9 @@ function ReportView({
               empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
             />
             {exposure.length > 0 && (
-              <p className="mt-4 border-t border-border/70 pt-3 text-[12px] leading-relaxed text-foreground/85">
+              <p className="mt-3 border-t border-border/70 pt-2.5 text-[11.5px] leading-relaxed text-muted-foreground">
                 {report.holdingCount} holdings resolve into{" "}
-                <span className="font-semibold">
+                <span className="font-semibold text-foreground">
                   {exposure.length} distinct exposure{" "}
                   {exposure.length === 1 ? "family" : "families"}
                 </span>
@@ -1166,8 +1163,15 @@ function ReportView({
           <ChartCard
             title="Concentration"
             note="How much of the outcome rests on a single position."
+            takeaway={
+              largest
+                ? largest.pct >= 15
+                  ? "Your largest position can now materially influence the portfolio's outcome."
+                  : "No single position is large enough to decide the portfolio's outcome on its own."
+                : undefined
+            }
           >
-            <ConcentrationLadder
+            <ConcentrationGauge
               rows={report.topHoldings.map((h) => ({
                 name: h.name,
                 pct: h.pct,
@@ -1206,11 +1210,16 @@ function ReportView({
             title="Sector mix"
             note="Sector exposure across holdings matched to verified security data."
             className="xl:col-span-2"
+            takeaway={
+              report.allocation.bySector.length > 0
+                ? "Sector tilts decide how your portfolio behaves when one part of the market falls."
+                : undefined
+            }
           >
             <SectorTreemap
               slices={report.allocation.bySector}
               formatValue={formatInr}
-              height={340}
+              height={280}
               columns={3}
               empty="Sector exposure appears once a holding is matched to a listed security. These positions are held through instruments that do not publish a single sector."
             />
@@ -1276,10 +1285,17 @@ function ReportView({
             </div>
           )}
           <ChartCard
-            title="If markets fall from here"
-            note="Hypothetical drawdowns applied to today's holdings - not predictions."
+            title="Personalised stress test"
+            note="One drawdown, weighted to the exposure NitiInvest™ actually identified in your portfolio."
           >
-            <StressWaterfall rows={stress} total={report.totalValue} formatValue={formatInr} />
+            {stress ? (
+              <PersonalStress stress={stress} formatValue={formatInr} />
+            ) : (
+              <p className="text-[12px] leading-relaxed text-muted-foreground">
+                A stress test needs holdings NitiInvest™ can classify into exposure families. None of
+                these positions resolved reliably, so no shock has been assumed.
+              </p>
+            )}
           </ChartCard>
         </div>
       </section>
@@ -1294,12 +1310,22 @@ function ReportView({
           />
           {diagnostics.length > 0 && (
             <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
-              {diagnostics.slice(0, 3).map((d) => (
-                <DiagnosticGauge key={d.id} d={d} />
-              ))}
-              {diagnostics.slice(3).map((d) => (
-                <DiagnosticChip key={d.id} d={d} />
-              ))}
+              {diagnostics
+                .slice()
+                .sort((a, b) => healthRank(a.id) - healthRank(b.id))
+                .map((d) =>
+                  d.id === "diversification" || d.id === "goal" ? (
+                    <DiagnosticGauge key={d.id} d={d} />
+                  ) : d.id === "cost" ? (
+                    <DiagnosticBenchmark
+                      key={d.id}
+                      d={d}
+                      cohort={peer?.rows.find((r) => /cost/i.test(r.label))?.typical ?? 0.9}
+                    />
+                  ) : (
+                    <DiagnosticBar key={d.id} d={d} />
+                  ),
+                )}
             </div>
           )}
 
@@ -1427,22 +1453,30 @@ function ChartCard({
   title,
   note,
   children,
+  takeaway,
   className = "",
 }: {
   title: string;
   note?: string;
   children: React.ReactNode;
+  /** One-line "so what?" read for the investor. Kept to a single sentence. */
+  takeaway?: string;
   className?: string;
 }) {
   return (
     <div
-      className={`rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5 ${className}`}
+      className={`flex flex-col rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5 ${className}`}
     >
       <h4 className="font-display text-base tracking-tight text-foreground">{title}</h4>
       {note && (
         <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-muted-foreground">{note}</p>
       )}
-      <div className="mt-4">{children}</div>
+      <div className="mt-3 flex-1">{children}</div>
+      {takeaway && (
+        <p className="mt-3 border-t border-border/60 pt-2.5 text-[11.5px] font-medium leading-relaxed text-foreground/85">
+          {takeaway}
+        </p>
+      )}
     </div>
   );
 }
@@ -1542,39 +1576,31 @@ function DiagnosticGauge({
 }
 
 
-/**
- * Compact health chip. Status + measured value are glanceable; the reasoning
- * expands only on interaction so the matrix stays a strip, not six blocks.
- */
-function DiagnosticChip({
+/** Score-style checks lead the grid; threshold checks follow; cost closes it. */
+function healthRank(id: string): number {
+  return (
+    { diversification: 0, goal: 1, concentration: 2, allocation: 3, liquidity: 4, cost: 5 }[id] ?? 6
+  );
+}
+
+function DiagnosticShell({
   d,
+  children,
 }: {
   d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+  children: React.ReactNode;
 }) {
-  const map = {
-    good: { dot: SERIES_COLORS.positive, chip: "text-success", word: "Healthy" },
-    watch: { dot: SERIES_COLORS.attention, chip: "text-warning", word: "Watch" },
-    action: { dot: SERIES_COLORS.action, chip: "text-destructive", word: "Act" },
-  }[d.status];
+  const map = DIAGNOSTIC_TONE[d.status];
   return (
-    <details className="group rounded-2xl border border-border bg-card px-4 py-3 shadow-soft transition-colors open:bg-surface/60">
-      <summary className="flex cursor-pointer list-none items-center gap-2.5">
-        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: map.dot }} />
-        <span className="min-w-0 flex-1">
-          <span className="flex items-baseline justify-between gap-2">
-            <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
-            <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-foreground">
-              {d.valueLabel}
-            </span>
-          </span>
-          <span className="mt-1.5 block">
-            <MiniMeter value={d.score} color={map.dot} />
+    <details className="group rounded-2xl border border-border bg-card px-4 py-3.5 shadow-soft transition-colors open:bg-surface/60">
+      <summary className="cursor-pointer list-none">
+        <span className="flex items-baseline justify-between gap-2">
+          <span className="truncate text-[12.5px] font-semibold text-foreground">{d.label}</span>
+          <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}>
+            {map.word}
           </span>
         </span>
-        <span className={`shrink-0 text-[10px] font-bold uppercase tracking-[0.12em] ${map.chip}`}>
-          {map.word}
-        </span>
-        <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
+        {children}
       </summary>
       <div className="mt-3 space-y-1.5 border-t border-border/60 pt-3 text-[11.5px] leading-relaxed">
         <p>
@@ -1587,6 +1613,67 @@ function DiagnosticChip({
         </p>
       </div>
     </details>
+  );
+}
+
+/**
+ * Threshold check - concentration, allocation and liquidity are read against a
+ * healthy band rather than as a score out of a hundred, so they use a measured
+ * bar with the target marked rather than a gauge.
+ */
+function DiagnosticBar({
+  d,
+}: {
+  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+}) {
+  const map = DIAGNOSTIC_TONE[d.status];
+  return (
+    <DiagnosticShell d={d}>
+      <span className="mt-2 block">
+        <ThresholdBar score={d.score} color={map.dot} markerPct={70} markerLabel="healthy" />
+      </span>
+      <span className="mt-0.5 flex items-baseline justify-between gap-2 font-mono text-[11px] tabular-nums">
+        <span className="truncate text-foreground">{d.valueLabel}</span>
+        <span className="shrink-0 truncate text-muted-foreground">{d.targetLabel}</span>
+      </span>
+    </DiagnosticShell>
+  );
+}
+
+/** Cost is only meaningful against what comparable investors pay. */
+function DiagnosticBenchmark({
+  d,
+  cohort,
+}: {
+  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
+  cohort: number;
+}) {
+  const you = blendedCostFromDiagnostics([d]) ?? 0;
+  const max = Math.max(you, cohort, 0.1) * 1.25;
+  return (
+    <DiagnosticShell d={d}>
+      <span className="mt-2 block space-y-1">
+        {[
+          { k: "You", v: you, c: SERIES_COLORS.you },
+          { k: "Cohort", v: cohort, c: SERIES_COLORS.peer },
+        ].map((t) => (
+          <span key={t.k} className="grid grid-cols-[2.6rem_minmax(0,1fr)_2.6rem] items-center gap-x-2">
+            <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+              {t.k}
+            </span>
+            <span className="block h-[7px] overflow-hidden rounded-full bg-muted/70">
+              <span
+                className="block h-full rounded-full"
+                style={{ width: `${(t.v / max) * 100}%`, background: t.c }}
+              />
+            </span>
+            <span className="text-right font-mono text-[11px] tabular-nums text-foreground">
+              {t.v}%
+            </span>
+          </span>
+        ))}
+      </span>
+    </DiagnosticShell>
   );
 }
 
@@ -1950,13 +2037,6 @@ function EffectivenessSection({
   );
   const lever = useMemo(() => highestImpactLever(grid), [grid]);
 
-  const series = useMemo(() => {
-    const common = { currentValue: basis.currentValue, years };
-    return buildProjectionSeries(
-      { ...common, monthlySip: baseSip, annualReturnPct: basis.expectedReturnPct },
-      { ...common, monthlySip, annualReturnPct: result.returnPct, annualStepUpPct: stepUpPct },
-    );
-  }, [basis, baseSip, monthlySip, years, stepUpPct, result.returnPct]);
 
   const changed =
     monthlySip !== baseSip || stepUpPct !== 0 || years !== baseYears || scenario !== "base";
@@ -2196,7 +2276,7 @@ function EffectivenessSection({
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               Contribution × return · projected value at {years} years
             </p>
-            <div className="mt-2.5 -mx-1 overflow-x-auto px-1">
+            <div className="mt-2.5 -mx-1 flex min-h-0 flex-1 flex-col overflow-x-auto px-1">
               <div className="min-w-[420px]">
                 <ScenarioMatrix
                   cells={grid}
@@ -2212,32 +2292,10 @@ function EffectivenessSection({
                 />
               </div>
             </div>
-
-            {/* Projected growth - flexes to fill the right column so both columns align */}
-            <div className="mt-2.5 flex min-h-0 flex-1 flex-col border-t border-border/70 pt-2.5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Projected growth
-              </p>
-              <div className="mt-1.5 flex min-h-[150px] flex-1 flex-col">
-                <ProjectionChart
-                  data={series}
-                  format={inrShort}
-                  fill
-                  series={[
-                    { key: "base", label: "Current plan", color: SERIES_COLORS.you },
-                    {
-                      key: "alternative",
-                      label: "Your scenario",
-                      color: SERIES_COLORS.recommended,
-                      dash: "6 4",
-                    },
-                  ]}
-                />
-              </div>
-              <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
-                Illustrative scenarios, not guaranteed returns.
-              </p>
-            </div>
+            <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+              Each cell is the projected corpus at {years} years. Illustrative scenarios, not
+              guaranteed returns.
+            </p>
 
             {lever && (
               <p className="mt-2.5 border-t border-border/60 pt-2.5 text-[11.5px] leading-relaxed text-foreground/85">
@@ -2299,11 +2357,23 @@ function PeerComparison({
   // same deterministic NitiCore™ rule (roughly 100 − age). Every other cohort
   // reference is structural, so it is left exactly as the engine calculated it.
   const bandStart = Number(band.split("-")[0]);
-  const rows = peer.rows.map((r) =>
-    /equity participation/i.test(r.label)
-      ? { ...r, typical: Math.max(20, Math.min(90, 100 - (bandStart + 2))) }
-      : r,
-  );
+  // The five comparisons that actually change a decision. Holding count and
+  // liquidity are deliberately excluded - neither tells you whether the
+  // portfolio is structurally better or worse than a peer's.
+  const PEER_METRICS = [
+    /equity participation/i,
+    /largest holding/i,
+    /diversification/i,
+    /cost efficiency/i,
+    /defensive/i,
+  ];
+  const rows = PEER_METRICS.map((re) => peer.rows.find((r) => re.test(r.label)))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r))
+    .map((r) =>
+      /equity participation/i.test(r.label)
+        ? { ...r, typical: Math.max(20, Math.min(90, 100 - (bandStart + 2))) }
+        : r,
+    );
 
   const conc = rows.find((r) => /largest holding/i.test(r.label));
   const div = rows.find((r) => /diversification/i.test(r.label));
@@ -2329,7 +2399,7 @@ function PeerComparison({
   })();
 
   return (
-    <div className="rounded-3xl border border-border bg-card p-5 shadow-soft md:p-6">
+    <div className="rounded-3xl border border-border bg-card p-4 shadow-soft md:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-[11px] text-muted-foreground">{peer.cohort}</p>
         <label className="flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -2347,8 +2417,8 @@ function PeerComparison({
           </select>
         </label>
       </div>
-      <div className="mt-5">
-        <PeerRails rows={rows} />
+      <div className="mt-4">
+        <PeerBars rows={rows} />
       </div>
       {conclusion && (
         <p className="mt-5 border-t border-border/70 pt-4 text-[13px] leading-relaxed text-foreground/90">
