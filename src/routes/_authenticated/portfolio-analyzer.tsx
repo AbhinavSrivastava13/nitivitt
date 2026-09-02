@@ -2266,7 +2266,7 @@ function EffectivenessSection({
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               Contribution × return · projected value at {years} years
             </p>
-            <div className="mt-2.5 -mx-1 overflow-x-auto px-1">
+            <div className="mt-2.5 -mx-1 flex min-h-0 flex-1 flex-col overflow-x-auto px-1">
               <div className="min-w-[420px]">
                 <ScenarioMatrix
                   cells={grid}
@@ -2282,32 +2282,10 @@ function EffectivenessSection({
                 />
               </div>
             </div>
-
-            {/* Projected growth - flexes to fill the right column so both columns align */}
-            <div className="mt-2.5 flex min-h-0 flex-1 flex-col border-t border-border/70 pt-2.5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Projected growth
-              </p>
-              <div className="mt-1.5 flex min-h-[150px] flex-1 flex-col">
-                <ProjectionChart
-                  data={series}
-                  format={inrShort}
-                  fill
-                  series={[
-                    { key: "base", label: "Current plan", color: SERIES_COLORS.you },
-                    {
-                      key: "alternative",
-                      label: "Your scenario",
-                      color: SERIES_COLORS.recommended,
-                      dash: "6 4",
-                    },
-                  ]}
-                />
-              </div>
-              <p className="mt-1.5 text-[10.5px] leading-relaxed text-muted-foreground">
-                Illustrative scenarios, not guaranteed returns.
-              </p>
-            </div>
+            <p className="mt-2 text-[10.5px] leading-relaxed text-muted-foreground">
+              Each cell is the projected corpus at {years} years. Illustrative scenarios, not
+              guaranteed returns.
+            </p>
 
             {lever && (
               <p className="mt-2.5 border-t border-border/60 pt-2.5 text-[11.5px] leading-relaxed text-foreground/85">
