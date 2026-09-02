@@ -2027,13 +2027,6 @@ function EffectivenessSection({
   );
   const lever = useMemo(() => highestImpactLever(grid), [grid]);
 
-  const series = useMemo(() => {
-    const common = { currentValue: basis.currentValue, years };
-    return buildProjectionSeries(
-      { ...common, monthlySip: baseSip, annualReturnPct: basis.expectedReturnPct },
-      { ...common, monthlySip, annualReturnPct: result.returnPct, annualStepUpPct: stepUpPct },
-    );
-  }, [basis, baseSip, monthlySip, years, stepUpPct, result.returnPct]);
 
   const changed =
     monthlySip !== baseSip || stepUpPct !== 0 || years !== baseYears || scenario !== "base";
