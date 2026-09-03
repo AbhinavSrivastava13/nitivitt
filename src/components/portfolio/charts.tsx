@@ -1431,7 +1431,7 @@ export function ConcentrationGauge({
   const top5 = Math.round(top.slice(0, 5).reduce((a, x) => a + x.pct, 0) * 10) / 10;
 
   return (
-    <div>
+    <div className="flex h-full flex-col justify-between gap-3">
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
         <div className="relative shrink-0" style={{ width: W, height: H }}>
           <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Largest holding ${lead.pct}% of portfolio`}>
