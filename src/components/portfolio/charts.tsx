@@ -1088,7 +1088,7 @@ export function ScenarioMatrix({
   return (
     <div
       className="grid"
-      style={{ gridTemplateColumns: `4.75rem repeat(${columns.length}, minmax(0,1fr))` }}
+      style={{ gridTemplateColumns: `minmax(3.4rem,4.5rem) repeat(${columns.length}, minmax(0,1fr))` }}
     >
       <span />
       {columns.map((c) => (
@@ -1101,7 +1101,7 @@ export function ScenarioMatrix({
       ))}
       {rows.map((r) => (
         <Fragment key={`row-${r}`}>
-          <span className="flex items-center justify-end pr-2.5 text-right text-[11px] font-medium text-muted-foreground">
+          <span className="flex items-center justify-end pr-2 text-right text-[10.5px] font-medium leading-tight text-muted-foreground">
             {r}% step-up
           </span>
           {columns.map((c) => {
@@ -1117,7 +1117,7 @@ export function ScenarioMatrix({
                 }`}
                 style={{ background: shade(cell?.projected ?? 0) }}
               >
-                <span className="block font-mono text-[12.5px] font-semibold tabular-nums text-foreground">
+                <span className="block font-mono text-[11.5px] font-semibold tabular-nums text-foreground sm:text-[12.5px]">
                   {cell ? formatValue(cell.projected) : "-"}
                 </span>
                 <span className="mt-0.5 block font-mono text-[10px] tabular-nums text-muted-foreground">
@@ -1433,8 +1433,9 @@ export function ConcentrationGauge({
   return (
     <div className="flex h-full flex-col justify-between gap-3">
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
-        <div className="relative shrink-0" style={{ width: W, height: H }}>
-          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Largest holding ${lead.pct}% of portfolio`}>
+        <div className="relative w-full shrink-0 sm:w-[240px]" style={{ maxWidth: W }}>
+          <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax meet" style={{ display: "block", aspectRatio: `${W} / ${H}` }} role="img" aria-label={`Largest holding ${lead.pct}% of portfolio`}>
+
             <path d={arcPath(cx, cy, r, 0, 1)} fill="none" stroke="var(--muted)" strokeWidth={13} strokeLinecap="round" />
             <path
               d={arcPath(cx, cy, r, 0, Math.max(0.012, t))}
@@ -1664,6 +1665,56 @@ export function PersonalStress({
       )}
       <p className="mt-2 border-t border-border/60 pt-2 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
         Illustrative scenario based on NitiCore™ exposure assumptions - not a forecast.
+      </p>
+    </div>
+  );
+}
+
+/* ───────────────── STRESS - simple personalised market ladder ───────────────── */
+
+export function MarketStressLadderView({
+  ladder,
+  formatValue,
+}: {
+  ladder: import("@/lib/portfolio-analyzer/effectiveness").MarketStressLadder;
+  formatValue: (n: number) => string;
+}) {
+  const maxLoss = Math.max(1, ...ladder.rows.map((r) => r.loss));
+  return (
+    <div>
+      <ul className="space-y-2.5">
+        {ladder.rows.map((r) => (
+          <li key={r.label} className="rounded-xl border border-border/70 px-3 py-2">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-[12px] font-semibold text-foreground">{r.label}</span>
+              <span
+                className="font-mono text-[12px] font-semibold tabular-nums"
+                style={{ color: SERIES_COLORS.action }}
+              >
+                −{r.impactPct}% · −{formatValue(r.loss)}
+              </span>
+            </div>
+            <span className="mt-1.5 block h-[6px] w-full overflow-hidden rounded-full bg-muted/60">
+              <span
+                className="block h-full rounded-full"
+                style={{ width: `${(r.loss / maxLoss) * 100}%`, background: SERIES_COLORS.action, opacity: 0.8 }}
+              />
+            </span>
+            <p className="mt-1 font-mono text-[10.5px] tabular-nums text-muted-foreground">
+              Value remaining · {formatValue(r.after)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2.5 text-[11.5px] leading-relaxed text-foreground/85">{ladder.explanation}</p>
+      {ladder.unclassifiedPct > 0 && (
+        <p className="mt-1 text-[10.5px] leading-relaxed text-muted-foreground">
+          {ladder.unclassifiedPct}% of the portfolio could not be classified reliably, so no shock
+          was assumed for it.
+        </p>
+      )}
+      <p className="mt-2 border-t border-border/60 pt-2 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+        Illustrative scenario, not a forecast.
       </p>
     </div>
   );

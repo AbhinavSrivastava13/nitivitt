@@ -359,3 +359,51 @@ export function personalisedStress(
     unclassifiedPct: Math.round(unclassifiedPct * 10) / 10,
   };
 }
+
+/* ─────────────── Simple market-shock ladder (personalised) ─────────────── */
+
+export interface MarketStressRow {
+  label: string;
+  marketDropPct: number;
+  impactPct: number;
+  loss: number;
+  after: number;
+}
+
+export interface MarketStressLadder {
+  rows: MarketStressRow[];
+  sensitivity: number;
+  explanation: string;
+  unclassifiedPct: number;
+}
+
+/**
+ * Presentation-simple stress ladder (-10% / -20% / -30% market) whose impact is
+ * still personalised: the portfolio's sensitivity is derived from the same
+ * exposure-family shocks used by personalisedStress, benchmarked against a 25%
+ * broad-equity fall. No new assumptions are introduced.
+ */
+export function marketStressLadder(
+  stress: PersonalisedStress | null,
+  totalValue: number,
+): MarketStressLadder | null {
+  if (!stress || totalValue <= 0) return null;
+  const sensitivity = Math.round((stress.impactPct / 25) * 100) / 100;
+  const rows = [10, 20, 30].map((drop) => {
+    const impactPct = Math.round(drop * sensitivity * 10) / 10;
+    const loss = Math.round((totalValue * impactPct) / 100);
+    return {
+      label: `Market −${drop}%`,
+      marketDropPct: drop,
+      impactPct,
+      loss,
+      after: Math.max(0, totalValue - loss),
+    };
+  });
+  const driver = stress.legs[0];
+  const explanation =
+    sensitivity >= 1
+      ? `Your portfolio falls slightly harder than the market because ${driver.label.toLowerCase()} and similar growth exposure carry more downside than a broad index.`
+      : `Your portfolio falls less than the market because part of it sits in defensive or non-equity exposure, which absorbs some of the drop.`;
+  return { rows, sensitivity, explanation, unclassifiedPct: stress.unclassifiedPct };
+}
