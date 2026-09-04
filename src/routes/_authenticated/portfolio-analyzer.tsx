@@ -1136,31 +1136,6 @@ function ReportView({
 
         <div className="mt-3 grid items-stretch gap-3 xl:grid-cols-2">
           <ChartCard
-            title="Exposure families"
-            note="Holdings collapsed into the exposure they actually share."
-            takeaway={
-              exposure.length > 0 && exposure.length < report.holdingCount
-                ? "You own multiple instruments, but some provide highly similar exposure."
-                : undefined
-            }
-          >
-            <ExposureOverlap
-              groups={exposure}
-              formatValue={formatInr}
-              empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
-            />
-            {exposure.length > 0 && (
-              <p className="mt-3 border-t border-border/70 pt-2.5 text-[11.5px] leading-relaxed text-muted-foreground">
-                {report.holdingCount} holdings resolve into{" "}
-                <span className="font-semibold text-foreground">
-                  {exposure.length} distinct exposure{" "}
-                  {exposure.length === 1 ? "family" : "families"}
-                </span>
-                . More positions do not automatically mean more independent sources of return.
-              </p>
-            )}
-          </ChartCard>
-          <ChartCard
             title="Concentration"
             note="How much of the outcome rests on a single position."
             takeaway={
@@ -1189,23 +1164,59 @@ function ReportView({
               empty="Asset class data not available for these holdings."
             />
           </ChartCard>
+
           <ChartCard
-            title="Market cap mix"
-            note="Structure of the equity sleeve, shown exactly as identified."
+            title="Portfolio exposure"
+            note="What you actually own, and how the equity sleeve is structured."
+            className="xl:col-span-2"
+            takeaway={
+              exposure.length > 0 && exposure.length < report.holdingCount
+                ? "You own multiple instruments, but some provide highly similar exposure."
+                : undefined
+            }
           >
-            <StackedComposition
-              slices={report.allocation.byMarketCap}
-              formatValue={formatInr}
-              caption={
-                equitySleeve > 0 ? (
-                  <p className="font-mono text-[12px] tabular-nums text-foreground">
-                    Equity sleeve · <span className="font-semibold">{formatInr(equitySleeve)}</span>
+            <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
+              <div className="min-w-0">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Exposure families
+                </p>
+                <ExposureOverlap
+                  groups={exposure}
+                  formatValue={formatInr}
+                  empty="Exposure grouping needs identifiable holdings. None of these positions resolved to a security NitiInvest™ could classify."
+                />
+                {exposure.length > 0 && (
+                  <p className="mt-2.5 text-[11.5px] leading-relaxed text-muted-foreground">
+                    {report.holdingCount} holdings resolve into{" "}
+                    <span className="font-semibold text-foreground">
+                      {exposure.length} distinct exposure{" "}
+                      {exposure.length === 1 ? "family" : "families"}
+                    </span>
+                    .
                   </p>
-                ) : undefined
-              }
-              empty="Market cap could not be identified for these holdings."
-            />
+                )}
+              </div>
+              <div className="min-w-0 border-t border-border/70 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Market cap mix
+                </p>
+                <StackedComposition
+                  slices={report.allocation.byMarketCap}
+                  formatValue={formatInr}
+                  caption={
+                    equitySleeve > 0 ? (
+                      <p className="font-mono text-[12px] tabular-nums text-foreground">
+                        Equity sleeve ·{" "}
+                        <span className="font-semibold">{formatInr(equitySleeve)}</span>
+                      </p>
+                    ) : undefined
+                  }
+                  empty="Market cap could not be identified for these holdings."
+                />
+              </div>
+            </div>
           </ChartCard>
+
           <ChartCard
             title="Sector mix"
             note="Sector exposure across holdings matched to verified security data."
@@ -1219,7 +1230,7 @@ function ReportView({
             <SectorTreemap
               slices={report.allocation.bySector}
               formatValue={formatInr}
-              height={280}
+              height={260}
               columns={3}
               empty="Sector exposure appears once a holding is matched to a listed security. These positions are held through instruments that do not publish a single sector."
             />
@@ -1230,8 +1241,8 @@ function ReportView({
               note="What the portfolio pays every year, and what that compounds into."
               className="xl:col-span-2"
             >
-              <div className="grid items-center gap-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-8">
-                <div className="shrink-0 rounded-2xl border border-border/70 bg-surface/60 px-5 py-3.5">
+              <div className="grid items-center gap-4 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-7">
+                <div className="shrink-0 rounded-2xl border border-border/70 bg-surface/60 px-5 py-3">
                   <p className="font-display text-3xl leading-none tracking-tight text-foreground">
                     {blendedCost}%
                   </p>
@@ -1256,6 +1267,7 @@ function ReportView({
             </ChartCard>
           )}
         </div>
+
 
         {holdings.length > 0 && (
           <details className="group mt-4 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-soft">
