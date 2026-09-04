@@ -1088,7 +1088,7 @@ export function ScenarioMatrix({
   return (
     <div
       className="grid"
-      style={{ gridTemplateColumns: `4.75rem repeat(${columns.length}, minmax(0,1fr))` }}
+      style={{ gridTemplateColumns: `minmax(3.4rem,4.5rem) repeat(${columns.length}, minmax(0,1fr))` }}
     >
       <span />
       {columns.map((c) => (
@@ -1101,7 +1101,7 @@ export function ScenarioMatrix({
       ))}
       {rows.map((r) => (
         <Fragment key={`row-${r}`}>
-          <span className="flex items-center justify-end pr-2.5 text-right text-[11px] font-medium text-muted-foreground">
+          <span className="flex items-center justify-end pr-2 text-right text-[10.5px] font-medium leading-tight text-muted-foreground">
             {r}% step-up
           </span>
           {columns.map((c) => {
@@ -1117,7 +1117,7 @@ export function ScenarioMatrix({
                 }`}
                 style={{ background: shade(cell?.projected ?? 0) }}
               >
-                <span className="block font-mono text-[12.5px] font-semibold tabular-nums text-foreground">
+                <span className="block font-mono text-[11.5px] font-semibold tabular-nums text-foreground sm:text-[12.5px]">
                   {cell ? formatValue(cell.projected) : "-"}
                 </span>
                 <span className="mt-0.5 block font-mono text-[10px] tabular-nums text-muted-foreground">

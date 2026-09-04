@@ -38,7 +38,7 @@ import {
   HealthGauge,
   ThresholdBar,
   PeerBars,
-  PersonalStress,
+  MarketStressLadderView,
   type ExposureGroup,
 } from "@/components/portfolio/charts";
 import {
@@ -51,6 +51,7 @@ import {
   blendedCostFromDiagnostics,
   costDrag,
   personalisedStress,
+  marketStressLadder,
   baselineSip,
   resolveHorizon,
   STEP_UP_ROWS,
@@ -947,6 +948,10 @@ function ReportView({
     () => personalisedStress(exposure, report.totalValue),
     [exposure, report.totalValue],
   );
+  const stressLadder = useMemo(
+    () => marketStressLadder(stress, report.totalValue),
+    [stress, report.totalValue],
+  );
   const blendedCost = useMemo(() => blendedCostFromDiagnostics(diagnostics), [diagnostics]);
   const drag = useMemo(
     () =>
@@ -1298,10 +1303,10 @@ function ReportView({
           )}
           <ChartCard
             title="Personalised stress test"
-            note="One drawdown, weighted to the exposure NitiInvest™ actually identified in your portfolio."
+            note="Market falls, sized to the exposure NitiInvest™ actually identified in your portfolio."
           >
-            {stress ? (
-              <PersonalStress stress={stress} formatValue={formatInr} />
+            {stressLadder ? (
+              <MarketStressLadderView ladder={stressLadder} formatValue={formatInr} />
             ) : (
               <p className="text-[12px] leading-relaxed text-muted-foreground">
                 A stress test needs holdings NitiInvest™ can classify into exposure families. None of
@@ -1326,7 +1331,7 @@ function ReportView({
                 .slice()
                 .sort((a, b) => healthRank(a.id) - healthRank(b.id))
                 .map((d) =>
-                  d.id === "diversification" || d.id === "goal" ? (
+                  d.id === "diversification" || d.id === "goal" || d.id === "liquidity" ? (
                     <DiagnosticGauge key={d.id} d={d} />
                   ) : d.id === "cost" ? (
                     <DiagnosticBenchmark
@@ -1591,7 +1596,7 @@ function DiagnosticGauge({
 /** Score-style checks lead the grid; threshold checks follow; cost closes it. */
 function healthRank(id: string): number {
   return (
-    { diversification: 0, goal: 1, concentration: 2, allocation: 3, liquidity: 4, cost: 5 }[id] ?? 6
+    { diversification: 0, concentration: 1, goal: 2, cost: 3, liquidity: 4, allocation: 5 }[id] ?? 6
   );
 }
 
@@ -2149,13 +2154,13 @@ function EffectivenessSection({
         {/* Left 55: Your Plan · Right 45: Scenario Lab */}
         <div className="mt-3 grid items-stretch gap-3 lg:grid-cols-[55fr_45fr]">
           {/* ── YOUR PLAN ── */}
-          <div className="flex min-w-0 flex-col justify-between gap-3 rounded-2xl border border-border/70 bg-surface/40 p-4">
+          <div className="flex min-w-0 flex-col justify-between gap-2.5 rounded-2xl border border-border/70 bg-surface/40 p-3.5">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Your plan · where am I going?
               </p>
-              <div className="mt-2.5 grid gap-4 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
-              <EffectivenessDial score={result.score} delta={result.score - current.score} size={136} />
+              <div className="mt-2 grid gap-3.5 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
+              <EffectivenessDial score={result.score} delta={result.score - current.score} size={122} />
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                 {[
                   {
@@ -2178,7 +2183,7 @@ function EffectivenessSection({
               </dl>
             </div>
 
-            <div className="mt-3 grid gap-2 border-t border-border/70 pt-3 sm:grid-cols-3">
+            <div className="mt-2.5 grid gap-2 border-t border-border/70 pt-2.5 sm:grid-cols-3">
               {[
                 {
                   label: "Projected corpus",
@@ -2281,15 +2286,15 @@ function EffectivenessSection({
           </div>
 
           {/* ── SCENARIO LAB ── */}
-          <div className="flex min-w-0 flex-col rounded-2xl border border-border/70 bg-surface/40 p-4">
+          <div className="flex min-w-0 flex-col rounded-2xl border border-border/70 bg-surface/40 p-3.5">
             <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Scenario lab · what can I change?
             </p>
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
               Contribution × return · projected value at {years} years
             </p>
-            <div className="mt-2.5 -mx-1 flex min-h-0 flex-1 flex-col overflow-x-auto px-1">
-              <div className="min-w-[420px]">
+            <div className="mt-2.5 flex min-h-0 flex-1 flex-col">
+              <div className="min-w-0">
                 <ScenarioMatrix
                   cells={grid}
                   rows={STEP_UP_ROWS}
