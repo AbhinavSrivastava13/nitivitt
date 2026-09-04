@@ -1433,8 +1433,9 @@ export function ConcentrationGauge({
   return (
     <div className="flex h-full flex-col justify-between gap-3">
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
-        <div className="relative shrink-0" style={{ width: W, height: H }}>
-          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Largest holding ${lead.pct}% of portfolio`}>
+        <div className="relative w-full shrink-0 sm:w-[240px]" style={{ maxWidth: W }}>
+          <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax meet" style={{ display: "block", aspectRatio: `${W} / ${H}` }} role="img" aria-label={`Largest holding ${lead.pct}% of portfolio`}>
+
             <path d={arcPath(cx, cy, r, 0, 1)} fill="none" stroke="var(--muted)" strokeWidth={13} strokeLinecap="round" />
             <path
               d={arcPath(cx, cy, r, 0, Math.max(0.012, t))}
