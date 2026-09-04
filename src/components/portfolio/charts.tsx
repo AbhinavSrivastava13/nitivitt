@@ -1668,3 +1668,53 @@ export function PersonalStress({
     </div>
   );
 }
+
+/* ───────────────── STRESS - simple personalised market ladder ───────────────── */
+
+export function MarketStressLadderView({
+  ladder,
+  formatValue,
+}: {
+  ladder: import("@/lib/portfolio-analyzer/effectiveness").MarketStressLadder;
+  formatValue: (n: number) => string;
+}) {
+  const maxLoss = Math.max(1, ...ladder.rows.map((r) => r.loss));
+  return (
+    <div>
+      <ul className="space-y-2.5">
+        {ladder.rows.map((r) => (
+          <li key={r.label} className="rounded-xl border border-border/70 px-3 py-2">
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-[12px] font-semibold text-foreground">{r.label}</span>
+              <span
+                className="font-mono text-[12px] font-semibold tabular-nums"
+                style={{ color: SERIES_COLORS.action }}
+              >
+                −{r.impactPct}% · −{formatValue(r.loss)}
+              </span>
+            </div>
+            <span className="mt-1.5 block h-[6px] w-full overflow-hidden rounded-full bg-muted/60">
+              <span
+                className="block h-full rounded-full"
+                style={{ width: `${(r.loss / maxLoss) * 100}%`, background: SERIES_COLORS.action, opacity: 0.8 }}
+              />
+            </span>
+            <p className="mt-1 font-mono text-[10.5px] tabular-nums text-muted-foreground">
+              Value remaining · {formatValue(r.after)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2.5 text-[11.5px] leading-relaxed text-foreground/85">{ladder.explanation}</p>
+      {ladder.unclassifiedPct > 0 && (
+        <p className="mt-1 text-[10.5px] leading-relaxed text-muted-foreground">
+          {ladder.unclassifiedPct}% of the portfolio could not be classified reliably, so no shock
+          was assumed for it.
+        </p>
+      )}
+      <p className="mt-2 border-t border-border/60 pt-2 text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+        Illustrative scenario, not a forecast.
+      </p>
+    </div>
+  );
+}
