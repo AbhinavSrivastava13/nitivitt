@@ -200,20 +200,32 @@ export function AllocationDonut({
   centerLabel,
   centerValue,
   empty,
+  compact = false,
 }: {
   slices: Slice[];
   formatValue: (n: number) => string;
   centerLabel: string;
   centerValue: string;
   empty?: string;
+  compact?: boolean;
 }) {
   const data = slices.filter((s) => s.pct > 0).slice(0, 8);
   const [active, setActive] = useState<number | null>(null);
   if (data.length === 0) return <NoData>{empty}</NoData>;
 
   return (
-    <div className="grid gap-8 sm:grid-cols-[minmax(0,240px)_1fr] sm:items-center">
-      <div className="relative mx-auto aspect-square w-full max-w-[240px]">
+    <div
+      className={
+        compact
+          ? "grid gap-4 sm:grid-cols-[minmax(0,160px)_1fr] sm:items-center"
+          : "grid gap-6 sm:grid-cols-[minmax(0,200px)_1fr] sm:items-center"
+      }
+    >
+      <div
+        className="relative mx-auto aspect-square w-full"
+        style={{ maxWidth: compact ? 160 : 200 }}
+      >
+
         <ResponsiveContainer>
           <PieChart>
             <Pie
