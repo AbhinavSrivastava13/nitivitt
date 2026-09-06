@@ -2151,7 +2151,7 @@ function EffectivenessSection({
                 Your plan · where am I going?
               </p>
               <div className="mt-2 grid gap-3.5 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
-              <EffectivenessDial score={result.score} delta={result.score - current.score} size={122} />
+              <EffectivenessDial score={result.score} delta={result.score - current.score} size={98} />
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                 {[
                   {
