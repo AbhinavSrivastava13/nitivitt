@@ -255,14 +255,15 @@ export function AllocationDonut({
             />
           </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display text-2xl text-foreground">
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4">
+          <span className="font-display text-[1.05rem] leading-none text-foreground">
             {active === null ? centerValue : `${data[active].pct}%`}
           </span>
-          <span className="mt-1 max-w-[70%] text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <span className="mt-1 line-clamp-2 max-w-full text-center text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             {active === null ? centerLabel : data[active].label}
           </span>
         </div>
+
       </div>
       <ul className="space-y-0.5">
         {data.map((s, i) => (
