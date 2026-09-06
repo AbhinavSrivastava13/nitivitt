@@ -256,10 +256,12 @@ export function AllocationDonut({
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-4">
-          <span className="font-display text-[1.05rem] leading-none text-foreground">
+          <span
+            className={`font-display leading-none text-foreground ${compact ? "text-[0.85rem]" : "text-[0.95rem]"}`}
+          >
             {active === null ? centerValue : `${data[active].pct}%`}
           </span>
-          <span className="mt-1 line-clamp-2 max-w-full text-center text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="mt-1 line-clamp-2 max-w-full text-center text-[8.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
             {active === null ? centerLabel : data[active].label}
           </span>
         </div>
@@ -1044,10 +1046,10 @@ export function EffectivenessDial({
           />
         </svg>
         <div className="absolute inset-x-0 bottom-0 flex flex-col items-center">
-          <span className="font-display text-[2.75rem] leading-none tracking-tight text-foreground tabular-nums">
+          <span className="font-display text-[1.9rem] leading-none tracking-tight text-foreground tabular-nums">
             {v}
           </span>
-          <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="mt-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             out of 100
           </span>
         </div>
