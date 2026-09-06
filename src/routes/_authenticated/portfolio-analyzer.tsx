@@ -29,7 +29,6 @@ import {
   ExposureOverlap,
   AllocationDonut,
   ConcentrationGauge,
-  StackedComposition,
   SectorTreemap,
   MiniMeter,
   SERIES_COLORS,
