@@ -1647,42 +1647,8 @@ function DiagnosticBar({
   );
 }
 
-/** Cost is only meaningful against what comparable investors pay. */
-function DiagnosticBenchmark({
-  d,
-  cohort,
-}: {
-  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
-  cohort: number;
-}) {
-  const you = blendedCostFromDiagnostics([d]) ?? 0;
-  const max = Math.max(you, cohort, 0.1) * 1.25;
-  return (
-    <DiagnosticShell d={d}>
-      <span className="mt-2 block space-y-1">
-        {[
-          { k: "You", v: you, c: SERIES_COLORS.you },
-          { k: "Cohort", v: cohort, c: SERIES_COLORS.peer },
-        ].map((t) => (
-          <span key={t.k} className="grid grid-cols-[2.6rem_minmax(0,1fr)_2.6rem] items-center gap-x-2">
-            <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-              {t.k}
-            </span>
-            <span className="block h-[7px] overflow-hidden rounded-full bg-muted/70">
-              <span
-                className="block h-full rounded-full"
-                style={{ width: `${(t.v / max) * 100}%`, background: t.c }}
-              />
-            </span>
-            <span className="text-right font-mono text-[11px] tabular-nums text-foreground">
-              {t.v}%
-            </span>
-          </span>
-        ))}
-      </span>
-    </DiagnosticShell>
-  );
-}
+
+
 
 /* ─────────── holdings ─────────── */
 
