@@ -29,7 +29,6 @@ import {
   ExposureOverlap,
   AllocationDonut,
   ConcentrationGauge,
-  StackedComposition,
   SectorTreemap,
   MiniMeter,
   SERIES_COLORS,
@@ -1205,19 +1204,15 @@ function ReportView({
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Market cap mix
                 </p>
-                <StackedComposition
+                <AllocationDonut
                   slices={report.allocation.byMarketCap}
                   formatValue={formatInr}
-                  caption={
-                    equitySleeve > 0 ? (
-                      <p className="font-mono text-[12px] tabular-nums text-foreground">
-                        Equity sleeve ·{" "}
-                        <span className="font-semibold">{formatInr(equitySleeve)}</span>
-                      </p>
-                    ) : undefined
-                  }
+                  compact
+                  centerLabel="Equity sleeve"
+                  centerValue={inrShort(equitySleeve)}
                   empty="Market cap could not be identified for these holdings."
                 />
+
               </div>
             </div>
           </ChartCard>
@@ -1333,16 +1328,11 @@ function ReportView({
                 .map((d) =>
                   d.id === "diversification" || d.id === "goal" || d.id === "liquidity" ? (
                     <DiagnosticGauge key={d.id} d={d} />
-                  ) : d.id === "cost" ? (
-                    <DiagnosticBenchmark
-                      key={d.id}
-                      d={d}
-                      cohort={peer?.rows.find((r) => /cost/i.test(r.label))?.typical ?? 0.9}
-                    />
                   ) : (
                     <DiagnosticBar key={d.id} d={d} />
                   ),
                 )}
+
             </div>
           )}
 
@@ -1657,42 +1647,8 @@ function DiagnosticBar({
   );
 }
 
-/** Cost is only meaningful against what comparable investors pay. */
-function DiagnosticBenchmark({
-  d,
-  cohort,
-}: {
-  d: import("@/lib/portfolio-analyzer/types").PortfolioDiagnostic;
-  cohort: number;
-}) {
-  const you = blendedCostFromDiagnostics([d]) ?? 0;
-  const max = Math.max(you, cohort, 0.1) * 1.25;
-  return (
-    <DiagnosticShell d={d}>
-      <span className="mt-2 block space-y-1">
-        {[
-          { k: "You", v: you, c: SERIES_COLORS.you },
-          { k: "Cohort", v: cohort, c: SERIES_COLORS.peer },
-        ].map((t) => (
-          <span key={t.k} className="grid grid-cols-[2.6rem_minmax(0,1fr)_2.6rem] items-center gap-x-2">
-            <span className="text-[9.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-              {t.k}
-            </span>
-            <span className="block h-[7px] overflow-hidden rounded-full bg-muted/70">
-              <span
-                className="block h-full rounded-full"
-                style={{ width: `${(t.v / max) * 100}%`, background: t.c }}
-              />
-            </span>
-            <span className="text-right font-mono text-[11px] tabular-nums text-foreground">
-              {t.v}%
-            </span>
-          </span>
-        ))}
-      </span>
-    </DiagnosticShell>
-  );
-}
+
+
 
 /* ─────────── holdings ─────────── */
 
@@ -2160,7 +2116,7 @@ function EffectivenessSection({
                 Your plan · where am I going?
               </p>
               <div className="mt-2 grid gap-3.5 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
-              <EffectivenessDial score={result.score} delta={result.score - current.score} size={122} />
+              <EffectivenessDial score={result.score} delta={result.score - current.score} size={98} />
               <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                 {[
                   {
