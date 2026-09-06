@@ -1329,16 +1329,11 @@ function ReportView({
                 .map((d) =>
                   d.id === "diversification" || d.id === "goal" || d.id === "liquidity" ? (
                     <DiagnosticGauge key={d.id} d={d} />
-                  ) : d.id === "cost" ? (
-                    <DiagnosticBenchmark
-                      key={d.id}
-                      d={d}
-                      cohort={peer?.rows.find((r) => /cost/i.test(r.label))?.typical ?? 0.9}
-                    />
                   ) : (
                     <DiagnosticBar key={d.id} d={d} />
                   ),
                 )}
+
             </div>
           )}
 
