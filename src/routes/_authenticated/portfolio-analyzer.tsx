@@ -1205,19 +1205,15 @@ function ReportView({
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Market cap mix
                 </p>
-                <StackedComposition
+                <AllocationDonut
                   slices={report.allocation.byMarketCap}
                   formatValue={formatInr}
-                  caption={
-                    equitySleeve > 0 ? (
-                      <p className="font-mono text-[12px] tabular-nums text-foreground">
-                        Equity sleeve ·{" "}
-                        <span className="font-semibold">{formatInr(equitySleeve)}</span>
-                      </p>
-                    ) : undefined
-                  }
+                  compact
+                  centerLabel="Equity sleeve"
+                  centerValue={inrShort(equitySleeve)}
                   empty="Market cap could not be identified for these holdings."
                 />
+
               </div>
             </div>
           </ChartCard>
