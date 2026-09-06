@@ -1431,117 +1431,93 @@ export function ConcentrationGauge({
   const top = rows.slice(0, 8);
   if (top.length === 0) return <NoData />;
   const lead = top[0];
-  const scale = Math.max(threshold * 2, Math.ceil((lead.pct * 1.25) / 5) * 5);
+  const scale = Math.max(threshold * 2, Math.ceil((lead.pct * 1.2) / 5) * 5);
   const tone =
     lead.pct >= 25
       ? SERIES_COLORS.action
       : lead.pct >= threshold
         ? SERIES_COLORS.attention
         : SERIES_COLORS.positive;
-  const W = 220;
-  const H = 132;
-  const cx = W / 2;
-  const cy = 112;
-  const r = 88;
-  const t = Math.min(1, lead.pct / scale);
-  const guide = Math.min(1, threshold / scale);
+  const leadW = Math.max(2, Math.min(100, (lead.pct / scale) * 100));
+  const guideX = Math.min(100, (threshold / scale) * 100);
   const top5 = Math.round(top.slice(0, 5).reduce((a, x) => a + x.pct, 0) * 10) / 10;
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-5">
-        <svg
-          viewBox={`0 0 ${W} ${H}`}
-          className="w-[200px] shrink-0"
-          role="img"
-          aria-label={`Largest holding ${lead.pct}% of portfolio, guide ${threshold}%`}
-        >
-          <path
-            d={arcPath(cx, cy, r, 0, 1)}
-            fill="none"
-            stroke="var(--muted)"
-            strokeWidth={12}
-            strokeLinecap="round"
-          />
-          <path
-            d={arcPath(cx, cy, r, 0, Math.max(0.015, t))}
-            fill="none"
-            stroke={tone}
-            strokeWidth={12}
-            strokeLinecap="round"
-          />
-          <line
-            x1={cx + (r - 10) * Math.cos(Math.PI * (1 - guide))}
-            y1={cy - (r - 10) * Math.sin(Math.PI * (1 - guide))}
-            x2={cx + (r + 10) * Math.cos(Math.PI * (1 - guide))}
-            y2={cy - (r + 10) * Math.sin(Math.PI * (1 - guide))}
-            stroke="var(--foreground)"
-            strokeWidth={1.5}
-            strokeDasharray="2 2"
-          />
-          <text
-            x={cx}
-            y={cy - 32}
-            textAnchor="middle"
-            fill={tone}
-            style={{ fontSize: 30, fontWeight: 600 }}
+    <div className="flex flex-col gap-4">
+      {/* Hero bar - largest position against the single-position guide */}
+      <div>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Largest position
+          </p>
+          <p className="font-mono text-[10.5px] tabular-nums text-muted-foreground">
+            {threshold}% single-position guide
+          </p>
+        </div>
+        <div className="mt-2 flex items-baseline gap-2">
+          <span
+            className="font-display text-[1.75rem] leading-none tabular-nums"
+            style={{ color: tone }}
           >
             {lead.pct}%
-          </text>
-          <text
-            x={cx}
-            y={cy - 14}
-            textAnchor="middle"
-            className="fill-muted-foreground"
-            style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.08em" }}
-          >
-            LARGEST POSITION
-          </text>
-          <text
-            x={cx}
-            y={cy + 2}
-            textAnchor="middle"
-            className="fill-current text-foreground"
-            style={{ fontSize: 10.5, fontWeight: 600 }}
-          >
-            {lead.name.length > 24 ? `${lead.name.slice(0, 23)}…` : lead.name}
-          </text>
+          </span>
+          <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">
+            {lead.name}
+          </span>
           {lead.value ? (
-            <text
-              x={cx}
-              y={cy + 16}
-              textAnchor="middle"
-              className="fill-muted-foreground"
-              style={{ fontSize: 10 }}
-            >
+            <span className="shrink-0 font-mono text-[12px] tabular-nums text-muted-foreground">
               {formatValue(lead.value)}
-            </text>
+            </span>
           ) : null}
-        </svg>
-
-        <ul className="w-full min-w-0 flex-1 space-y-[5px]">
-          {top.slice(0, 6).map((h, i) => (
-            <li
-              key={`${h.name}-${i}`}
-              className="grid grid-cols-[1.1rem_minmax(0,1fr)_2.6rem_3.6rem] items-center gap-x-2"
-            >
-              <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
-                {i + 1}
-              </span>
-              <span className="truncate text-[11.5px] font-medium text-foreground">{h.name}</span>
-              <span
-                className="text-right font-mono text-[11px] font-semibold tabular-nums"
-                style={{ color: h.pct >= threshold ? tone : "var(--foreground)" }}
-              >
-                {h.pct}%
-              </span>
-              <span className="text-right font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                {h.value ? formatValue(h.value) : ""}
-              </span>
-            </li>
-          ))}
-        </ul>
+        </div>
+        <div className="relative mt-2.5">
+          <div className="h-3 w-full overflow-hidden rounded-full bg-muted/70">
+            <div
+              className="h-full rounded-full transition-[width] duration-500"
+              style={{ width: `${leadW}%`, background: tone }}
+            />
+          </div>
+          <span
+            className="absolute -top-1 h-5 w-px border-l border-dashed border-foreground/60"
+            style={{ left: `${guideX}%` }}
+            aria-hidden
+          />
+        </div>
+        <div className="relative mt-1 h-3">
+          <span
+            className="absolute -translate-x-1/2 text-[9.5px] font-medium text-muted-foreground"
+            style={{ left: `${guideX}%` }}
+          >
+            {threshold}%
+          </span>
+          <span className="absolute right-0 text-[9.5px] text-muted-foreground/70">{scale}%</span>
+        </div>
       </div>
+
+      {/* Ranked supporting positions */}
+      <ul className="space-y-[5px] border-t border-border/60 pt-3">
+        {top.slice(0, 6).map((h, i) => (
+          <li
+            key={`${h.name}-${i}`}
+            className="grid grid-cols-[1.1rem_minmax(0,1fr)_2.6rem_3.6rem] items-center gap-x-2"
+          >
+            <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
+              {i + 1}
+            </span>
+            <span className="truncate text-[11.5px] font-medium text-foreground">{h.name}</span>
+            <span
+              className="text-right font-mono text-[11px] font-semibold tabular-nums"
+              style={{ color: h.pct >= threshold ? tone : "var(--foreground)" }}
+            >
+              {h.pct}%
+            </span>
+            <span className="text-right font-mono text-[10.5px] tabular-nums text-muted-foreground">
+              {h.value ? formatValue(h.value) : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+
       <p className="text-[11.5px] leading-relaxed text-muted-foreground">
         Top five holdings hold <span className="font-semibold text-foreground">{top5}%</span> of the
         portfolio. The dashed mark is the {threshold}% single-position guide.
