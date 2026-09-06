@@ -1418,75 +1418,106 @@ export function ConcentrationGauge({
   const lead = top[0];
   const scale = Math.max(threshold * 2, Math.ceil((lead.pct * 1.25) / 5) * 5);
   const tone =
-    lead.pct >= 25 ? SERIES_COLORS.action : lead.pct >= threshold ? SERIES_COLORS.attention : SERIES_COLORS.positive;
-  const W = 240;
-  const H = 128;
+    lead.pct >= 25
+      ? SERIES_COLORS.action
+      : lead.pct >= threshold
+        ? SERIES_COLORS.attention
+        : SERIES_COLORS.positive;
+  const W = 220;
+  const H = 132;
   const cx = W / 2;
-  const cy = H - 8;
-  const r = 96;
+  const cy = 112;
+  const r = 88;
   const t = Math.min(1, lead.pct / scale);
   const guide = Math.min(1, threshold / scale);
-  const gx = cx + (r + 12) * Math.cos(Math.PI * (1 - guide));
-  const gy = cy - (r + 12) * Math.sin(Math.PI * (1 - guide));
   const top5 = Math.round(top.slice(0, 5).reduce((a, x) => a + x.pct, 0) * 10) / 10;
 
   return (
-    <div className="flex h-full flex-col justify-between gap-3">
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
-        <div className="relative w-full shrink-0 sm:w-[240px]" style={{ maxWidth: W }}>
-          <svg width="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax meet" style={{ display: "block", aspectRatio: `${W} / ${H}` }} role="img" aria-label={`Largest holding ${lead.pct}% of portfolio`}>
-
-            <path d={arcPath(cx, cy, r, 0, 1)} fill="none" stroke="var(--muted)" strokeWidth={13} strokeLinecap="round" />
-            <path
-              d={arcPath(cx, cy, r, 0, Math.max(0.012, t))}
-              fill="none"
-              stroke={tone}
-              strokeWidth={13}
-              strokeLinecap="round"
-              style={{ transition: "d 400ms ease" }}
-            />
-            <line
-              x1={cx + (r - 11) * Math.cos(Math.PI * (1 - guide))}
-              y1={cy - (r - 11) * Math.sin(Math.PI * (1 - guide))}
-              x2={cx + (r + 8) * Math.cos(Math.PI * (1 - guide))}
-              y2={cy - (r + 8) * Math.sin(Math.PI * (1 - guide))}
-              stroke="var(--foreground)"
-              strokeWidth={1.5}
-              strokeDasharray="2 2"
-            />
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:gap-5">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="w-[200px] shrink-0"
+          role="img"
+          aria-label={`Largest holding ${lead.pct}% of portfolio, guide ${threshold}%`}
+        >
+          <path
+            d={arcPath(cx, cy, r, 0, 1)}
+            fill="none"
+            stroke="var(--muted)"
+            strokeWidth={12}
+            strokeLinecap="round"
+          />
+          <path
+            d={arcPath(cx, cy, r, 0, Math.max(0.015, t))}
+            fill="none"
+            stroke={tone}
+            strokeWidth={12}
+            strokeLinecap="round"
+          />
+          <line
+            x1={cx + (r - 10) * Math.cos(Math.PI * (1 - guide))}
+            y1={cy - (r - 10) * Math.sin(Math.PI * (1 - guide))}
+            x2={cx + (r + 10) * Math.cos(Math.PI * (1 - guide))}
+            y2={cy - (r + 10) * Math.sin(Math.PI * (1 - guide))}
+            stroke="var(--foreground)"
+            strokeWidth={1.5}
+            strokeDasharray="2 2"
+          />
+          <text
+            x={cx}
+            y={cy - 32}
+            textAnchor="middle"
+            fill={tone}
+            style={{ fontSize: 30, fontWeight: 600 }}
+          >
+            {lead.pct}%
+          </text>
+          <text
+            x={cx}
+            y={cy - 14}
+            textAnchor="middle"
+            className="fill-muted-foreground"
+            style={{ fontSize: 9.5, fontWeight: 600, letterSpacing: "0.08em" }}
+          >
+            LARGEST POSITION
+          </text>
+          <text
+            x={cx}
+            y={cy + 2}
+            textAnchor="middle"
+            className="fill-current text-foreground"
+            style={{ fontSize: 10.5, fontWeight: 600 }}
+          >
+            {lead.name.length > 24 ? `${lead.name.slice(0, 23)}…` : lead.name}
+          </text>
+          {lead.value ? (
             <text
-              x={gx}
-              y={gy}
-              textAnchor={guide < 0.5 ? "end" : "start"}
+              x={cx}
+              y={cy + 16}
+              textAnchor="middle"
               className="fill-muted-foreground"
-              style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em" }}
+              style={{ fontSize: 10 }}
             >
-              {threshold}%
+              {formatValue(lead.value)}
             </text>
-          </svg>
-          <div className="absolute inset-x-0 bottom-1 flex flex-col items-center px-6 text-center">
-            <span className="font-display text-[2.1rem] leading-none tracking-tight tabular-nums" style={{ color: tone }}>
-              {lead.pct}%
-            </span>
-            <span className="mt-1 line-clamp-1 max-w-full text-[11px] font-semibold text-foreground">
-              {lead.name}
-            </span>
-            {lead.value ? (
-              <span className="font-mono text-[10.5px] tabular-nums text-muted-foreground">
-                {formatValue(lead.value)}
-              </span>
-            ) : null}
-          </div>
-        </div>
+          ) : null}
+        </svg>
 
         <ul className="w-full min-w-0 flex-1 space-y-[5px]">
           {top.slice(0, 6).map((h, i) => (
-            <li key={`${h.name}-${i}`} className="grid grid-cols-[1.1rem_minmax(0,1fr)_2.6rem_3.6rem] items-center gap-x-2">
+            <li
+              key={`${h.name}-${i}`}
+              className="grid grid-cols-[1.1rem_minmax(0,1fr)_2.6rem_3.6rem] items-center gap-x-2"
+            >
               <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
                 {i + 1}
               </span>
               <span className="truncate text-[11.5px] font-medium text-foreground">{h.name}</span>
-              <span className="text-right font-mono text-[11px] font-semibold tabular-nums" style={{ color: h.pct >= threshold ? tone : "var(--foreground)" }}>
+              <span
+                className="text-right font-mono text-[11px] font-semibold tabular-nums"
+                style={{ color: h.pct >= threshold ? tone : "var(--foreground)" }}
+              >
                 {h.pct}%
               </span>
               <span className="text-right font-mono text-[10.5px] tabular-nums text-muted-foreground">
@@ -1496,13 +1527,14 @@ export function ConcentrationGauge({
           ))}
         </ul>
       </div>
-      <p className="mt-3 border-t border-border/70 pt-2.5 text-[11px] leading-relaxed text-muted-foreground">
+      <p className="text-[11.5px] leading-relaxed text-muted-foreground">
         Top five holdings hold <span className="font-semibold text-foreground">{top5}%</span> of the
         portfolio. The dashed mark is the {threshold}% single-position guide.
       </p>
     </div>
   );
 }
+
 
 /* ───────────────── PEER - benchmark bars ───────────────── */
 
