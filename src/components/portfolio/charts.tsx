@@ -1401,23 +1401,13 @@ export function HealthGauge({
   );
 }
 
-/* ───────────────── CONCENTRATION - semi-donut gauge ───────────────── */
-
-function arcPath(cx: number, cy: number, r: number, from: number, to: number) {
-  const p = (t: number) => {
-    const a = Math.PI * (1 - t);
-    return [cx + r * Math.cos(a), cy - r * Math.sin(a)];
-  };
-  const [x1, y1] = p(from);
-  const [x2, y2] = p(to);
-  return `M ${x1} ${y1} A ${r} ${r} 0 ${to - from > 0.5 ? 1 : 0} 1 ${x2} ${y2}`;
-}
+/* ───────────────── CONCENTRATION - hero bar + ranked list ───────────────── */
 
 /**
- * Concentration presented as a semi-donut: the sweep is the largest position's
- * share of the portfolio against a scale that always contains the 15% guide, so
- * how concentrated the portfolio is reads instantly. The ranked list underneath
- * keeps the supporting positions on the same page.
+ * Concentration presented as a clean horizontal bar: the largest position's
+ * share of the portfolio against a scale that always contains the 15% guide,
+ * so how concentrated the portfolio is reads instantly. The ranked list
+ * underneath keeps the supporting positions on the same page.
  */
 export function ConcentrationGauge({
   rows,
