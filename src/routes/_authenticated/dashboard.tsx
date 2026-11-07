@@ -15,12 +15,9 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
-} from "@/lib/services/profile.service";
-import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   calculateSavingsRate, calculateDebtRatio,
-  generateRecommendations,
+  generateRecommendations, buildNitiCoreInput, getNitiScorePillarCount,
 } from "@/lib/niti-core";
 import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
@@ -42,12 +39,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-function ageFromDob(dob: string | null): number {
-  if (!dob) return 30;
-  const diff = Date.now() - new Date(dob).getTime();
-  return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
-}
-
 function formatDateUTC(date: Date): string {
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${String(date.getUTCDate()).padStart(2, "0")} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
@@ -61,12 +52,8 @@ function useDashboardData() {
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       const user = data.user!;
-      const [profile, fp, assets, liabs, goals, insurance] = await Promise.all([
-        getProfile(user.id), getFinancialProfile(user.id),
-        listAssets(user.id), listLiabilities(user.id),
-        listGoals(user.id), listInsurance(user.id),
-      ]);
-      return { user, profile, fp, assets, liabs, goals, insurance };
+      const data = await buildNitiCoreInput(user.id, supabase);
+      return { user, ...data };
     },
   });
 }
@@ -128,26 +115,9 @@ function Dashboard() {
     );
   }
 
-  const { profile, fp, assets, liabs, insurance } = data;
-  const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-  const liquidAssets = assets.filter((a) => a.is_liquid).reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-  const totalLiabilities = liabs.reduce((a, b) => a + Number(b.outstanding_amount ?? 0), 0);
-  const monthlyEmi = liabs.reduce((a, b) => a + Number(b.monthly_emi ?? 0), 0);
-  const hasTerm = insurance.some((i) => i.insurance_type === "term");
-  const hasHealth = insurance.some((i) => i.insurance_type === "health");
-  const termCover = insurance.filter((i) => i.insurance_type === "term")
-    .reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
-
+  const { profile, financialProfile: fp, input: baseInput } = data;
   const input: NitiCoreInput = {
-    ageYears: ageFromDob(profile?.date_of_birth ?? null),
-    monthlyIncome: Number(fp?.monthly_income ?? 0),
-    monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
-    monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
-    liquidAssets, totalAssets, totalLiabilities, monthlyEmi,
-    monthlyInvestments: 0, totalInvestments: 0,
-    hasTermInsurance: hasTerm, hasHealthInsurance: hasHealth, termCover,
-    retirementCorpus: 0, retirementAge: Number(fp?.retirement_age ?? 60),
-    riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+    ...baseInput,
     crossService: {
       insurancePolicyCount,
       insuranceProtectionScore: insuranceScore ?? undefined,
@@ -159,7 +129,7 @@ function Dashboard() {
 
   const hasData = Number(fp?.monthly_income ?? 0) > 0;
   const score = calculateNitiScore(input);
-  const nitiAge = calculateNitiAge(input);
+  const nitiAge = input.hasDateOfBirth ? calculateNitiAge(input) : null;
   const emergency = calculateEmergencyFund(input);
   const netWorth = calculateNetWorth(input);
   const recs = generateRecommendations(input);
@@ -169,7 +139,7 @@ function Dashboard() {
   const lastUpdated = fpUpdated ? new Date(fpUpdated) : null;
   const topRecs = recs.slice(0, 3);
 
-  const agePayload = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
+  const agePayload = nitiAge?.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
   const ageDirection = agePayload?.direction ?? "on_track";
   const ageDeltaYears = agePayload?.deltaYears ?? 0;
   
