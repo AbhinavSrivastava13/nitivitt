@@ -94,6 +94,7 @@ export interface Recommendation {
 
 /** Canonical financial input the whole engine reads. */
 export interface NitiCoreInput {
+  /** 0 means the user has not provided a date of birth; never infer an age. */
   ageYears: number;
   monthlyIncome: number;
   monthlyExpenses: number;
@@ -113,6 +114,8 @@ export interface NitiCoreInput {
   riskProfile?: "conservative" | "moderate" | "aggressive";
   /** Optional - number of financial dependents (spouse, kids, parents). */
   dependentsCount?: number;
+  /** Goal records used by the NitiScore Goals pillar. */
+  goals?: NitiCoreGoal[];
   /**
    * Optional cross-service intelligence. Populated when the user has run
    * NitiSure™ (insurance) or NitiInvest™ (portfolio) analyses. Feeds the
@@ -129,4 +132,12 @@ export interface NitiCoreInput {
     portfolioTotalValue?: number;
     portfolioHoldingCount?: number;
   };
+}
+
+export interface NitiCoreGoal {
+  targetAmount: number;
+  currentProgress: number;
+  createdAt: string;
+  targetDate: string | null;
+  priority: string;
 }
