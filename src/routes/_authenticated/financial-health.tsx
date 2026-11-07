@@ -5,14 +5,13 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
   countFinancialSnapshots, listFinancialSnapshots,
 } from "@/lib/services/profile.service";
 
 import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   calculateSavingsRate, calculateDebtRatio, calculateInsuranceAdequacy, calculateRetirement,
-  NITI_CORE_CONFIG,
+  NITI_CORE_CONFIG, buildNitiCoreInput, getNitiScorePillarCount,
 } from "@/lib/niti-core";
 import type { NitiCoreInput } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
@@ -30,36 +29,28 @@ export const Route = createFileRoute("/_authenticated/financial-health")({
 
 
 
-function ageFromDob(dob: string | null): number {
-  if (!dob) return 30;
-  const diff = Date.now() - new Date(dob).getTime();
-  return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
-}
-
 function useReportData() {
   return useQuery({
     queryKey: ["health-report"],
     queryFn: async () => {
       const { data } = await supabase.auth.getUser();
       const user = data.user!;
-      const [profile, fp, assets, liabs, goals, insurance, snapshotCount, snapshots] = await Promise.all([
-        getProfile(user.id), getFinancialProfile(user.id),
-        listAssets(user.id), listLiabilities(user.id),
-        listGoals(user.id), listInsurance(user.id),
+      const [core, snapshotCount, snapshots] = await Promise.all([
+        buildNitiCoreInput(user.id, supabase),
         countFinancialSnapshots(user.id),
         listFinancialSnapshots(user.id, 2),
       ]);
       // Use the second-most-recent snapshot as the "previous review" baseline -
       // the most recent snapshot represents the current state.
       const previousSnapshot = snapshots.length >= 2 ? snapshots[1] : null;
-      return { user, profile, fp, assets, liabs, goals, insurance, snapshotCount, previousSnapshot };
+      return { user, ...core, snapshotCount, previousSnapshot };
     },
   });
 }
 
 function FinancialHealthReport() {
   const { data, isLoading } = useReportData();
-  const fpUpdated = (data?.fp as unknown as { updated_at?: string } | null)?.updated_at;
+  const fpUpdated = (data?.financialProfile as unknown as { updated_at?: string } | null)?.updated_at;
 
 
   if (isLoading || !data) {
@@ -74,30 +65,10 @@ function FinancialHealthReport() {
     );
   }
 
-  const { profile, fp, assets, liabs, insurance } = data;
-  const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-  const liquidAssets = assets.filter((a) => a.is_liquid).reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-  const totalLiabilities = liabs.reduce((a, b) => a + Number(b.outstanding_amount ?? 0), 0);
-  const monthlyEmi = liabs.reduce((a, b) => a + Number(b.monthly_emi ?? 0), 0);
-  const hasTerm = insurance.some((i) => i.insurance_type === "term");
-  const hasHealth = insurance.some((i) => i.insurance_type === "health");
-  const termCover = insurance.filter((i) => i.insurance_type === "term")
-    .reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
-
-  const input: NitiCoreInput = {
-    ageYears: ageFromDob(profile?.date_of_birth ?? null),
-    monthlyIncome: Number(fp?.monthly_income ?? 0),
-    monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
-    monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
-    liquidAssets, totalAssets, totalLiabilities, monthlyEmi,
-    monthlyInvestments: 0, totalInvestments: 0,
-    hasTermInsurance: hasTerm, hasHealthInsurance: hasHealth, termCover,
-    retirementCorpus: 0, retirementAge: Number(fp?.retirement_age ?? 60),
-    riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
-  };
+  const { profile, financialProfile: fp, input } = data;
 
   const score = calculateNitiScore(input);
-  const age = calculateNitiAge(input);
+  const age = input.hasDateOfBirth ? calculateNitiAge(input) : null;
   const emergency = calculateEmergencyFund(input);
   const netWorth = calculateNetWorth(input);
   const savings = calculateSavingsRate(input);
@@ -113,7 +84,7 @@ function FinancialHealthReport() {
     {
       nitiScore: score.value,
       nitiScoreGrade: score.grade,
-      nitiAge: age.value,
+      nitiAge: age?.value ?? 0,
       actualAge: input.ageYears,
       netWorth: netWorth.value,
       totalLiabilities: input.totalLiabilities,
@@ -239,7 +210,7 @@ function FinancialHealthReport() {
               {score.calculationSummary}
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-primary p-6 text-primary-foreground shadow-soft">
+          {age ? <div className="rounded-2xl border border-border bg-primary p-6 text-primary-foreground shadow-soft">
             <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">NitiAge™</p>
             <div className="mt-3 flex items-baseline gap-2">
               <span className="font-display text-5xl">{age.value}</span>
@@ -257,7 +228,12 @@ function FinancialHealthReport() {
                 </>
               );
             })()}
-          </div>
+          </div> : <div className="rounded-2xl border border-border bg-primary p-6 text-primary-foreground shadow-soft">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary-foreground/70">NitiAge™</p>
+            <p className="mt-3 text-sm font-semibold">Add your date of birth</p>
+            <p className="mt-1 text-xs text-primary-foreground/80">NitiAge needs your age to compare your financial habits with your life stage.</p>
+            <Link to="/onboarding" className="mt-3 inline-flex items-center text-xs font-semibold underline">Update your profile</Link>
+          </div>}
         </section>
 
         {/* Score breakdown */}
@@ -274,15 +250,15 @@ function FinancialHealthReport() {
                   <p className="text-xs text-muted-foreground">weight {p.weight}%</p>
                 </div>
                 <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
+                  {p.pillarScore !== null && <div
                     className="h-full rounded-full"
                     style={{
                       width: `${p.pillarScore}%`,
                       backgroundColor: p.pillarScore >= 75 ? "var(--color-secondary)" : p.pillarScore >= 50 ? "var(--color-primary)" : "var(--color-warning)",
                     }}
-                  />
+                  />}
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground">Pillar score: {Math.round(p.pillarScore)}/100 · Weighted contribution: {p.weighted.toFixed(1)}</p>
+                <p className="mt-2 text-xs text-muted-foreground">{p.pillarScore === null ? "Not scored" : `Pillar score: ${Math.round(p.pillarScore)}/100`} · Weighted contribution: {p.weighted.toFixed(1)}</p>
                 <p className="mt-2 text-xs text-muted-foreground">{p.reason}</p>
               </div>
             ))}

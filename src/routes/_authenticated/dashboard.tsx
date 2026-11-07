@@ -15,12 +15,9 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  getProfile, getFinancialProfile, listAssets, listLiabilities, listGoals, listInsurance,
-} from "@/lib/services/profile.service";
-import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   calculateSavingsRate, calculateDebtRatio,
-  generateRecommendations,
+  generateRecommendations, buildNitiCoreInput, getNitiScorePillarCount,
 } from "@/lib/niti-core";
 import type { NitiCoreInput, Recommendation } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
@@ -42,12 +39,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
-function ageFromDob(dob: string | null): number {
-  if (!dob) return 30;
-  const diff = Date.now() - new Date(dob).getTime();
-  return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
-}
-
 function formatDateUTC(date: Date): string {
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${String(date.getUTCDate()).padStart(2, "0")} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
@@ -59,14 +50,10 @@ function useDashboardData() {
   return useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user!;
-      const [profile, fp, assets, liabs, goals, insurance] = await Promise.all([
-        getProfile(user.id), getFinancialProfile(user.id),
-        listAssets(user.id), listLiabilities(user.id),
-        listGoals(user.id), listInsurance(user.id),
-      ]);
-      return { user, profile, fp, assets, liabs, goals, insurance };
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user!;
+      const coreData = await buildNitiCoreInput(user.id, supabase);
+      return { user, ...coreData };
     },
   });
 }
@@ -128,26 +115,11 @@ function Dashboard() {
     );
   }
 
-  const { profile, fp, assets, liabs, insurance } = data;
-  const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-  const liquidAssets = assets.filter((a) => a.is_liquid).reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-  const totalLiabilities = liabs.reduce((a, b) => a + Number(b.outstanding_amount ?? 0), 0);
-  const monthlyEmi = liabs.reduce((a, b) => a + Number(b.monthly_emi ?? 0), 0);
-  const hasTerm = insurance.some((i) => i.insurance_type === "term");
-  const hasHealth = insurance.some((i) => i.insurance_type === "health");
-  const termCover = insurance.filter((i) => i.insurance_type === "term")
-    .reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
-
+  const { profile, financialProfile: fp, input: baseInput } = data;
+  const totalAssets = baseInput.totalAssets;
+  const totalLiabilities = baseInput.totalLiabilities;
   const input: NitiCoreInput = {
-    ageYears: ageFromDob(profile?.date_of_birth ?? null),
-    monthlyIncome: Number(fp?.monthly_income ?? 0),
-    monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
-    monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
-    liquidAssets, totalAssets, totalLiabilities, monthlyEmi,
-    monthlyInvestments: 0, totalInvestments: 0,
-    hasTermInsurance: hasTerm, hasHealthInsurance: hasHealth, termCover,
-    retirementCorpus: 0, retirementAge: Number(fp?.retirement_age ?? 60),
-    riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+    ...baseInput,
     crossService: {
       insurancePolicyCount,
       insuranceProtectionScore: insuranceScore ?? undefined,
@@ -159,7 +131,7 @@ function Dashboard() {
 
   const hasData = Number(fp?.monthly_income ?? 0) > 0;
   const score = calculateNitiScore(input);
-  const nitiAge = calculateNitiAge(input);
+  const nitiAge = input.hasDateOfBirth ? calculateNitiAge(input) : null;
   const emergency = calculateEmergencyFund(input);
   const netWorth = calculateNetWorth(input);
   const recs = generateRecommendations(input);
@@ -169,7 +141,7 @@ function Dashboard() {
   const lastUpdated = fpUpdated ? new Date(fpUpdated) : null;
   const topRecs = recs.slice(0, 3);
 
-  const agePayload = nitiAge.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
+  const agePayload = nitiAge?.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number; interpretation: string } | undefined;
   const ageDirection = agePayload?.direction ?? "on_track";
   const ageDeltaYears = agePayload?.deltaYears ?? 0;
   
@@ -272,7 +244,7 @@ function Dashboard() {
             />
 
             {/* NitiAge */}
-            <MetricTile
+            {nitiAge ? <MetricTile
               onClick={() => setOpenMetric("age")}
               accent="secondary"
               eyebrow="NitiAge™"
@@ -282,7 +254,7 @@ function Dashboard() {
                 cls: ageBadge.cls,
                 icon: ageDirection === "ahead" ? ArrowDownRight : ageDirection === "behind" ? ArrowUpRight : undefined,
               }}
-              value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{nitiAge.value}</span>}
+              value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{nitiAge?.value}</span>}
               unit="yrs"
               footer={
                 <>
@@ -292,15 +264,25 @@ function Dashboard() {
                   </span>
                   <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
                     {ageDirection === "ahead"
-                      ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} ahead of your peers, giving you a Financial Age of ${nitiAge.value}.`
+                      ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} ahead of your peers, giving you a Financial Age of ${nitiAge?.value}.`
                       : ageDirection === "behind"
-                        ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} behind your peers, giving you a Financial Age of ${nitiAge.value}.`
-                        : `Your financial habits match your peers, giving you a Financial Age of ${nitiAge.value}.`}
+                        ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} behind your peers, giving you a Financial Age of ${nitiAge?.value}.`
+                        : `Your financial habits match your peers, giving you a Financial Age of ${nitiAge?.value}.`}
                   </p>
                 </>
               }
 
-            />
+            /> : <div className="flex h-full min-h-[212px] flex-col rounded-2xl border border-border bg-card p-5 shadow-soft">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Hourglass className="h-3.5 w-3.5" />
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">NitiAge™</p>
+              </div>
+              <p className="mt-4 text-sm font-semibold text-foreground">Add your date of birth</p>
+              <p className="mt-1 text-xs text-muted-foreground">NitiAge needs your age to compare your financial habits with your life stage.</p>
+              <Link to="/onboarding" className="mt-auto inline-flex items-center gap-1.5 pt-4 text-xs font-semibold text-primary hover:underline">
+                Update your profile <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>}
 
             {/* Net Worth */}
             <MetricTile
@@ -671,7 +653,7 @@ function MetricDialog({
   onClose: () => void;
   kind: MetricKind | null;
   score: ReturnType<typeof calculateNitiScore>;
-  nitiAge: ReturnType<typeof calculateNitiAge>;
+  nitiAge: ReturnType<typeof calculateNitiAge> | null;
   emergency: ReturnType<typeof calculateEmergencyFund>;
   netWorth: ReturnType<typeof calculateNetWorth>;
   input: NitiCoreInput;
@@ -697,8 +679,8 @@ function MetricDialog({
   const helping: string[] = [];
   const hurting: string[] = [];
   score.breakdown.forEach((b) => {
-    if (b.pillarScore >= 75) helping.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
-    else if (b.pillarScore < 50) hurting.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
+    if (b.pillarScore !== null && b.pillarScore >= 75) helping.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
+    else if (b.pillarScore !== null && b.pillarScore < 50) hurting.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
   });
 
   return (
@@ -708,7 +690,7 @@ function MetricDialog({
           <>
             <DialogHeader>
               <DialogTitle className="font-display text-2xl">NitiScore™ - {score.value}/1000 · Grade {score.grade}</DialogTitle>
-              <DialogDescription>Measure of overall financial health across six pillars.</DialogDescription>
+              <DialogDescription>Measure of overall financial health across {getNitiScorePillarCount()} pillars.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -719,9 +701,9 @@ function MetricDialog({
                       <span className="text-foreground">{b.pillar} <span className="text-[10px] text-muted-foreground">· weight {Math.round(b.weight)}%</span></span>
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-32 overflow-hidden rounded-full bg-muted">
-                          <div className={`h-full rounded-full ${b.pillarScore >= 75 ? "bg-secondary" : b.pillarScore >= 50 ? "bg-primary" : "bg-warning"}`} style={{ width: `${b.pillarScore}%` }} />
+                          {b.pillarScore !== null && <div className={`h-full rounded-full ${b.pillarScore >= 75 ? "bg-secondary" : b.pillarScore >= 50 ? "bg-primary" : "bg-warning"}`} style={{ width: `${b.pillarScore}%` }} />}
                         </div>
-                        <span className="w-14 text-right text-xs font-semibold text-foreground">{Math.round(b.pillarScore)}/100</span>
+                        <span className="w-14 text-right text-xs font-semibold text-foreground">{b.pillarScore === null ? "Not scored" : `${Math.round(b.pillarScore)}/100`}</span>
                       </div>
                     </li>
                   ))}
@@ -748,7 +730,9 @@ function MetricDialog({
           </>
         )}
 
-        {kind === "age" && <NitiAgeDetail nitiAge={nitiAge} input={input} />}
+        {kind === "age" && (nitiAge
+          ? <NitiAgeDetail nitiAge={nitiAge} input={input} />
+          : <DialogHeader><DialogTitle>Add your date of birth</DialogTitle><DialogDescription>NitiAge is available after your date of birth is added to your profile.</DialogDescription></DialogHeader>)}
 
 
         {kind === "networth" && (

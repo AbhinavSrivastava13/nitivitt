@@ -1,7 +1,9 @@
 import type { MetricResult, NitiCoreInput } from "../types";
 
 export function calculateAssetAllocation(input: NitiCoreInput): MetricResult {
-  const baseEquity = Math.max(20, Math.min(90, 100 - input.ageYears));
+  const baseEquity = input.hasDateOfBirth === false
+    ? 60
+    : Math.max(20, Math.min(90, 100 - input.ageYears));
   const adjust =
     input.riskProfile === "aggressive" ? 10 : input.riskProfile === "conservative" ? -10 : 0;
   const equityPct = Math.max(10, Math.min(95, baseEquity + adjust));
@@ -12,7 +14,9 @@ export function calculateAssetAllocation(input: NitiCoreInput): MetricResult {
     status: "on_track",
     explanationKey: "allocation.equity_pct",
     assumptions: { risk: input.riskProfile ?? "moderate" },
-    calculationSummary: `100 - ${input.ageYears} + risk_adjust(${adjust}) = ${equityPct}% equity`,
+    calculationSummary: input.hasDateOfBirth === false
+      ? `Age unavailable; neutral allocation assumption + risk_adjust(${adjust}) = ${equityPct}% equity`
+      : `100 - ${input.ageYears} + risk_adjust(${adjust}) = ${equityPct}% equity`,
     priority: "low",
     suggestedNextStep: `Aim for ~${equityPct}% equity / ${100 - equityPct}% debt.`,
     aiPayload: { equityPct, debtPct: 100 - equityPct },
