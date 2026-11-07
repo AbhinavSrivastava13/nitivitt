@@ -73,8 +73,7 @@ export function calculateNitiScore(input: NitiCoreInput): MetricResult<number> &
     { pillar: "Investments", key: "investments", score: input.monthlyIncome > 0 ? clamp((input.monthlyInvestments / (input.monthlyIncome * 0.2)) * 100) : 0, reason: "Monthly investments vs. 20% of income target." },
   ];
 
-  const goalWeight = goalResult.score === null ? weights.goals : 0;
-  const availableWeight = Object.entries(weights).reduce((sum, [key, weight]) => sum + (key === "goals" || goalWeight === 0 ? 0 : weight), 0);
+  const availableWeight = Object.entries(weights).reduce((sum, [key, weight]) => sum + (key === "goals" ? 0 : weight), 0);
   const scoreWeightTotal = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
   const breakdown: NitiScoreBreakdown[] = pillarScores.map(({ pillar, key, score, reason }) => {
     const configuredWeight = weights[key];
