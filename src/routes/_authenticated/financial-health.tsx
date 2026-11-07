@@ -11,7 +11,7 @@ import {
 import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   calculateSavingsRate, calculateDebtRatio, calculateInsuranceAdequacy, calculateRetirement,
-  NITI_CORE_CONFIG, buildNitiCoreInput,
+  NITI_CORE_CONFIG, buildNitiCoreInput, getNitiScorePillarCount,
 } from "@/lib/niti-core";
 import type { NitiCoreInput } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
@@ -240,7 +240,7 @@ function FinancialHealthReport() {
         <section className="mt-10">
           <h2 className="font-display text-2xl text-foreground md:text-3xl">NitiScore™ breakdown</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Every pillar, its weight, its score, and the exact reason behind the number.
+            Every one of the {getNitiScorePillarCount()} pillars, its weight, its score, and the exact reason behind the number.
           </p>
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {score.breakdown.map((p) => (
