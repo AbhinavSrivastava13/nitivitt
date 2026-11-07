@@ -69,19 +69,17 @@ export function calculateNitiScore(input: NitiCoreInput): MetricResult<number> &
     { pillar: "Debt", key: "debt", score: clamp(100 - (Number(debt.value) / 40) * 100), reason: debt.calculationSummary },
     { pillar: "Insurance", key: "insurance", score: clamp(Number(insurance.value)), reason: insurance.calculationSummary },
     { pillar: "Goals", key: "goals", score: goalResult.score, reason: goalResult.reason },
-    { pillar: "Retirement", key: "retirement", score: retirement.status === "on_track" ? 100 : retirement.status === "needs_attention" ? 60 : 25, reason: retirement.calculationSummary },
+    { pillar: "Retirement", key: "retirement", score: input.hasDateOfBirth === false ? null : retirement.status === "on_track" ? 100 : retirement.status === "needs_attention" ? 60 : 25, reason: retirement.calculationSummary },
     { pillar: "Investments", key: "investments", score: input.monthlyIncome > 0 ? clamp((input.monthlyInvestments / (input.monthlyIncome * 0.2)) * 100) : 0, reason: "Monthly investments vs. 20% of income target." },
   ];
 
-  const availableWeight = Object.entries(weights).reduce((sum, [key, weight]) => sum + (key === "goals" ? 0 : weight), 0);
+  const availableWeight = pillarScores.reduce((sum, item) => sum + (item.score === null ? 0 : weights[item.key]), 0);
   const scoreWeightTotal = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
   const breakdown: NitiScoreBreakdown[] = pillarScores.map(({ pillar, key, score, reason }) => {
     const configuredWeight = weights[key];
     const effectiveWeight = score === null
       ? 0
-      : goalResult.score === null
-        ? key === "goals" ? 0 : (configuredWeight / availableWeight) * scoreWeightTotal
-        : configuredWeight;
+      : (configuredWeight / availableWeight) * scoreWeightTotal;
     return {
       pillar,
       weight: effectiveWeight,
