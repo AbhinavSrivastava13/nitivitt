@@ -4,6 +4,16 @@ import type { NitiCoreGoal, NitiCoreInput } from "./types";
 
 type NitiCoreDataClient = SupabaseClient<Database>;
 
+export interface NitiCoreRecords {
+  profile: Database["public"]["Tables"]["profiles"]["Row"] | null;
+  financialProfile: Database["public"]["Tables"]["financial_profiles"]["Row"] | null;
+  assets: Database["public"]["Tables"]["assets"]["Row"][];
+  liabilities: Database["public"]["Tables"]["liabilities"]["Row"][];
+  insurance: Database["public"]["Tables"]["insurance"]["Row"][];
+  investments: Database["public"]["Tables"]["investments"]["Row"][];
+  goals: Database["public"]["Tables"]["goals"]["Row"][];
+}
+
 function ageFromDob(dob: string | null | undefined): number {
   if (!dob) return 0;
   const date = new Date(dob);
@@ -11,30 +21,8 @@ function ageFromDob(dob: string | null | undefined): number {
   return Math.max(18, Math.floor((Date.now() - date.getTime()) / (365.25 * 24 * 3600 * 1000)));
 }
 
-/** Load and normalize the shared, user-scoped inputs consumed by NitiCore. */
-export async function buildNitiCoreInput(userId: string, client: NitiCoreDataClient) {
-  const [profileRes, financialProfileRes, assetsRes, liabilitiesRes, insuranceRes, investmentsRes, goalsRes] = await Promise.all([
-    client.from("profiles").select("*").eq("id", userId).maybeSingle(),
-    client.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
-    client.from("assets").select("*").eq("user_id", userId),
-    client.from("liabilities").select("*").eq("user_id", userId),
-    client.from("insurance").select("*").eq("user_id", userId),
-    client.from("investments").select("*").eq("user_id", userId),
-    client.from("goals").select("*").eq("user_id", userId),
-  ]);
-
-  const results = [profileRes, financialProfileRes, assetsRes, liabilitiesRes, insuranceRes, investmentsRes, goalsRes];
-  const failure = results.find((result) => result.error)?.error;
-  if (failure) throw failure;
-
-  const profile = profileRes.data;
-  const financialProfile = financialProfileRes.data;
-  const assets = assetsRes.data ?? [];
-  const liabilities = liabilitiesRes.data ?? [];
-  const insurance = insuranceRes.data ?? [];
-  const investments = investmentsRes.data ?? [];
-  const goals = goalsRes.data ?? [];
-
+export function buildNitiCoreInputFromRecords(records: NitiCoreRecords) {
+  const { profile, financialProfile, assets, liabilities, insurance, investments, goals } = records;
   const totalAssets = assets.reduce((sum, row) => sum + Number(row.current_value ?? 0), 0);
   const liquidAssets = assets.filter((row) => row.is_liquid)
     .reduce((sum, row) => sum + Number(row.current_value ?? 0), 0);
@@ -75,6 +63,32 @@ export async function buildNitiCoreInput(userId: string, client: NitiCoreDataCli
     dependentsCount: profile?.dependents ?? undefined,
     goals: goalInputs,
   };
+  return { input, ...records };
+}
 
-  return { input, profile, financialProfile, assets, liabilities, insurance, investments, goals };
+/** Load and normalize the shared, user-scoped inputs consumed by NitiCore. */
+export async function buildNitiCoreInput(userId: string, client: NitiCoreDataClient) {
+  const [profileRes, financialProfileRes, assetsRes, liabilitiesRes, insuranceRes, investmentsRes, goalsRes] = await Promise.all([
+    client.from("profiles").select("*").eq("id", userId).maybeSingle(),
+    client.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
+    client.from("assets").select("*").eq("user_id", userId),
+    client.from("liabilities").select("*").eq("user_id", userId),
+    client.from("insurance").select("*").eq("user_id", userId),
+    client.from("investments").select("*").eq("user_id", userId),
+    client.from("goals").select("*").eq("user_id", userId),
+  ]);
+
+  const results = [profileRes, financialProfileRes, assetsRes, liabilitiesRes, insuranceRes, investmentsRes, goalsRes];
+  const failure = results.find((result) => result.error)?.error;
+  if (failure) throw failure;
+
+  return buildNitiCoreInputFromRecords({
+    profile: profileRes.data,
+    financialProfile: financialProfileRes.data,
+    assets: assetsRes.data ?? [],
+    liabilities: liabilitiesRes.data ?? [],
+    insurance: insuranceRes.data ?? [],
+    investments: investmentsRes.data ?? [],
+    goals: goalsRes.data ?? [],
+  });
 }
