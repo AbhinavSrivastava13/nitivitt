@@ -9,6 +9,8 @@
  */
 export * from "./types";
 export * from "./config";
+export * from "./build-input";
+export * from "./score-copy";
 export * from "./services";
 export {
   generateRecommendations,
