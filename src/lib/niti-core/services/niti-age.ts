@@ -29,6 +29,20 @@ export interface NitiAgeAiPayload {
 }
 
 export function calculateNitiAge(input: NitiCoreInput): MetricResult<number> {
+  if (input.hasDateOfBirth === false) {
+    return {
+      metric: "niti_age",
+      value: 0,
+      unit: "years",
+      status: "not_available",
+      explanationKey: "age.financial",
+      assumptions: {},
+      calculationSummary: "Not available - add your date of birth to calculate NitiAge.",
+      priority: "low",
+      suggestedNextStep: "Add your date of birth to your profile.",
+    };
+  }
+
   let adjust = 0;
   const sr = Number(calculateSavingsRate(input).value);
   const ef = Number(calculateEmergencyFund(input).value);

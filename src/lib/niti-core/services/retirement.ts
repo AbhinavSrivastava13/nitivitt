@@ -3,9 +3,21 @@ import type { MetricResult, NitiCoreInput } from "../types";
 
 /** Retirement corpus using the 25× / 4% rule, inflation-adjusted. */
 export function calculateRetirement(input: NitiCoreInput): MetricResult {
-  const yearsToRetirement = input.hasDateOfBirth === false
-    ? 0
-    : Math.max(0, input.retirementAge - input.ageYears);
+  if (input.hasDateOfBirth === false) {
+    return {
+      metric: "retirement",
+      value: 0,
+      unit: "INR",
+      status: "not_available",
+      explanationKey: "retirement.gap",
+      assumptions: {},
+      calculationSummary: "Not available - add your date of birth to assess your retirement timeline.",
+      priority: "low",
+      suggestedNextStep: "Add your date of birth to your profile.",
+    };
+  }
+
+  const yearsToRetirement = Math.max(0, input.retirementAge - input.ageYears);
   const futureMonthlyExp =
     input.monthlyExpenses * Math.pow(1 + NITI_CORE_CONFIG.inflation, yearsToRetirement);
   const futureAnnualExp = futureMonthlyExp * 12;

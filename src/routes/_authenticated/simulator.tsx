@@ -415,14 +415,16 @@ function AssistantTurn({ result }: { result: SimResult }) {
 type Snap = SimResult["baseline"];
 
 function SnapshotCard({ title, snap, tone, compare }: { title: string; snap: Snap; tone: "muted" | "primary"; compare?: Snap }) {
-  const ageLabel = snap.nitiAgeDirection === "ahead"
+  const ageLabel = snap.nitiAgeDirection === "not_available"
+    ? "Add date of birth"
+    : snap.nitiAgeDirection === "ahead"
     ? `${snap.nitiAge} yrs · ahead by ${snap.nitiAgeDeltaYears}`
     : snap.nitiAgeDirection === "behind"
       ? `${snap.nitiAge} yrs · behind by ${snap.nitiAgeDeltaYears}`
       : `${snap.nitiAge} yrs · on par`;
   const rows: { label: string; value: string; base?: number; sim?: number; higherIsBetter: boolean }[] = [
     { label: "NitiScore™", value: `${snap.nitiScore}/1000 · ${snap.grade}`, base: compare?.nitiScore, sim: snap.nitiScore, higherIsBetter: true },
-    { label: "NitiAge™", value: ageLabel, base: compare?.nitiAge, sim: snap.nitiAge, higherIsBetter: false },
+    ...(snap.nitiAgeDirection === "not_available" ? [] : [{ label: "NitiAge™", value: ageLabel, base: compare?.nitiAge, sim: snap.nitiAge, higherIsBetter: false }]),
     { label: "Net Worth", value: formatINR(snap.netWorth), base: compare?.netWorth, sim: snap.netWorth, higherIsBetter: true },
     { label: "Savings rate", value: `${snap.savingsRatePct.toFixed(1)}%`, base: compare?.savingsRatePct, sim: snap.savingsRatePct, higherIsBetter: true },
     { label: "Emergency fund", value: `${snap.emergencyMonths.toFixed(1)} mo`, base: compare?.emergencyMonths, sim: snap.emergencyMonths, higherIsBetter: true },

@@ -31,6 +31,7 @@ import {
   calculateDebtRatio,
   calculateInsuranceAdequacy,
   generateRecommendations,
+  buildNitiCoreInput,
   type NitiCoreInput,
 } from "@/lib/niti-core";
 
@@ -61,12 +62,6 @@ const PriorTurnSchema = z.object({
 
 // ─── Shared helpers ───────────────────────────────────────────────────────
 
-function ageFromDob(dob: string | null): number {
-  if (!dob) return 30;
-  const diff = Date.now() - new Date(dob).getTime();
-  return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
-}
-
 interface LoadedProfile {
   input: NitiCoreInput;
   goals: Array<{ name: string; target: number; progress: number; targetDate: string | null }>;
@@ -78,50 +73,7 @@ async function loadUserProfile(
   supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   userId: string,
 ): Promise<LoadedProfile> {
-  const [profileRes, fpRes, assetsRes, liabsRes, insRes, goalsRes] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-    supabase.from("financial_profiles").select("*").eq("user_id", userId).maybeSingle(),
-    supabase.from("assets").select("*").eq("user_id", userId),
-    supabase.from("liabilities").select("*").eq("user_id", userId),
-    supabase.from("insurance").select("*").eq("user_id", userId),
-    supabase.from("goals").select("*").eq("user_id", userId),
-  ]);
-
-  const profile = profileRes.data;
-  const fp = fpRes.data;
-  const assets = assetsRes.data ?? [];
-  const liabs = liabsRes.data ?? [];
-  const insurance = insRes.data ?? [];
-  const goals = goalsRes.data ?? [];
-
-  const totalAssets = assets.reduce((a: number, b: { current_value?: number | null }) => a + Number(b.current_value ?? 0), 0);
-  const liquidAssets = assets
-    .filter((a: { is_liquid?: boolean | null }) => a.is_liquid)
-    .reduce((a: number, b: { current_value?: number | null }) => a + Number(b.current_value ?? 0), 0);
-  const totalLiabilities = liabs.reduce((a: number, b: { outstanding_amount?: number | null }) => a + Number(b.outstanding_amount ?? 0), 0);
-  const monthlyEmi = liabs.reduce((a: number, b: { monthly_emi?: number | null }) => a + Number(b.monthly_emi ?? 0), 0);
-  const termCover = insurance
-    .filter((i: { insurance_type?: string | null }) => i.insurance_type === "term")
-    .reduce((a: number, b: { cover_amount?: number | null }) => a + Number(b.cover_amount ?? 0), 0);
-
-  const input: NitiCoreInput = {
-    ageYears: ageFromDob(profile?.date_of_birth ?? null),
-    monthlyIncome: Number(fp?.monthly_income ?? 0),
-    monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
-    monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
-    liquidAssets,
-    totalAssets,
-    totalLiabilities,
-    monthlyEmi,
-    monthlyInvestments: 0,
-    totalInvestments: 0,
-    hasTermInsurance: insurance.some((i: { insurance_type?: string | null }) => i.insurance_type === "term"),
-    hasHealthInsurance: insurance.some((i: { insurance_type?: string | null }) => i.insurance_type === "health"),
-    termCover,
-    retirementCorpus: 0,
-    retirementAge: Number(fp?.retirement_age ?? 60),
-    riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
-  };
+  const { input, profile, goals } = await buildNitiCoreInput(userId, supabase);
 
   const recs = generateRecommendations(input);
 
@@ -146,20 +98,20 @@ async function loadUserProfile(
 
 function snapshot(input: NitiCoreInput) {
   const score = calculateNitiScore(input);
-  const age = calculateNitiAge(input);
+  const age = input.hasDateOfBirth ? calculateNitiAge(input) : null;
   const emergency = calculateEmergencyFund(input);
   const netWorth = calculateNetWorth(input);
   const retirement = calculateRetirement(input);
   const savings = calculateSavingsRate(input);
   const debt = calculateDebtRatio(input);
   const insurance = calculateInsuranceAdequacy(input);
-  const agePayload = age.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number } | undefined;
+  const agePayload = age?.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number } | undefined;
   return {
     nitiScore: score.value,
     grade: score.grade,
-    nitiAge: age.value,
-    nitiAgeDirection: agePayload?.direction ?? "on_track",
-    nitiAgeDeltaYears: agePayload?.deltaYears ?? 0,
+    nitiAge: age?.value ?? 0,
+    nitiAgeDirection: age ? agePayload?.direction ?? "on_track" : "not_available",
+    nitiAgeDeltaYears: age ? agePayload?.deltaYears ?? 0 : 0,
     emergencyMonths: Number(emergency.value),
     netWorth: netWorth.value,
     savingsRatePct: Number(savings.value),

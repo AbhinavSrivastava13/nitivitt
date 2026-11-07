@@ -1,0 +1,5 @@
+- [ ] Consolidate authenticated NitiCore input loading across score surfaces and analyzer functions.
+- [ ] Correct Goals scoring, missing-date-of-birth handling, and single-source NitiScore ownership.
+- [ ] Derive pillar count/weight copy from NITI_CORE_CONFIG across app and knowledge content.
+- [ ] Add and run unit tests for each pillar and the composite score.
+- [ ] Run typecheck and preview diagnostics; fix all reported errors.

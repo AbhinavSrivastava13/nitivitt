@@ -25,6 +25,7 @@ import {
   generateRecommendationsWithContext,
   describeContext,
   type NitiCoreInput,
+  buildNitiCoreInput,
 } from "@/lib/niti-core";
 import { derivePortfolioRating } from "@/lib/ratings";
 
@@ -34,12 +35,6 @@ const InputSchema = z.object({
     .default("overview"),
   question: z.string().trim().max(500).optional(),
 });
-
-function ageFromDob(dob: string | null): number {
-  if (!dob) return 30;
-  const diff = Date.now() - new Date(dob).getTime();
-  return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
-}
 
 export const getNitiGuideExplanation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -79,23 +74,9 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
       .filter((i) => i.insurance_type === "term")
       .reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
 
+    const { input: sharedInput } = await buildNitiCoreInput(userId, supabase);
     const input: NitiCoreInput = {
-      ageYears: ageFromDob(profile?.date_of_birth ?? null),
-      monthlyIncome: Number(fp?.monthly_income ?? 0),
-      monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
-      monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
-      liquidAssets,
-      totalAssets,
-      totalLiabilities,
-      monthlyEmi,
-      monthlyInvestments: 0,
-      totalInvestments: 0,
-      hasTermInsurance: insurance.some((i) => i.insurance_type === "term"),
-      hasHealthInsurance: insurance.some((i) => i.insurance_type === "health"),
-      termCover,
-      retirementCorpus: 0,
-      retirementAge: Number(fp?.retirement_age ?? 60),
-      riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+      ...sharedInput,
       crossService: {
         insurancePolicyCount: insAnalyses.length,
         insuranceProtectionScore: insAnalyses.length
@@ -125,8 +106,8 @@ export const getNitiGuideExplanation = createServerFn({ method: "POST" })
       firstName,
       focus: data.focus,
       metrics: {
-        nitiScore: { value: score.value, grade: score.grade, breakdown: score.breakdown.map((b) => ({ pillar: b.pillar, score: Math.round(b.pillarScore) })) },
-        nitiAge: { value: age.value, actual: input.ageYears, delta: age.value - input.ageYears },
+        nitiScore: { value: score.value, grade: score.grade, breakdown: score.breakdown.map((b) => ({ pillar: b.pillar, score: b.pillarScore === null ? null : Math.round(b.pillarScore) })) },
+        nitiAge: input.hasDateOfBirth ? { value: age.value, actual: input.ageYears, delta: age.value - input.ageYears } : null,
         netWorth: { value: netWorth.value, status: netWorth.status },
         savingsRatePct: savings.value,
         emergencyMonths: emergency.value,
@@ -280,19 +261,9 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
     const termCover = insurance.filter((i) => i.insurance_type === "term")
       .reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
 
+    const { input: sharedInput } = await buildNitiCoreInput(userId, supabase);
     const input: NitiCoreInput = {
-      ageYears: ageFromDob(profile?.date_of_birth ?? null),
-      monthlyIncome: Number(fp?.monthly_income ?? 0),
-      monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
-      monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
-      liquidAssets, totalAssets, totalLiabilities, monthlyEmi,
-      monthlyInvestments: 0, totalInvestments: 0,
-      hasTermInsurance: insurance.some((i) => i.insurance_type === "term"),
-      hasHealthInsurance: insurance.some((i) => i.insurance_type === "health"),
-      termCover,
-      retirementCorpus: 0,
-      retirementAge: Number(fp?.retirement_age ?? 60),
-      riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
+      ...sharedInput,
       crossService: {
         insurancePolicyCount: insAnalyses.length,
         insuranceProtectionScore: insAnalyses.length
@@ -324,7 +295,7 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       {
         nitiScore: score.value,
         nitiScoreGrade: score.grade,
-        nitiAge: age.value,
+        nitiAge: age?.value ?? 0,
         actualAge: input.ageYears,
         netWorth: netWorth.value,
         totalLiabilities: input.totalLiabilities,
@@ -344,8 +315,8 @@ export const getNitiGuideBriefing = createServerFn({ method: "POST" })
       monthlyIncome: input.monthlyIncome,
       monthlyExpenses: input.monthlyExpenses,
       metrics: {
-        nitiScore: { value: score.value, grade: score.grade, breakdown: score.breakdown.map((b) => ({ pillar: b.pillar, score: Math.round(b.pillarScore) })) },
-        nitiAge: { value: age.value, actual: input.ageYears, delta: age.value - input.ageYears },
+        nitiScore: { value: score.value, grade: score.grade, breakdown: score.breakdown.map((b) => ({ pillar: b.pillar, score: b.pillarScore === null ? null : Math.round(b.pillarScore) })) },
+        nitiAge: input.hasDateOfBirth && age ? { value: age.value, actual: input.ageYears, delta: age.value - input.ageYears } : null,
         netWorth: netWorth.value,
         totalAssets, totalLiabilities,
         savingsRatePct: Number(savings.value),
