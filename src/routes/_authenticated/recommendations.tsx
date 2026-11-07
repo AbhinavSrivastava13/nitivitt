@@ -9,13 +9,10 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  getProfile, getFinancialProfile, listAssets, listLiabilities, listInsurance,
-} from "@/lib/services/profile.service";
-import {
   generateRecommendations,
   calculateEmergencyFund, calculateInsuranceAdequacy, calculateDebtRatio,
   calculateSavingsRate, calculateRetirement,
-  type NitiCoreInput,
+  type NitiCoreInput, buildNitiCoreInput,
 } from "@/lib/niti-core";
 import type { Recommendation } from "@/lib/niti-core/types";
 
@@ -32,41 +29,14 @@ export const Route = createFileRoute("/_authenticated/recommendations")({
   component: RecommendationsPage,
 });
 
-function ageFromDob(dob: string | null): number {
-  if (!dob) return 30;
-  const diff = Date.now() - new Date(dob).getTime();
-  return Math.max(18, Math.floor(diff / (365.25 * 24 * 3600 * 1000)));
-}
-
 function useUserInput() {
   return useQuery({
     queryKey: ["nitipath-input"],
     queryFn: async (): Promise<NitiCoreInput> => {
       const { data } = await supabase.auth.getUser();
       const user = data.user!;
-      const [profile, fp, assets, liabs, insurance] = await Promise.all([
-        getProfile(user.id), getFinancialProfile(user.id),
-        listAssets(user.id), listLiabilities(user.id), listInsurance(user.id),
-      ]);
-      const totalAssets = assets.reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-      const liquidAssets = assets.filter((a) => a.is_liquid).reduce((a, b) => a + Number(b.current_value ?? 0), 0);
-      const totalLiabilities = liabs.reduce((a, b) => a + Number(b.outstanding_amount ?? 0), 0);
-      const monthlyEmi = liabs.reduce((a, b) => a + Number(b.monthly_emi ?? 0), 0);
-      const termCover = insurance.filter((i) => i.insurance_type === "term")
-        .reduce((a, b) => a + Number(b.cover_amount ?? 0), 0);
-      return {
-        ageYears: ageFromDob(profile?.date_of_birth ?? null),
-        monthlyIncome: Number(fp?.monthly_income ?? 0),
-        monthlyExpenses: Number(fp?.monthly_expenses ?? 0),
-        monthlyEssentialExpenses: Number(fp?.monthly_essential_expenses ?? 0),
-        liquidAssets, totalAssets, totalLiabilities, monthlyEmi,
-        monthlyInvestments: 0, totalInvestments: 0,
-        hasTermInsurance: insurance.some((i) => i.insurance_type === "term"),
-        hasHealthInsurance: insurance.some((i) => i.insurance_type === "health"),
-        termCover,
-        retirementCorpus: 0, retirementAge: Number(fp?.retirement_age ?? 60),
-        riskProfile: (fp?.risk_profile as NitiCoreInput["riskProfile"]) ?? "moderate",
-      };
+      const { input } = await buildNitiCoreInput(user.id, supabase);
+      return input;
     },
   });
 }
