@@ -105,7 +105,7 @@ function snapshot(input: NitiCoreInput) {
   const savings = calculateSavingsRate(input);
   const debt = calculateDebtRatio(input);
   const insurance = calculateInsuranceAdequacy(input);
-  const agePayload = age.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number } | undefined;
+  const agePayload = age?.aiPayload as { direction: "ahead" | "behind" | "on_track"; deltaYears: number } | undefined;
   return {
     nitiScore: score.value,
     grade: score.grade,
