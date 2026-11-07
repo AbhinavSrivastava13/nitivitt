@@ -11,7 +11,7 @@ import {
 import {
   calculateNitiScore, calculateNitiAge, calculateEmergencyFund, calculateNetWorth,
   calculateSavingsRate, calculateDebtRatio, calculateInsuranceAdequacy, calculateRetirement,
-  NITI_CORE_CONFIG, buildNitiCoreInput, getNitiScorePillarCount,
+  NITI_CORE_CONFIG, buildNitiCoreInput,
 } from "@/lib/niti-core";
 import type { NitiCoreInput } from "@/lib/niti-core";
 import { formatINR } from "@/lib/finance/core";
