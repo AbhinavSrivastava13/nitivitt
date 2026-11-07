@@ -17,9 +17,7 @@ export function calculateRetirement(input: NitiCoreInput): MetricResult {
     };
   }
 
-  const yearsToRetirement = input.hasDateOfBirth === false
-    ? 0
-    : Math.max(0, input.retirementAge - input.ageYears);
+  const yearsToRetirement = Math.max(0, input.retirementAge - input.ageYears);
   const futureMonthlyExp =
     input.monthlyExpenses * Math.pow(1 + NITI_CORE_CONFIG.inflation, yearsToRetirement);
   const futureAnnualExp = futureMonthlyExp * 12;
