@@ -116,6 +116,8 @@ function Dashboard() {
   }
 
   const { profile, financialProfile: fp, input: baseInput } = data;
+  const totalAssets = baseInput.totalAssets;
+  const totalLiabilities = baseInput.totalLiabilities;
   const input: NitiCoreInput = {
     ...baseInput,
     crossService: {
@@ -242,7 +244,7 @@ function Dashboard() {
             />
 
             {/* NitiAge */}
-            <MetricTile
+            {nitiAge ? <MetricTile
               onClick={() => setOpenMetric("age")}
               accent="secondary"
               eyebrow="NitiAge™"
@@ -270,7 +272,17 @@ function Dashboard() {
                 </>
               }
 
-            />
+            /> : <div className="flex h-full min-h-[212px] flex-col rounded-2xl border border-border bg-card p-5 shadow-soft">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Hourglass className="h-3.5 w-3.5" />
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">NitiAge™</p>
+              </div>
+              <p className="mt-4 text-sm font-semibold text-foreground">Add your date of birth</p>
+              <p className="mt-1 text-xs text-muted-foreground">NitiAge needs your age to compare your financial habits with your life stage.</p>
+              <Link to="/onboarding" className="mt-auto inline-flex items-center gap-1.5 pt-4 text-xs font-semibold text-primary hover:underline">
+                Update your profile <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>}
 
             {/* Net Worth */}
             <MetricTile
@@ -641,7 +653,7 @@ function MetricDialog({
   onClose: () => void;
   kind: MetricKind | null;
   score: ReturnType<typeof calculateNitiScore>;
-  nitiAge: ReturnType<typeof calculateNitiAge>;
+  nitiAge: ReturnType<typeof calculateNitiAge> | null;
   emergency: ReturnType<typeof calculateEmergencyFund>;
   netWorth: ReturnType<typeof calculateNetWorth>;
   input: NitiCoreInput;
@@ -667,8 +679,8 @@ function MetricDialog({
   const helping: string[] = [];
   const hurting: string[] = [];
   score.breakdown.forEach((b) => {
-    if (b.pillarScore >= 75) helping.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
-    else if (b.pillarScore < 50) hurting.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
+    if (b.pillarScore !== null && b.pillarScore >= 75) helping.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
+    else if (b.pillarScore !== null && b.pillarScore < 50) hurting.push(`${b.pillar}: ${Math.round(b.pillarScore)}/100`);
   });
 
   return (
@@ -678,7 +690,7 @@ function MetricDialog({
           <>
             <DialogHeader>
               <DialogTitle className="font-display text-2xl">NitiScore™ - {score.value}/1000 · Grade {score.grade}</DialogTitle>
-              <DialogDescription>Measure of overall financial health across six pillars.</DialogDescription>
+              <DialogDescription>Measure of overall financial health across {getNitiScorePillarCount()} pillars.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
@@ -689,9 +701,9 @@ function MetricDialog({
                       <span className="text-foreground">{b.pillar} <span className="text-[10px] text-muted-foreground">· weight {Math.round(b.weight)}%</span></span>
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-32 overflow-hidden rounded-full bg-muted">
-                          <div className={`h-full rounded-full ${b.pillarScore >= 75 ? "bg-secondary" : b.pillarScore >= 50 ? "bg-primary" : "bg-warning"}`} style={{ width: `${b.pillarScore}%` }} />
+                          {b.pillarScore !== null && <div className={`h-full rounded-full ${b.pillarScore >= 75 ? "bg-secondary" : b.pillarScore >= 50 ? "bg-primary" : "bg-warning"}`} style={{ width: `${b.pillarScore}%` }} />}
                         </div>
-                        <span className="w-14 text-right text-xs font-semibold text-foreground">{Math.round(b.pillarScore)}/100</span>
+                        <span className="w-14 text-right text-xs font-semibold text-foreground">{b.pillarScore === null ? "Not scored" : `${Math.round(b.pillarScore)}/100`}</span>
                       </div>
                     </li>
                   ))}
@@ -718,7 +730,9 @@ function MetricDialog({
           </>
         )}
 
-        {kind === "age" && <NitiAgeDetail nitiAge={nitiAge} input={input} />}
+        {kind === "age" && (nitiAge
+          ? <NitiAgeDetail nitiAge={nitiAge} input={input} />
+          : <DialogHeader><DialogTitle>Add your date of birth</DialogTitle><DialogDescription>NitiAge is available after your date of birth is added to your profile.</DialogDescription></DialogHeader>)}
 
 
         {kind === "networth" && (
