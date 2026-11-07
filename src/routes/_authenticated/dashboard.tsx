@@ -50,10 +50,10 @@ function useDashboardData() {
   return useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user!;
-      const data = await buildNitiCoreInput(user.id, supabase);
-      return { user, ...data };
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user!;
+      const coreData = await buildNitiCoreInput(user.id, supabase);
+      return { user, ...coreData };
     },
   });
 }
@@ -254,7 +254,7 @@ function Dashboard() {
                 cls: ageBadge.cls,
                 icon: ageDirection === "ahead" ? ArrowDownRight : ageDirection === "behind" ? ArrowUpRight : undefined,
               }}
-              value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{nitiAge.value}</span>}
+              value={<span className="font-display text-5xl font-semibold leading-none text-foreground md:text-6xl">{nitiAge?.value}</span>}
               unit="yrs"
               footer={
                 <>
@@ -264,10 +264,10 @@ function Dashboard() {
                   </span>
                   <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground">
                     {ageDirection === "ahead"
-                      ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} ahead of your peers, giving you a Financial Age of ${nitiAge.value}.`
+                      ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} ahead of your peers, giving you a Financial Age of ${nitiAge?.value}.`
                       : ageDirection === "behind"
-                        ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} behind your peers, giving you a Financial Age of ${nitiAge.value}.`
-                        : `Your financial habits match your peers, giving you a Financial Age of ${nitiAge.value}.`}
+                        ? `Your financial habits place you ${ageDeltaYears} year${ageDeltaYears === 1 ? "" : "s"} behind your peers, giving you a Financial Age of ${nitiAge?.value}.`
+                        : `Your financial habits match your peers, giving you a Financial Age of ${nitiAge?.value}.`}
                   </p>
                 </>
               }
