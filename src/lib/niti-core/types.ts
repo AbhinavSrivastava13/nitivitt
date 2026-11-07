@@ -116,6 +116,7 @@ export interface NitiCoreInput {
   dependentsCount?: number;
   /** Goal records used by the NitiScore Goals pillar. */
   goals?: NitiCoreGoal[];
+  hasDateOfBirth?: boolean;
   /**
    * Optional cross-service intelligence. Populated when the user has run
    * NitiSure™ (insurance) or NitiInvest™ (portfolio) analyses. Feeds the
